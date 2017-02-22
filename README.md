@@ -4,6 +4,24 @@ This is the development site for MPCPy, the open source platform for model predi
 ## Description
 MPCPy facilitates the testing and implementation of Model Predictive Control (MPC) for building systems.  The software package focuses on the use of data-driven simplified physical or statistical models to predict building performance and optimize control.  Modules exist for importing data, interacting with a real or emulated system, estimating and validating data-driven models, and optimizing control inputs.
 
+## Dependencies
+
+MPCPy takes advantage of many third-party software packages.  The following is a list of packages that the current version of MPCPy has been tested with:
+
+**Python Packages**
+- matplotlib 1.5.1
+- numpy 1.11.0
+- pandas 0.17.1
+- python-dateutil 2.4.2
+- pytz 2014.10
+- scikit-learn 0.18.1
+- tzwhere 2.3
+- estimationpy
+**Modelica Environments**
+- JModelica 1.17
+
+
+
 ## License
 
 MPCPy is available under the following open-source [license](https://github.com/lbl-srg/MPCPy/blob/master/license.txt)
