@@ -17,16 +17,18 @@ MPCPy takes advantage of many third-party software packages, listed below.  It h
 - tzwhere 2.3
 - estimationpy
 
-**Modelica Environments**
+**Modelica Compiler and Optimizer, FMU Simulator**
 - JModelica 1.17
 
 ## Installation
 Install MPCPy by placing the parent directory on the PYTHONPATH environmental variable.  Modules and classes can then be imported into a python environment.
 
+Explore the [unittests](https://github.com/lbl-srg/MPCPy/tree/master/unittests) directory for example MPCPy use-cases.  See the [README](https://github.com/lbl-srg/MPCPy/blob/master/bin/README.md) on how to run unit tests.
+
 ## License
 MPCPy is available under the following open-source [license](https://github.com/lbl-srg/MPCPy/blob/master/license.txt)
 
-## Development and contribution
+## Development and Contribution
 You are welcome to report any issues in [Issues](https://github.com/lbl-srg/MPCPy/issues).
 
-You are welcome to suggest contributions in the form of [Pull Requests](https://github.com/lbl-srg/MPCPy/pulls).
+You are welcome to suggest contributions in the form of [Pull Requests](https://github.com/lbl-srg/MPCPy/pulls).  Please visit the [Contribution Workflow](https://github.com/lbl-srg/MPCPy/wiki/Contribution-Workflow) page for guidance.
