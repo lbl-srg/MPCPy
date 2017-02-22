@@ -1,11 +1,10 @@
 # MPCPy
-This is the development site for MPCPy, the open source platform for model predictive control in buildings.
+This is the development site for MPCPy, the python-based open-source platform for model predictive control in buildings.
 
 ## Description
-MPCPy facilitates the testing and implementation of Model Predictive Control (MPC) for building systems.  The software package focuses on the use of data-driven simplified physical or statistical models to predict building performance and optimize control.  Modules exist for importing data, interacting with a real or emulated system, estimating and validating data-driven models, and optimizing control inputs.
+MPCPy facilitates the testing and implementation of Model Predictive Control (MPC) for building systems.  The software package focuses on the use of data-driven simplified physical or statistical models to predict building performance and optimize control.  Python modules and classes exist for importing data, interacting with a real or emulated system, estimating and validating data-driven models, and optimizing control inputs.
 
 ## Dependencies
-
 MPCPy takes advantage of many third-party software packages, listed below.  It has been tested on Ubuntu 16.04.
 
 **Python Packages**
@@ -21,10 +20,10 @@ MPCPy takes advantage of many third-party software packages, listed below.  It h
 **Modelica Environments**
 - JModelica 1.17
 
-
+## Installation
+Install MPCPy by placing the parent directory on the PYTHONPATH environmental variable.  Modules and classes can then be imported into a python environment.
 
 ## License
-
 MPCPy is available under the following open-source [license](https://github.com/lbl-srg/MPCPy/blob/master/license.txt)
 
 ## Development and contribution
