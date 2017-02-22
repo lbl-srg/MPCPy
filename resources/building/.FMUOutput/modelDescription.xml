@@ -1,0 +1,3319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="1.0"
+  modelName="RapidMPC.Examples.LBNL71T_Emulate.Emulation"
+  modelIdentifier="RapidMPC_Examples_LBNL71T_0Emulate_Emulation"
+  guid="{bd43875d-e0d5-4ad8-94d5-7cbbbd264fb3}"
+  description="Open loop model of the three zones"
+  generationTool="Dymola Version 2017 (64-bit), 2016-04-12 (requires license to execute)"
+  generationDateAndTime="2016-08-17T22:40:42Z"
+  variableNamingConvention="structured"
+  numberOfContinuousStates="28"
+  numberOfEventIndicators="50">
+  <UnitDefinitions>
+    <BaseUnit
+      unit="K">
+      <DisplayUnitDefinition
+        displayUnit="degC"
+        offset="-273.15"/>
+    </BaseUnit>
+    <BaseUnit
+      unit="Pa">
+      <DisplayUnitDefinition
+        displayUnit="bar"
+        gain="1E-05"/>
+    </BaseUnit>
+    <BaseUnit
+      unit="kg/m3"/>
+    <BaseUnit
+      unit="rad">
+      <DisplayUnitDefinition
+        displayUnit="deg"
+        gain="57.29577951308232"/>
+    </BaseUnit>
+  </UnitDefinitions>
+  <TypeDefinitions>
+    <Type
+      name="Buildings.HeatTransfer.Interfaces.RadiosityInflow">
+      <RealType
+        unit="W"
+        min="0.0"
+        nominal="419.0"/>
+    </Type>
+    <Type
+      name="Buildings.HeatTransfer.Interfaces.RadiosityOutflow">
+      <RealType
+        unit="W"
+        min="0.0"
+        nominal="419.0"/>
+    </Type>
+    <Type
+      name="Modelica.Blocks.Interfaces.RealInput">
+      <RealType/>
+    </Type>
+    <Type
+      name="Modelica.Blocks.Interfaces.RealOutput">
+      <RealType/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.PartialMedium.MassFlowRate">
+      <RealType
+        quantity="MassFlowRate.unusablePartialMedium"
+        unit="kg/s"
+        min="-100000.0"
+        max="100000.0"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.AbsolutePressure">
+      <RealType
+        quantity="Pressure"
+        unit="Pa"
+        displayUnit="bar"
+        min="0.0"
+        max="100000000.0"
+        nominal="100000.0"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.Density">
+      <RealType
+        quantity="Density"
+        unit="kg/m3"
+        min="0.0"
+        max="100000.0"
+        nominal="1.0"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.EnthalpyFlowRate">
+      <RealType
+        quantity="EnthalpyFlowRate"
+        unit="W"
+        min="-100000000.0"
+        max="100000000.0"
+        nominal="1000.0"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.ExtraProperty">
+      <RealType min="0.0"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.ExtraPropertyFlowRate">
+      <RealType
+        unit="kg/s"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.MassFraction">
+      <RealType
+        quantity="MassFraction"
+        unit="kg/kg"
+        min="0.0"
+        max="1.0"
+        nominal="0.1"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.MolarMass">
+      <RealType
+        quantity="MolarMass"
+        unit="kg/mol"
+        min="0.001"
+        max="0.25"
+        nominal="0.032"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.SpecificEnthalpy">
+      <RealType
+        quantity="SpecificEnergy"
+        unit="J/kg"
+        min="-10000000000.0"
+        max="10000000000.0"
+        nominal="1000000.0"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.SpecificHeatCapacity">
+      <RealType
+        quantity="SpecificHeatCapacity"
+        unit="J/(kg.K)"
+        min="0.0"
+        max="10000000.0"
+        nominal="1000.0"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.SpecificInternalEnergy">
+      <RealType
+        quantity="SpecificEnergy"
+        unit="J/kg"
+        min="-100000000.0"
+        max="100000000.0"
+        nominal="1000000.0"/>
+    </Type>
+    <Type
+      name="Modelica.Media.Interfaces.Types.Temperature">
+      <RealType
+        quantity="ThermodynamicTemperature"
+        unit="K"
+        displayUnit="degC"
+        min="1.0"
+        max="10000.0"
+        nominal="300.0"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Angle">
+      <RealType
+        quantity="Angle"
+        unit="rad"
+        displayUnit="deg"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Area">
+      <RealType
+        quantity="Area"
+        unit="m2"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.CoefficientOfHeatTransfer">
+      <RealType
+        quantity="CoefficientOfHeatTransfer"
+        unit="W/(m2.K)"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Conversions.NonSIunits.Pressure_bar">
+      <RealType
+        quantity="Pressure"
+        unit="bar"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Conversions.NonSIunits.Temperature_degC">
+      <RealType
+        quantity="ThermodynamicTemperature"
+        unit="degC"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Density">
+      <RealType
+        quantity="Density"
+        unit="kg/m3"
+        min="0.0"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.DynamicViscosity">
+      <RealType
+        quantity="DynamicViscosity"
+        unit="Pa.s"
+        min="0.0"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Emissivity">
+      <RealType
+        quantity="Emissivity"
+        unit="1"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Energy">
+      <RealType
+        quantity="Energy"
+        unit="J"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.EnthalpyFlowRate">
+      <RealType
+        quantity="EnthalpyFlowRate"
+        unit="W"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.HeatCapacity">
+      <RealType
+        quantity="HeatCapacity"
+        unit="J/K"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.HeatFlowRate">
+      <RealType
+        quantity="Power"
+        unit="W"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.HeatFlux">
+      <RealType
+        quantity="HeatFlux"
+        unit="W/m2"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Length">
+      <RealType
+        quantity="Length"
+        unit="m"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.LinearTemperatureCoefficient">
+      <RealType
+        quantity="LinearTemperatureCoefficient"
+        unit="1/K"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Mass">
+      <RealType
+        quantity="Mass"
+        unit="kg"
+        min="0.0"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.MassFlowRate">
+      <RealType
+        quantity="MassFlowRate"
+        unit="kg/s"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.MassFraction">
+      <RealType
+        quantity="MassFraction"
+        unit="1"
+        min="0.0"
+        max="1.0"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.MolarMass">
+      <RealType
+        quantity="MolarMass"
+        unit="kg/mol"
+        min="0.0"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Power">
+      <RealType
+        quantity="Power"
+        unit="W"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Pressure">
+      <RealType
+        quantity="Pressure"
+        unit="Pa"
+        displayUnit="bar"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.ReflectionCoefficient">
+      <RealType
+        quantity="ReflectionCoefficient"
+        unit="1"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.SpecificEnergy">
+      <RealType
+        quantity="SpecificEnergy"
+        unit="J/kg"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.SpecificEnthalpy">
+      <RealType
+        quantity="SpecificEnergy"
+        unit="J/kg"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.SpecificHeatCapacity">
+      <RealType
+        quantity="SpecificHeatCapacity"
+        unit="J/(kg.K)"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.SpecificInternalEnergy">
+      <RealType
+        quantity="SpecificEnergy"
+        unit="J/kg"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Temperature">
+      <RealType
+        quantity="ThermodynamicTemperature"
+        unit="K"
+        displayUnit="degC"
+        min="0.0"
+        nominal="300.0"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.TemperatureDifference">
+      <RealType
+        quantity="ThermodynamicTemperature"
+        unit="K"
+        relativeQuantity="true"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.ThermalConductance">
+      <RealType
+        quantity="ThermalConductance"
+        unit="W/K"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.ThermalConductivity">
+      <RealType
+        quantity="ThermalConductivity"
+        unit="W/(m.K)"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.ThermalResistance">
+      <RealType
+        quantity="ThermalResistance"
+        unit="K/W"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.TransmissionCoefficient">
+      <RealType
+        quantity="TransmissionCoefficient"
+        unit="1"/>
+    </Type>
+    <Type
+      name="Modelica.SIunits.Volume">
+      <RealType
+        quantity="Volume"
+        unit="m3"/>
+    </Type>
+    <Type
+      name="Buildings.HeatTransfer.Types.ExteriorConvection">
+      <EnumerationType min="1"
+        max="2">
+        <Item name="Fixed"
+          description="Fixed coefficient (a user-specified parameter is used)"/>
+        <Item name="TemperatureWind"
+          description="Wind speed and temperature dependent"/>
+      </EnumerationType>
+    </Type>
+    <Type
+      name="Buildings.HeatTransfer.Types.InteriorConvection">
+      <EnumerationType min="1"
+        max="2">
+        <Item name="Fixed"
+          description="Fixed coefficient (a user-specified parameter is used)"/>
+        <Item name="Temperature"
+          description="Temperature dependent"/>
+      </EnumerationType>
+    </Type>
+    <Type
+      name="Buildings.HeatTransfer.Types.SurfaceRoughness">
+      <EnumerationType min="1"
+        max="6">
+        <Item name="VeryRough"
+          description="Very rough"/>
+        <Item name="Rough"
+          description="Rough"/>
+        <Item name="Medium"
+          description="Medium rough"/>
+        <Item name="MediumSmooth"
+          description="Medium smooth"/>
+        <Item name="Smooth"
+          description="Smooth"/>
+        <Item name="VerySmooth"
+          description="Very smooth"/>
+      </EnumerationType>
+    </Type>
+    <Type
+      name="Buildings.Rooms.Types.CFDBoundaryConditions">
+      <EnumerationType min="1"
+        max="2">
+        <Item name="Temperature"
+          description="Temperature specified"/>
+        <Item name="HeatFlowRate"
+          description="Heat flow rate specified"/>
+      </EnumerationType>
+    </Type>
+    <Type
+      name="Modelica.Fluid.Types.Dynamics">
+      <EnumerationType min="1"
+        max="4">
+        <Item name="DynamicFreeInitial"
+          description="DynamicFreeInitial -- Dynamic balance, Initial guess value"/>
+        <Item name="FixedInitial"
+          description="FixedInitial -- Dynamic balance, Initial value fixed"/>
+        <Item name="SteadyStateInitial"
+          description="SteadyStateInitial -- Dynamic balance, Steady state initial with guess value"/>
+        <Item name="SteadyState"
+          description="SteadyState -- Steady state balance, Initial guess value"/>
+      </EnumerationType>
+    </Type>
+  </TypeDefinitions>
+  <DefaultExperiment startTime="0.0"
+    stopTime="604800.0"
+    tolerance="0.0001"/>
+  <ModelVariables>
+    <ScalarVariable
+      name="lat"
+      valueReference="16777216"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.Angle"
+        start="0.6632251157578452"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="nPortsWes"
+      valueReference="100663296"
+      description="Number of ports for west zone"
+      variability="constant">
+      <Integer start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="nPortsHal"
+      valueReference="100663297"
+      description="Number of ports for hallway zone"
+      variability="constant">
+      <Integer start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="nPortsEas"
+      valueReference="100663298"
+      description="Number of ports for east zone"
+      variability="constant">
+      <Integer start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="HDirTilWin[1]"
+      valueReference="335544320"
+      description="Direct solar irradiation at outside of windows"
+      causality="output">
+      <Real
+        unit="W/m2"/>
+      <DirectDependency>
+        <Name>weaCloTim</Name>
+        <Name>weaHDirNor</Name>
+        <Name>weaSolTim</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="HDirTilWin[2]"
+      valueReference="335544321"
+      description="Direct solar irradiation at outside of windows"
+      causality="output">
+      <Real
+        unit="W/m2"/>
+      <DirectDependency>
+        <Name>weaCloTim</Name>
+        <Name>weaHDirNor</Name>
+        <Name>weaSolTim</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.lat"
+      valueReference="100663299"
+      description="Latitude"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.Angle"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.nPorts"
+      valueReference="100663300"
+      description="Number of ports"
+      variability="constant">
+      <Integer start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.qhvac_heat_max"
+      valueReference="16777217"
+      description="Maximum HVAC Heating (W/m2)"
+      variability="parameter">
+      <Real
+        unit="m-2"
+        start="75"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.AExt"
+      valueReference="100663301"
+      description="Area of exterior wall (including window), or interior walls that are parallel to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="10.22"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.AInt"
+      valueReference="100663302"
+      description="Area of one interior wall that is perpendicular to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="15.33"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.lExt"
+      valueReference="100663303"
+      description="Length of exterior wall, or interior walls that are parallel to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Length"
+        start="3.0326409495548963"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.lInt"
+      valueReference="100663304"
+      description="Length of one interior wall that is perpendicular to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Length"
+        start="4.548961424332344"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.AFlo"
+      valueReference="100663305"
+      description="Floor area"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="13.795366693375833"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.hRoo"
+      valueReference="100663306"
+      description="Room height"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Length"
+        start="3.37"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.ADoo"
+      valueReference="100663307"
+      description="Door area"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="3.3000000000000003"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.HDifHor"
+      valueReference="352321548"
+      description="Horizontal diffuse solar radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.HDirNor"
+      valueReference="352321546"
+      description="Direct normal radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.HGloHor"
+      valueReference="352321547"
+      description="Horizontal global solar radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.HHorIR"
+      valueReference="352321545"
+      description="Input diffuse horizontal radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.TBlaSky"
+      valueReference="352321558"
+      description="Black body sky temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"
+        min="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.TDewPoi"
+      valueReference="352321537"
+      description="Input dew point temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.TDryBul"
+      valueReference="352321538"
+      description="Connector of Real input signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.TWetBul"
+      valueReference="352321559"
+      description="Input global horizontal radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.celHei"
+      valueReference="352321541"
+      description="Input ceiling height"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.cloTim"
+      valueReference="352321560"
+      description="Day number with units of seconds"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.nOpa"
+      valueReference="352321540"
+      description="Input opaque sky cover"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.nTot"
+      valueReference="352321542"
+      description="Input total sky cover"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.pAtm"
+      valueReference="352321536"
+      description="Input pressure"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.relHum"
+      valueReference="352321539"
+      description="Input relative humidity"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.solTim"
+      valueReference="352321561"
+      description="Solar time"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.solZen"
+      valueReference="352321562"
+      description="Zenith angle of the sun beam"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="rad"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.winDir"
+      valueReference="352321544"
+      description="Connector of Real input signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.weaBus.winSpe"
+      valueReference="352321543"
+      description="Connector of Real input signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.TRooAir"
+      valueReference="335544327"
+      description="Room air temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="K"
+        min="1.0"
+        max="10000.0"
+        nominal="300.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.XWat"
+      valueReference="335544322"
+      description="Water vapor concentration in [kg/kg]"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="1"
+        min="-0.001"
+        max="1.001"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senMasFra.port.m_flow"
+      valueReference="100667705"
+      description="Mass flow rate from the connection point into the component"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.PartialMedium.MassFlowRate"
+        quantity="MassFlowRate.Air"
+        min="0.0"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senMasFra.port.p"
+      valueReference="905969785"
+      description="Thermodynamic pressure in the connection point">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.AbsolutePressure"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senMasFra.port.h_outflow"
+      valueReference="100667706"
+      description="Specific thermodynamic enthalpy close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.SpecificEnthalpy"
+        start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senMasFra.port.Xi_outflow[1]"
+      valueReference="100667707"
+      description="Independent mixture mass fractions m_i/m close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        unit="kg/kg"
+        min="0.0"
+        max="1.0"
+        nominal="0.1"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senMasFra.X"
+      valueReference="335544322"
+      description="Mass fraction in port"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="kg/kg"
+        min="-0.001"
+        max="1.001"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senRelHum.port.m_flow"
+      valueReference="100667710"
+      description="Mass flow rate from the connection point into the component"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.PartialMedium.MassFlowRate"
+        quantity="MassFlowRate.Air"
+        min="0.0"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senRelHum.port.p"
+      valueReference="905969785"
+      description="Thermodynamic pressure in the connection point"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.AbsolutePressure"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senRelHum.port.h_outflow"
+      valueReference="100667711"
+      description="Specific thermodynamic enthalpy close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.SpecificEnthalpy"
+        start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senRelHum.port.Xi_outflow[1]"
+      valueReference="100667712"
+      description="Independent mixture mass fractions m_i/m close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        unit="kg/kg"
+        min="0.0"
+        max="1.0"
+        nominal="0.1"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.senRelHum.phi"
+      valueReference="905974082"
+      description="Relative humidity in port medium"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="1"
+        min="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.phi"
+      valueReference="905974082"
+      description="Relative humidity in port medium">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="1"
+        min="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.qGai_con"
+      valueReference="352321550"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.qGai_rad"
+      valueReference="352321549"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.qGai_lat"
+      valueReference="352321551"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.multiplex3_1.n1"
+      valueReference="100667715"
+      description="dimension of input signal connector 1"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.multiplex3_1.n2"
+      valueReference="100667716"
+      description="dimension of input signal connector 2"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.multiplex3_1.n3"
+      valueReference="100667717"
+      description="dimension of input signal connector 3"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.multiplex3_1.u1[1]"
+      valueReference="352321549"
+      description="Connector of Real input signals 1"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.multiplex3_1.u2[1]"
+      valueReference="352321550"
+      description="Connector of Real input signals 2"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.multiplex3_1.u3[1]"
+      valueReference="352321551"
+      description="Connector of Real input signals 3"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.multiplex3_1.y[1]"
+      valueReference="352321549"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.multiplex3_1.y[2]"
+      valueReference="352321550"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.multiplex3_1.y[3]"
+      valueReference="352321551"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.u_heat"
+      valueReference="352321563"
+      description="Heating from HVAC"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.q_max"
+      valueReference="100667718"
+      description="Max heater output [W]"
+      variability="parameter">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.eff"
+      valueReference="16777595"
+      description="Efficiency of heater [W_t/W_e]"
+      variability="parameter">
+      <Real
+        unit="1"
+        start="0.99"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.prescribedHeatFlow.T_ref"
+      valueReference="16777596"
+      description="Reference temperature"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"
+        start="293.15"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.prescribedHeatFlow.alpha"
+      valueReference="16777597"
+      description="Temperature coefficient of heat flow rate"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.LinearTemperatureCoefficient"
+        start="0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.prescribedHeatFlow.Q_flow"
+      valueReference="369103175">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.prescribedHeatFlow.port.T"
+      valueReference="335544327"
+      description="Port temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.prescribedHeatFlow.port.Q_flow"
+      valueReference="637538633"
+      description="Heat flow rate (positive if flowing from outside into the component)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.gain1.k"
+      valueReference="100667720"
+      description="Gain value multiplied with input signal"
+      variability="parameter">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.gain1.u"
+      valueReference="352321563"
+      description="Input signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.gain1.y"
+      valueReference="369103175"
+      description="Output signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.u"
+      valueReference="352321563"
+      description="Input signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.HeatOutput.T"
+      valueReference="335544327"
+      description="Port temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.HeatOutput.Q_flow"
+      valueReference="637538633"
+      description="Heat flow rate (positive if flowing from outside into the component)">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.P_e"
+      valueReference="335544330"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.gain2.k"
+      valueReference="100667722"
+      description="Gain value multiplied with input signal"
+      variability="parameter">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.gain2.u"
+      valueReference="369103175"
+      description="Input signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.convectiveHeater.gain2.y"
+      valueReference="335544330"
+      description="Output signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.Phvac"
+      valueReference="335544330"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.nConBou"
+      valueReference="100667723"
+      description="Number of surfaces that are connected to constructions that are modeled inside the room"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.westFacing"
+      valueReference="16777598"
+      description="Set to true for West facing, else it is East facing"
+      variability="parameter">
+      <Boolean start="true"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.azi"
+      valueReference="100667724"
+      description="Exterior wall azimuth"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.Angle"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.uWin"
+      valueReference="16778299"
+      description="Control signal for window state"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.surf_conBou[1].T"
+      valueReference="637538637"
+      description="Port temperature">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.surf_conBou[1].Q_flow"
+      valueReference="637538638"
+      description="Heat flow rate (positive if flowing from outside into the component)">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.HDirTilWin"
+      valueReference="369101473"
+      description="Direct solar irradiation at outside of window">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wes.inc"
+      valueReference="369101472"
+      description="Direct solar incidence angle for exterior surfaces">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="rad"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.lat"
+      valueReference="100667727"
+      description="Latitude"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.Angle"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.nPorts"
+      valueReference="100667728"
+      description="Number of ports"
+      variability="constant">
+      <Integer start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.qhvac_heat_max"
+      valueReference="16777599"
+      description="Maximum HVAC Heating (W/m2)"
+      variability="parameter">
+      <Real
+        unit="m-2"
+        start="0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.AExt"
+      valueReference="100667729"
+      description="Area of exterior wall (including window), or interior walls that are parallel to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="10.22"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.AInt"
+      valueReference="100667730"
+      description="Area of one interior wall that is perpendicular to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="10.11"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.lExt"
+      valueReference="100667731"
+      description="Length of exterior wall, or interior walls that are parallel to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Length"
+        start="3.0326409495548963"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.lInt"
+      valueReference="100667732"
+      description="Length of one interior wall that is perpendicular to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Length"
+        start="2.9999999999999996"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.AFlo"
+      valueReference="100667733"
+      description="Floor area"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="9.097922848664687"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.hRoo"
+      valueReference="100667734"
+      description="Room height"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Length"
+        start="3.37"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.ADoo"
+      valueReference="100667735"
+      description="Door area"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="3.3000000000000003"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.HDifHor"
+      valueReference="352321548"
+      description="Horizontal diffuse solar radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.HDirNor"
+      valueReference="352321546"
+      description="Direct normal radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.HGloHor"
+      valueReference="352321547"
+      description="Horizontal global solar radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.HHorIR"
+      valueReference="352321545"
+      description="Input diffuse horizontal radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.TBlaSky"
+      valueReference="352321558"
+      description="Black body sky temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"
+        min="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.TDewPoi"
+      valueReference="352321537"
+      description="Input dew point temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.TDryBul"
+      valueReference="352321538"
+      description="Connector of Real input signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.TWetBul"
+      valueReference="352321559"
+      description="Input global horizontal radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.celHei"
+      valueReference="352321541"
+      description="Input ceiling height"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.cloTim"
+      valueReference="352321560"
+      description="Day number with units of seconds"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.nOpa"
+      valueReference="352321540"
+      description="Input opaque sky cover"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.nTot"
+      valueReference="352321542"
+      description="Input total sky cover"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.pAtm"
+      valueReference="352321536"
+      description="Input pressure"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.relHum"
+      valueReference="352321539"
+      description="Input relative humidity"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.solTim"
+      valueReference="352321561"
+      description="Solar time"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.solZen"
+      valueReference="352321562"
+      description="Zenith angle of the sun beam"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="rad"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.winDir"
+      valueReference="352321544"
+      description="Connector of Real input signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.weaBus.winSpe"
+      valueReference="352321543"
+      description="Connector of Real input signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.TRooAir"
+      valueReference="335544328"
+      description="Room air temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="K"
+        min="1.0"
+        max="10000.0"
+        nominal="300.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.XWat"
+      valueReference="335544323"
+      description="Water vapor concentration in [kg/kg]"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="1"
+        min="-0.001"
+        max="1.001"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senMasFra.port.m_flow"
+      valueReference="100668918"
+      description="Mass flow rate from the connection point into the component"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.PartialMedium.MassFlowRate"
+        quantity="MassFlowRate.Air"
+        min="0.0"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senMasFra.port.p"
+      valueReference="905974208"
+      description="Thermodynamic pressure in the connection point">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.AbsolutePressure"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senMasFra.port.h_outflow"
+      valueReference="100668919"
+      description="Specific thermodynamic enthalpy close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.SpecificEnthalpy"
+        start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senMasFra.port.Xi_outflow[1]"
+      valueReference="100668920"
+      description="Independent mixture mass fractions m_i/m close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        unit="kg/kg"
+        min="0.0"
+        max="1.0"
+        nominal="0.1"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senMasFra.X"
+      valueReference="335544323"
+      description="Mass fraction in port"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="kg/kg"
+        min="-0.001"
+        max="1.001"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senRelHum.port.m_flow"
+      valueReference="100668923"
+      description="Mass flow rate from the connection point into the component"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.PartialMedium.MassFlowRate"
+        quantity="MassFlowRate.Air"
+        min="0.0"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senRelHum.port.p"
+      valueReference="905974208"
+      description="Thermodynamic pressure in the connection point"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.AbsolutePressure"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senRelHum.port.h_outflow"
+      valueReference="100668924"
+      description="Specific thermodynamic enthalpy close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.SpecificEnthalpy"
+        start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senRelHum.port.Xi_outflow[1]"
+      valueReference="100668925"
+      description="Independent mixture mass fractions m_i/m close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        unit="kg/kg"
+        min="0.0"
+        max="1.0"
+        nominal="0.1"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.senRelHum.phi"
+      valueReference="905975295"
+      description="Relative humidity in port medium"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="1"
+        min="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.phi"
+      valueReference="905975295"
+      description="Relative humidity in port medium">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="1"
+        min="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.qGai_con"
+      valueReference="352321553"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.qGai_rad"
+      valueReference="352321552"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.qGai_lat"
+      valueReference="352321554"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.multiplex3_1.n1"
+      valueReference="100668928"
+      description="dimension of input signal connector 1"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.multiplex3_1.n2"
+      valueReference="100668929"
+      description="dimension of input signal connector 2"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.multiplex3_1.n3"
+      valueReference="100668930"
+      description="dimension of input signal connector 3"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.multiplex3_1.u1[1]"
+      valueReference="352321552"
+      description="Connector of Real input signals 1"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.multiplex3_1.u2[1]"
+      valueReference="352321553"
+      description="Connector of Real input signals 2"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.multiplex3_1.u3[1]"
+      valueReference="352321554"
+      description="Connector of Real input signals 3"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.multiplex3_1.y[1]"
+      valueReference="352321552"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.multiplex3_1.y[2]"
+      valueReference="352321553"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.multiplex3_1.y[3]"
+      valueReference="352321554"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.u_heat"
+      valueReference="352321565"
+      description="Heating from HVAC"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.q_max"
+      valueReference="100668931"
+      description="Max heater output [W]"
+      variability="parameter">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.eff"
+      valueReference="16777914"
+      description="Efficiency of heater [W_t/W_e]"
+      variability="parameter">
+      <Real
+        unit="1"
+        start="0.99"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.prescribedHeatFlow.T_ref"
+      valueReference="16777915"
+      description="Reference temperature"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"
+        start="293.15"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.prescribedHeatFlow.alpha"
+      valueReference="16777916"
+      description="Temperature coefficient of heat flow rate"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.LinearTemperatureCoefficient"
+        start="0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.prescribedHeatFlow.Q_flow"
+      valueReference="369104388">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.prescribedHeatFlow.port.T"
+      valueReference="335544328"
+      description="Port temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.prescribedHeatFlow.port.Q_flow"
+      valueReference="637539846"
+      description="Heat flow rate (positive if flowing from outside into the component)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.gain1.k"
+      valueReference="100668933"
+      description="Gain value multiplied with input signal"
+      variability="parameter">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.gain1.u"
+      valueReference="352321565"
+      description="Input signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.gain1.y"
+      valueReference="369104388"
+      description="Output signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.u"
+      valueReference="352321565"
+      description="Input signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.HeatOutput.T"
+      valueReference="335544328"
+      description="Port temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.HeatOutput.Q_flow"
+      valueReference="637539846"
+      description="Heat flow rate (positive if flowing from outside into the component)">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.P_e"
+      valueReference="335544331"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.gain2.k"
+      valueReference="100668935"
+      description="Gain value multiplied with input signal"
+      variability="parameter">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.gain2.u"
+      valueReference="369104388"
+      description="Input signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.convectiveHeater.gain2.y"
+      valueReference="335544331"
+      description="Output signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.Phvac"
+      valueReference="335544331"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.nSurBou"
+      valueReference="100668936"
+      description="Number of surfaces with prescribed boundary conditions"
+      variability="constant">
+      <Integer start="2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.surf_surBou[1].T"
+      valueReference="637538637"
+      description="Port temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.surf_surBou[1].Q_flow"
+      valueReference="637546103"
+      description="Heat flow rate (positive if flowing from outside into the component)">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.surf_surBou[2].T"
+      valueReference="637539849"
+      description="Port temperature">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="hal.surf_surBou[2].Q_flow"
+      valueReference="637539850"
+      description="Heat flow rate (positive if flowing from outside into the component)">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.lat"
+      valueReference="100668939"
+      description="Latitude"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.Angle"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.nPorts"
+      valueReference="100668940"
+      description="Number of ports"
+      variability="constant">
+      <Integer start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.qhvac_heat_max"
+      valueReference="16777917"
+      description="Maximum HVAC Heating (W/m2)"
+      variability="parameter">
+      <Real
+        unit="m-2"
+        start="60"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.AExt"
+      valueReference="100668941"
+      description="Area of exterior wall (including window), or interior walls that are parallel to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="10.22"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.AInt"
+      valueReference="100668942"
+      description="Area of one interior wall that is perpendicular to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="15.33"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.lExt"
+      valueReference="100668943"
+      description="Length of exterior wall, or interior walls that are parallel to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Length"
+        start="3.0326409495548963"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.lInt"
+      valueReference="100668944"
+      description="Length of one interior wall that is perpendicular to exterior wall"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Length"
+        start="4.548961424332344"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.AFlo"
+      valueReference="100668945"
+      description="Floor area"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="13.795366693375833"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.hRoo"
+      valueReference="100668946"
+      description="Room height"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Length"
+        start="3.37"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.ADoo"
+      valueReference="100668947"
+      description="Door area"
+      variability="constant">
+      <Real
+        declaredType="Modelica.SIunits.Area"
+        start="3.3000000000000003"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.HDifHor"
+      valueReference="352321548"
+      description="Horizontal diffuse solar radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.HDirNor"
+      valueReference="352321546"
+      description="Direct normal radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.HGloHor"
+      valueReference="352321547"
+      description="Horizontal global solar radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.HHorIR"
+      valueReference="352321545"
+      description="Input diffuse horizontal radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.TBlaSky"
+      valueReference="352321558"
+      description="Black body sky temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"
+        min="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.TDewPoi"
+      valueReference="352321537"
+      description="Input dew point temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.TDryBul"
+      valueReference="352321538"
+      description="Connector of Real input signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.TWetBul"
+      valueReference="352321559"
+      description="Input global horizontal radiation"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.celHei"
+      valueReference="352321541"
+      description="Input ceiling height"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.cloTim"
+      valueReference="352321560"
+      description="Day number with units of seconds"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.nOpa"
+      valueReference="352321540"
+      description="Input opaque sky cover"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.nTot"
+      valueReference="352321542"
+      description="Input total sky cover"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.pAtm"
+      valueReference="352321536"
+      description="Input pressure"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.relHum"
+      valueReference="352321539"
+      description="Input relative humidity"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.solTim"
+      valueReference="352321561"
+      description="Solar time"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.solZen"
+      valueReference="352321562"
+      description="Zenith angle of the sun beam"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="rad"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.winDir"
+      valueReference="352321544"
+      description="Connector of Real input signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.weaBus.winSpe"
+      valueReference="352321543"
+      description="Connector of Real input signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.TRooAir"
+      valueReference="335544329"
+      description="Room air temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="K"
+        min="1.0"
+        max="10000.0"
+        nominal="300.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.XWat"
+      valueReference="335544324"
+      description="Water vapor concentration in [kg/kg]"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="1"
+        min="-0.001"
+        max="1.001"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senMasFra.port.m_flow"
+      valueReference="100673343"
+      description="Mass flow rate from the connection point into the component"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.PartialMedium.MassFlowRate"
+        quantity="MassFlowRate.Air"
+        min="0.0"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senMasFra.port.p"
+      valueReference="905975425"
+      description="Thermodynamic pressure in the connection point">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.AbsolutePressure"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senMasFra.port.h_outflow"
+      valueReference="100673344"
+      description="Specific thermodynamic enthalpy close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.SpecificEnthalpy"
+        start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senMasFra.port.Xi_outflow[1]"
+      valueReference="100673345"
+      description="Independent mixture mass fractions m_i/m close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        unit="kg/kg"
+        min="0.0"
+        max="1.0"
+        nominal="0.1"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senMasFra.X"
+      valueReference="335544324"
+      description="Mass fraction in port"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="kg/kg"
+        min="-0.001"
+        max="1.001"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senRelHum.port.m_flow"
+      valueReference="100673348"
+      description="Mass flow rate from the connection point into the component"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.PartialMedium.MassFlowRate"
+        quantity="MassFlowRate.Air"
+        min="0.0"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senRelHum.port.p"
+      valueReference="905975425"
+      description="Thermodynamic pressure in the connection point"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.AbsolutePressure"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senRelHum.port.h_outflow"
+      valueReference="100673349"
+      description="Specific thermodynamic enthalpy close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        declaredType="Modelica.Media.Interfaces.Types.SpecificEnthalpy"
+        start="0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senRelHum.port.Xi_outflow[1]"
+      valueReference="100673350"
+      description="Independent mixture mass fractions m_i/m close to the connection point if m_flow &lt; 0"
+      variability="constant">
+      <Real
+        unit="kg/kg"
+        min="0.0"
+        max="1.0"
+        nominal="0.1"
+        start="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.senRelHum.phi"
+      valueReference="905979720"
+      description="Relative humidity in port medium"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="1"
+        min="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.phi"
+      valueReference="905979720"
+      description="Relative humidity in port medium">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="1"
+        min="0.0"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.qGai_con"
+      valueReference="352321556"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.qGai_rad"
+      valueReference="352321555"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.qGai_lat"
+      valueReference="352321557"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.multiplex3_1.n1"
+      valueReference="100673353"
+      description="dimension of input signal connector 1"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.multiplex3_1.n2"
+      valueReference="100673354"
+      description="dimension of input signal connector 2"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.multiplex3_1.n3"
+      valueReference="100673355"
+      description="dimension of input signal connector 3"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.multiplex3_1.u1[1]"
+      valueReference="352321555"
+      description="Connector of Real input signals 1"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.multiplex3_1.u2[1]"
+      valueReference="352321556"
+      description="Connector of Real input signals 2"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.multiplex3_1.u3[1]"
+      valueReference="352321557"
+      description="Connector of Real input signals 3"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.multiplex3_1.y[1]"
+      valueReference="352321555"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.multiplex3_1.y[2]"
+      valueReference="352321556"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.multiplex3_1.y[3]"
+      valueReference="352321557"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.u_heat"
+      valueReference="352321564"
+      description="Heating from HVAC"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.q_max"
+      valueReference="100673356"
+      description="Max heater output [W]"
+      variability="parameter">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.eff"
+      valueReference="16778295"
+      description="Efficiency of heater [W_t/W_e]"
+      variability="parameter">
+      <Real
+        unit="1"
+        start="0.99"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.prescribedHeatFlow.T_ref"
+      valueReference="16778296"
+      description="Reference temperature"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"
+        start="293.15"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.prescribedHeatFlow.alpha"
+      valueReference="16778297"
+      description="Temperature coefficient of heat flow rate"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.LinearTemperatureCoefficient"
+        start="0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.prescribedHeatFlow.Q_flow"
+      valueReference="369108813">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.prescribedHeatFlow.port.T"
+      valueReference="335544329"
+      description="Port temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.prescribedHeatFlow.port.Q_flow"
+      valueReference="637544271"
+      description="Heat flow rate (positive if flowing from outside into the component)"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.gain1.k"
+      valueReference="100673358"
+      description="Gain value multiplied with input signal"
+      variability="parameter">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.gain1.u"
+      valueReference="352321564"
+      description="Input signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.gain1.y"
+      valueReference="369108813"
+      description="Output signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.u"
+      valueReference="352321564"
+      description="Input signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.HeatOutput.T"
+      valueReference="335544329"
+      description="Port temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.HeatOutput.Q_flow"
+      valueReference="637544271"
+      description="Heat flow rate (positive if flowing from outside into the component)">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.P_e"
+      valueReference="335544332"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.gain2.k"
+      valueReference="100673360"
+      description="Gain value multiplied with input signal"
+      variability="parameter">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.gain2.u"
+      valueReference="369108813"
+      description="Input signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.convectiveHeater.gain2.y"
+      valueReference="335544332"
+      description="Output signal connector"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.Phvac"
+      valueReference="335544332"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.nConBou"
+      valueReference="100673361"
+      description="Number of surfaces that are connected to constructions that are modeled inside the room"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.westFacing"
+      valueReference="16778298"
+      description="Set to true for West facing, else it is East facing"
+      variability="parameter">
+      <Boolean start="false"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.azi"
+      valueReference="100673362"
+      description="Exterior wall azimuth"
+      variability="parameter">
+      <Real
+        declaredType="Modelica.SIunits.Angle"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.uWin"
+      valueReference="16778300"
+      description="Control signal for window state"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.surf_conBou[1].T"
+      valueReference="637539849"
+      description="Port temperature"
+      alias="alias">
+      <Real
+        declaredType="Modelica.SIunits.Temperature"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.surf_conBou[1].Q_flow"
+      valueReference="637547315"
+      description="Heat flow rate (positive if flowing from outside into the component)">
+      <Real
+        declaredType="Modelica.SIunits.HeatFlowRate"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.HDirTilWin"
+      valueReference="369107113"
+      description="Direct solar irradiation at outside of window">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W/m2"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="eas.inc"
+      valueReference="369107112"
+      description="Direct solar incidence angle for exterior surfaces">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="rad"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="deMultiplex2_1.n1"
+      valueReference="100673363"
+      description="dimension of output signal connector 1"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="deMultiplex2_1.n2"
+      valueReference="100673364"
+      description="dimension of output signal connector 2"
+      variability="constant">
+      <Integer start="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="deMultiplex2_1.u[1]"
+      valueReference="16778299"
+      description="Connector of Real input signals"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="deMultiplex2_1.u[2]"
+      valueReference="16778300"
+      description="Connector of Real input signals"
+      alias="alias">
+      <Real/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="deMultiplex2_1.y1[1]"
+      valueReference="16778299"
+      description="Connector of Real output signals 1"
+      alias="alias">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="deMultiplex2_1.y2[1]"
+      valueReference="16778300"
+      description="Connector of Real output signals 2"
+      alias="alias">
+      <Real
+        unit="1"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="Xi[1]"
+      valueReference="335544322"
+      description="Water vapor concentration in [kg/kg total air]"
+      causality="output">
+      <Real min="-0.001"
+        max="1.001"/>
+      <DirectDependency/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="Xi[2]"
+      valueReference="335544323"
+      description="Water vapor concentration in [kg/kg total air]"
+      causality="output">
+      <Real min="-0.001"
+        max="1.001"/>
+      <DirectDependency/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="Xi[3]"
+      valueReference="335544324"
+      description="Water vapor concentration in [kg/kg total air]"
+      causality="output">
+      <Real min="-0.001"
+        max="1.001"/>
+      <DirectDependency/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaPAtm"
+      valueReference="352321536"
+      description="Input pressure"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaTDewPoi"
+      valueReference="352321537"
+      description="Input dew point temperature"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaTDryBul"
+      valueReference="352321538"
+      description="Input dry bulb temperature"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"
+        min="0.0"
+        nominal="300.0"
+        start="288.15"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaRelHum"
+      valueReference="352321539"
+      description="Input relative humidity"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaNOpa"
+      valueReference="352321540"
+      description="Input opaque sky cover"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaCelHei"
+      valueReference="352321541"
+      description="Input ceiling height"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaNTot"
+      valueReference="352321542"
+      description="Input total sky cover"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaWinSpe"
+      valueReference="352321543"
+      description="Input wind speed"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaWinDir"
+      valueReference="352321544"
+      description="Input wind direction"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        min="0.0"
+        max="6.283185307179586"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaHHorIR"
+      valueReference="352321545"
+      description="Input diffuse horizontal radiation"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaHDirNor"
+      valueReference="352321546"
+      description="Input infrared horizontal radiation"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaHGloHor"
+      valueReference="352321547"
+      description="Input direct normal radiation"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaHDifHor"
+      valueReference="352321548"
+      description="Input global horizontal radiation"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="uWin[1].k"
+      valueReference="16778299"
+      description="Constant output value"
+      variability="parameter">
+      <Real min="0.0"
+        max="1.0"
+        start="0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="uWin[1].y"
+      valueReference="16778299"
+      description="Connector of Real output signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="uWin[2].k"
+      valueReference="16778300"
+      description="Constant output value"
+      variability="parameter">
+      <Real min="0.0"
+        max="1.0"
+        start="0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="uWin[2].y"
+      valueReference="16778300"
+      description="Connector of Real output signal"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="intRad_wes"
+      valueReference="352321549"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="intCon_wes"
+      valueReference="352321550"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="intLat_wes"
+      valueReference="352321551"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="intRad_hal"
+      valueReference="352321552"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="intCon_hal"
+      valueReference="352321553"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="intLat_hal"
+      valueReference="352321554"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="intRad_eas"
+      valueReference="352321555"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="intCon_eas"
+      valueReference="352321556"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="intLat_eas"
+      valueReference="352321557"
+      description="Radiant, convective and latent heat input into room (positive if heat gain)"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="inc[1]"
+      valueReference="335544325"
+      description="Direct solar incidence angle on constructions"
+      causality="output">
+      <Real
+        unit="rad"/>
+      <DirectDependency>
+        <Name>weaCloTim</Name>
+        <Name>weaSolTim</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="inc[2]"
+      valueReference="335544326"
+      description="Direct solar incidence angle on constructions"
+      causality="output">
+      <Real
+        unit="rad"/>
+      <DirectDependency>
+        <Name>weaCloTim</Name>
+        <Name>weaSolTim</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wesTdb"
+      valueReference="335544327"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="K"
+        min="1.0"
+        max="10000.0"
+        nominal="300.0"/>
+      <DirectDependency/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="halTdb"
+      valueReference="335544328"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="K"
+        min="1.0"
+        max="10000.0"
+        nominal="300.0"/>
+      <DirectDependency/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="easTdb"
+      valueReference="335544329"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="K"
+        min="1.0"
+        max="10000.0"
+        nominal="300.0"/>
+      <DirectDependency/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.pAtm"
+      valueReference="335544334"
+      description="Input pressure"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaPAtm</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.TDewPoi"
+      valueReference="335544335"
+      description="Input dew point temperature"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaTDewPoi</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.TDryBul"
+      valueReference="335544336"
+      description="Input dry bulb temperature"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"/>
+      <DirectDependency>
+        <Name>weaTDryBul</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.relHum"
+      valueReference="335544337"
+      description="Input relative humidity"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaRelHum</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.nOpa"
+      valueReference="335544338"
+      description="Input opaque sky cover"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaNOpa</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.celHei"
+      valueReference="335544339"
+      description="Input ceiling height"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaCelHei</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.nTot"
+      valueReference="335544340"
+      description="Input total sky cover"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaNTot</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.winSpe"
+      valueReference="335544341"
+      description="Input wind speed"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaWinSpe</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.winDir"
+      valueReference="335544342"
+      description="Input wind direction"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaWinDir</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.HHorIR"
+      valueReference="335544343"
+      description="Input diffuse horizontal radiation"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaHHorIR</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.HDirNor"
+      valueReference="335544344"
+      description="Input infrared horizontal radiation"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+      <DirectDependency>
+        <Name>weaHDirNor</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.HGloHor"
+      valueReference="335544345"
+      description="Input direct normal radiation"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+      <DirectDependency>
+        <Name>weaHGloHor</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.HDifHor"
+      valueReference="335544346"
+      description="Input global horizontal radiation"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W/m2"/>
+      <DirectDependency>
+        <Name>weaHDifHor</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.TBlaSky"
+      valueReference="335544347"
+      description="Input global horizontal radiation"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"/>
+      <DirectDependency>
+        <Name>weaTBlaSky</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.TWetBul"
+      valueReference="335544348"
+      description="Input global horizontal radiation"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"/>
+      <DirectDependency>
+        <Name>weaTWetBul</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.cloTim"
+      valueReference="335544349"
+      description="Input global horizontal radiation"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"/>
+      <DirectDependency>
+        <Name>weaCloTim</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.solTim"
+      valueReference="335544350"
+      description="Input global horizontal radiation"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"/>
+      <DirectDependency>
+        <Name>weaSolTim</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaBus.solZen"
+      valueReference="335544351"
+      description="Input global horizontal radiation"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="rad"/>
+      <DirectDependency>
+        <Name>weaSolZen</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaTBlaSky"
+      valueReference="352321558"
+      description="Input global horizontal radiation"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="K"
+        min="0.0"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaTWetBul"
+      valueReference="352321559"
+      description="Input global horizontal radiation"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaCloTim"
+      valueReference="352321560"
+      description="Input global horizontal radiation"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaSolTim"
+      valueReference="352321561"
+      description="Input global horizontal radiation"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="s"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="weaSolZen"
+      valueReference="352321562"
+      description="Input global horizontal radiation"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="rad"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="conHeat_wes"
+      valueReference="352321563"
+      description="HVAC Heating Input for wes Zone"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="conHeat_eas"
+      valueReference="352321564"
+      description="HVAC Heating Input for eas Zone"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="conHeat_hal"
+      valueReference="352321565"
+      description="HVAC Heating Input for hal Zone"
+      causality="input">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        start="0.0"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="add3_1.k1"
+      valueReference="16778301"
+      description="Gain of upper input"
+      variability="parameter">
+      <Real start="1"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="add3_1.k2"
+      valueReference="16778302"
+      description="Gain of middle input"
+      variability="parameter">
+      <Real start="1"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="add3_1.k3"
+      valueReference="16778303"
+      description="Gain of lower input"
+      variability="parameter">
+      <Real start="1"
+        fixed="true"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="add3_1.u1"
+      valueReference="335544330"
+      description="Connector 1 of Real input signals"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="add3_1.u2"
+      valueReference="335544331"
+      description="Connector 2 of Real input signals"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="add3_1.u3"
+      valueReference="335544332"
+      description="Connector 3 of Real input signals"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealInput"
+        unit="W"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="add3_1.y"
+      valueReference="335544333"
+      description="Connector of Real output signals"
+      alias="alias">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"/>
+    </ScalarVariable>
+    <ScalarVariable
+      name="wesPhvac"
+      valueReference="335544330"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+      <DirectDependency>
+        <Name>conHeat_wes</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="halPhvac"
+      valueReference="335544331"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+      <DirectDependency>
+        <Name>conHeat_hal</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="easPhvac"
+      valueReference="335544332"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"
+        unit="W"/>
+      <DirectDependency>
+        <Name>conHeat_eas</Name>
+      </DirectDependency>
+    </ScalarVariable>
+    <ScalarVariable
+      name="Popt"
+      valueReference="335544333"
+      causality="output">
+      <Real
+        declaredType="Modelica.Blocks.Interfaces.RealOutput"/>
+      <DirectDependency>
+        <Name>conHeat_eas</Name>
+        <Name>conHeat_hal</Name>
+        <Name>conHeat_wes</Name>
+      </DirectDependency>
+    </ScalarVariable>
+  </ModelVariables>
+  <Implementation>
+    <CoSimulation_StandAlone>
+      <Capabilities
+        canHandleVariableCommunicationStepSize="true"
+        canHandleEvents="true"
+        canBeInstantiatedOnlyOncePerProcess="false"
+        canInterpolateInputs="true"
+        maxOutputDerivativeOrder="1"/>
+    </CoSimulation_StandAlone>
+  </Implementation>
+</fmiModelDescription>

@@ -1,0 +1,49 @@
+# version script generated during FMU export and used when building shared object
+
+FmuExamples_ValveStuck_0dhb {
+
+   global:
+   # FMI 1
+   FmuExamples_ValveStuck_0dhb_fmiGetVersion;
+   FmuExamples_ValveStuck_0dhb_fmiSetDebugLogging;
+   FmuExamples_ValveStuck_0dhb_fmiGetReal;
+   FmuExamples_ValveStuck_0dhb_fmiGetInteger;
+   FmuExamples_ValveStuck_0dhb_fmiGetBoolean;
+   FmuExamples_ValveStuck_0dhb_fmiGetString;
+   FmuExamples_ValveStuck_0dhb_fmiSetReal;
+   FmuExamples_ValveStuck_0dhb_fmiSetInteger;
+   FmuExamples_ValveStuck_0dhb_fmiSetBoolean;
+   FmuExamples_ValveStuck_0dhb_fmiSetString;
+   FmuExamples_ValveStuck_0dhb_fmiGetModelTypesPlatform;
+   FmuExamples_ValveStuck_0dhb_fmiInstantiateModel;
+   FmuExamples_ValveStuck_0dhb_fmiFreeModelInstance;
+   FmuExamples_ValveStuck_0dhb_fmiSetTime;
+   FmuExamples_ValveStuck_0dhb_fmiSetContinuousStates;
+   FmuExamples_ValveStuck_0dhb_fmiInitialize;
+   FmuExamples_ValveStuck_0dhb_fmiEventUpdate;
+   FmuExamples_ValveStuck_0dhb_fmiCompletedIntegratorStep;
+   FmuExamples_ValveStuck_0dhb_fmiTerminate;
+   FmuExamples_ValveStuck_0dhb_fmiGetDerivatives;
+   FmuExamples_ValveStuck_0dhb_fmiGetEventIndicators;
+   FmuExamples_ValveStuck_0dhb_fmiGetContinuousStates;
+   FmuExamples_ValveStuck_0dhb_fmiGetNominalContinuousStates;
+   FmuExamples_ValveStuck_0dhb_fmiGetStateValueReferences;
+   FmuExamples_ValveStuck_0dhb_fmiGetTypesPlatform;
+   FmuExamples_ValveStuck_0dhb_fmiInstantiateSlave;
+   FmuExamples_ValveStuck_0dhb_fmiFreeSlaveInstance;
+   FmuExamples_ValveStuck_0dhb_fmiInitializeSlave;
+   FmuExamples_ValveStuck_0dhb_fmiTerminateSlave;
+   FmuExamples_ValveStuck_0dhb_fmiResetSlave;
+   FmuExamples_ValveStuck_0dhb_fmiSetRealInputDerivatives;
+   FmuExamples_ValveStuck_0dhb_fmiGetRealOutputDerivatives;
+   FmuExamples_ValveStuck_0dhb_fmiDoStep;
+   FmuExamples_ValveStuck_0dhb_fmiCancelStep;
+   FmuExamples_ValveStuck_0dhb_fmiGetStatus;
+   FmuExamples_ValveStuck_0dhb_fmiGetRealStatus;
+   FmuExamples_ValveStuck_0dhb_fmiGetIntegerStatus;
+   FmuExamples_ValveStuck_0dhb_fmiGetBooleanStatus;
+   FmuExamples_ValveStuck_0dhb_fmiGetStringStatus;
+
+    local:
+        *;
+}; 

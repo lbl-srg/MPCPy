@@ -1,0 +1,49 @@
+# version script generated during FMU export and used when building shared object
+
+RapidMPC_Examples_LBNL71T_0Emulate_Emulation {
+
+   global:
+   # FMI 1
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetVersion;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiSetDebugLogging;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetReal;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetInteger;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetBoolean;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetString;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiSetReal;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiSetInteger;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiSetBoolean;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiSetString;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetModelTypesPlatform;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiInstantiateModel;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiFreeModelInstance;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiSetTime;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiSetContinuousStates;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiInitialize;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiEventUpdate;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiCompletedIntegratorStep;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiTerminate;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetDerivatives;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetEventIndicators;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetContinuousStates;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetNominalContinuousStates;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetStateValueReferences;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetTypesPlatform;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiInstantiateSlave;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiFreeSlaveInstance;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiInitializeSlave;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiTerminateSlave;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiResetSlave;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiSetRealInputDerivatives;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetRealOutputDerivatives;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiDoStep;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiCancelStep;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetStatus;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetRealStatus;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetIntegerStatus;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetBooleanStatus;
+   RapidMPC_Examples_LBNL71T_0Emulate_Emulation_fmiGetStringStatus;
+
+    local:
+        *;
+}; 

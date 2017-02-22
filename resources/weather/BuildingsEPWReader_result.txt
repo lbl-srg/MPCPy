@@ -1,0 +1,1001 @@
+#1
+char Aclass(3,11)
+Atrajectory
+1.1
+
+char name(320,40)
+time
+epw.epsCos
+epw.cheWinSpe.winSpeMin
+epw.chePre.PMin
+epw.chePre.PMax
+epw.cheTotSkyCov.delta
+epw.cheRelHum.delta
+epw.cheRelHum.relHumMin
+epw.cheTotSkyCov.nMin
+epw.cheOpaSkyCov.nMin
+epw.cheWinDir.delta
+epw.cheOpaSkyCov.delta
+epw.cheTotSkyCov.nMax
+epw.cheOpaSkyCov.nMax
+epw.cheGloHorRad.HMin
+epw.cheDifHorRad.HMin
+epw.cheDirNorRad.HMin
+epw.cheHorRad.HMin
+epw.cheCeiHei.ceiHeiMin
+epw.tWetBul_TDryBulXi.rh_per
+epw.tWetBul_TDryBulXi.TDryBul_degC
+epw.cheWinDir.nMin
+epw.cheWinDir.nMax
+epw.add.u1
+epw.con30mins.y
+epw.conTim1.year
+epw.conTim.year
+epw.conHorRad.Hou
+epw.conDifHorRad.Hou
+epw.conGloHorRad.Hou
+epw.conDirNorRad.Hou
+epw.cheRelHum.relHumMax
+epw.decAng.k1
+epw.decAng.k2
+epw.pAtm
+epw.ceiHei
+epw.totSkyCov
+epw.opaSkyCov
+epw.TDryBul
+epw.TDewPoi
+epw.TBlaSky
+epw.relHum
+epw.winSpe
+epw.winDir
+epw.HInfHor
+epw.cheTemDryBul.TMin
+epw.cheTemDryBul.TMax
+epw.cheTemDewPoi.TMin
+epw.cheTemDewPoi.TMax
+epw.add.k1
+epw.add.k2
+epw.cheTemBlaSky.TMin
+epw.cheTemBlaSky.TMax
+_block_jacobian_check_tol
+_cs_rel_tol
+_cs_step_size
+_events_default_tol
+_events_tol_factor
+_nle_jacobian_finite_difference_delta
+_nle_solver_default_tol
+_nle_solver_max_residual_scaling_factor
+_nle_solver_min_residual_scaling_factor
+_nle_solver_min_tol
+_nle_solver_regularization_tolerance
+_nle_solver_step_limit_factor
+_nle_solver_tol_factor
+epw.lon
+epw.longitude.y
+epw.locTim.lon
+epw.longitude.longitude
+epw.weaBus.lon
+epw.lat
+epw.zenAng.lat
+epw.latitude.latitude
+epw.latitude.y
+epw.weaBus.lat
+epw.timZon
+epw.locTim.timZon
+epw.con30mins.k
+epw.locTim.diff
+epw.conTotSkyCov.k
+epw.conOpaSkyCov.k
+epw.datRea.tableOnFileRead
+epw.datRea1.tableOnFileRead
+epw.pAtm_in_internal
+epw.chePre.POut
+epw.chePre.PIn
+epw.tWetBul_TDryBulXi.p
+epw.weaBus.pAtm
+epw.datRea.y[4]
+epw.datRea.y[5]
+epw.datRea.y[6]
+epw.datRea.y[7]
+epw.datRea.y[8]
+epw.datRea.y[9]
+epw.datRea.y[10]
+epw.datRea.y[15]
+epw.datRea.y[17]
+epw.datRea.y[18]
+epw.datRea.y[19]
+epw.datRea.y[20]
+epw.datRea.y[21]
+epw.datRea.y[22]
+epw.datRea.y[23]
+epw.datRea.y[24]
+epw.datRea.y[25]
+epw.conRelHum.relHumIn
+epw.datRea.y[3]
+epw.cheTotSkyCov.nOut
+epw.weaBus.nTot
+epw.cheGloHorRad.HOut
+epw.weaBus.HGloHor
+epw.cheDifHorRad.HOut
+epw.weaBus.HDifHor
+epw.cheDirNorRad.HOut
+epw.weaBus.HDirNor
+epw.cheCeiHei.ceiHeiOut
+epw.weaBus.celHei
+epw.cheWinSpe.winSpeOut
+epw.weaBus.winSpe
+epw.cheWinDir.nOut
+epw.weaBus.winDir
+epw.TBlaSkyCom.nOpa
+epw.weaBus.nOpa
+epw.cheOpaSkyCov.nOut
+epw.TBlaSkyCom.HHorIR
+epw.weaBus.HHorIR
+epw.cheHorRad.HOut
+epw.TBlaSkyCom.TDewPoiK
+epw.TBlaSkyCom.epsSky
+epw.TBlaSkyCom.nOpa10
+epw.add.u2
+epw.modTim.y
+epw.locTim.cloTim
+epw.decAng.nDay
+epw.conTim.modTim
+epw.eqnTim.nDay
+epw.weaBus.cloTim
+epw.add.y
+epw.conTim1.modTim
+epw.locTim.locTim
+epw.solTim.locTim
+epw.conTim1.calTim
+epw.datRea1.u
+epw.conTim.calTim
+epw.datRea.u
+epw.eqnTim.eqnTim
+epw.solTim.equTim
+epw.eqnTim.Bt
+epw.ceiHei_in_internal
+epw.datRea.y[16]
+epw.cheCeiHei.ceiHeiIn
+epw.totSkyCov_in_internal
+epw.cheTotSkyCov.nIn
+epw.conTotSkyCov.y
+epw.opaSkyCov_in_internal
+epw.conOpaSkyCov.y
+epw.cheOpaSkyCov.nIn
+epw.TDewPoi_in_internal
+epw.conTDewPoi.y
+epw.cheTemDewPoi.TOut
+epw.weaBus.TDewPoi
+epw.TBlaSkyCom.TDewPoi
+epw.cheTemDewPoi.TIn
+epw.TBlaSky_in_internal
+epw.weaBus.TBlaSky
+epw.cheTemBlaSky.TOut
+epw.TBlaSkyCom.TBlaSky
+epw.cheTemBlaSky.TIn
+epw.relHum_in_internal
+epw.conRelHum.relHumOut
+epw.cheRelHum.relHumIn
+epw.winSpe_in_internal
+epw.cheWinSpe.winSpeIn
+epw.datRea.y[12]
+epw.winDir_in_internal
+epw.cheWinDir.nIn
+epw.conWinDir.y
+epw.HGloHor_in_internal
+epw.datRea1.y[2]
+epw.conGloHorRad.HOut
+epw.conGloHorRad.HIn
+epw.cheGloHorRad.HIn
+epw.HDifHor_in_internal
+epw.cheDifHorRad.HIn
+epw.conDifHorRad.HIn
+epw.conDifHorRad.HOut
+epw.datRea1.y[4]
+epw.HDirNor_in_internal
+epw.cheDirNorRad.HIn
+epw.conDirNorRad.HIn
+epw.conDirNorRad.HOut
+epw.datRea1.y[3]
+epw.HInfHor_in_internal
+epw.conHorRad.HIn
+epw.cheHorRad.HIn
+epw.datRea1.y[1]
+epw.conHorRad.HOut
+epw.conWinDir.u
+epw.datRea.y[11]
+epw.conTDryBul.u
+epw.datRea.y[1]
+epw.conTDewPoi.u
+epw.datRea.y[2]
+epw.cheRelHum.relHumOut
+epw.weaBus.relHum
+epw.tWetBul_TDryBulXi.phi
+epw.altAng.zen
+epw.zenAng.zen
+epw.weaBus.solZen
+epw.altAng.alt
+epw.weaBus.solAlt
+epw.decAng.decAng
+epw.zenAng.decAng
+epw.weaBus.solDec
+epw.solHouAng.solTim
+epw.weaBus.solTim
+epw.solTim.solTim
+epw.solHouAng.solHouAng
+epw.zenAng.solHouAng
+epw.weaBus.solHouAng
+epw.tWetBul_TDryBulXi.TDryBul
+epw.TBlaSkyCom.TDryBul
+epw.conTDryBul.y
+epw.cheTemDryBul.TIn
+epw.TDryBul_in_internal
+epw.cheTemDryBul.TOut
+epw.weaBus.TDryBul
+epw.tWetBul_TDryBulXi.TWetBul
+epw.weaBus.TWetBul
+epw.tWetBul_TDryBulXi.XiDryBul
+epw.tWetBul_TDryBulXi.XiSat
+epw.conTotSkyCov.u
+epw.datRea.y[13]
+epw.conOpaSkyCov.u
+epw.datRea.y[14]
+epw.conTim1.tStart
+epw.conTim.tStart
+_block_solver_experimental_mode
+_cs_experimental_mode
+_cs_solver
+_iteration_variable_scaling
+_log_level
+_nle_active_bounds_mode
+_nle_jacobian_calculation_mode
+_nle_jacobian_update_mode
+_nle_solver_exit_criterion
+_nle_solver_max_iter
+_nle_solver_max_iter_no_jacobian
+_residual_equation_scaling
+epw.datRea.columns[1]
+epw.datRea.columns[2]
+epw.datRea.columns[3]
+epw.datRea1.nout
+epw.datRea.columns[4]
+epw.datRea.columns[5]
+epw.datRea.columns[6]
+epw.datRea1.columns[4]
+epw.datRea.columns[7]
+epw.datRea.columns[8]
+epw.datRea.columns[9]
+epw.datRea.columns[10]
+epw.datRea.columns[11]
+epw.datRea.columns[12]
+epw.datRea.columns[13]
+epw.datRea.columns[14]
+epw.datRea.columns[15]
+epw.datRea.columns[16]
+epw.datRea.columns[17]
+epw.datRea.columns[18]
+epw.datRea.columns[19]
+epw.datRea.columns[20]
+epw.datRea.nout
+epw.datRea.columns[21]
+epw.datRea.columns[22]
+epw.datRea.columns[23]
+epw.datRea.columns[24]
+epw.datRea.columns[25]
+epw.datRea1.columns[1]
+epw.datRea1.columns[2]
+epw.datRea1.columns[3]
+epw.pAtmSou
+epw.ceiHeiSou
+epw.totSkyCovSou
+epw.HInfHorSou
+epw.winDirSou
+epw.relHumSou
+epw.TBlaSkySou
+epw.winSpeSou
+epw.TDryBulSou
+epw.TDewPoiSou
+epw.opaSkyCovSou
+epw.HSou
+epw.calTSky
+epw.TBlaSkyCom.calTSky
+epw.datRea.smoothness
+epw.datRea1.smoothness
+temp_1
+temp_2
+epw.datRea.verboseRead
+epw.datRea1.verboseRead
+_block_jacobian_check
+_block_solver_profiling
+_enforce_bounds
+_nle_brent_ignore_error
+_nle_solver_check_jac_cond
+_nle_solver_use_last_integrator_step
+_nle_solver_use_nominals_as_fallback
+_rescale_after_singular_jac
+_rescale_each_step
+_runtime_log_to_file
+_use_Brent_in_1d
+_use_jacobian_equilibration
+_use_newton_for_brent
+epw.computeWetBulbTemperature
+epw.datRea1.tableOnFile
+epw.datRea.tableOnFile
+epw.tWetBul_TDryBulXi.approximateWetBulb
+temp_3
+temp_4
+
+char description(320,73)
+Time in [s]
+Small value to avoid division by 0
+Minimum allowed wind speed
+Minimum allowed pressure
+Maximum allowed pressure
+Smoothing parameter
+Smoothing parameter
+Lower bound
+Lower bound
+Lower bound
+Smoothing parameter
+Smoothing parameter
+Upper bound
+Upper bound
+Minimum value for radiation
+Minimum value for radiation
+Minimum value for radiation
+Minimum value for radiation
+Minimum allowed ceiling height
+Relative humidity in percentage
+Dry bulb temperature in degree Celsius
+Lower bound
+Upper bound
+Connector of Real input signal 1
+Connector of Real output signal
+Number of seconds in a year
+Number of seconds in a year
+1 hour
+1 hour
+1 hour
+1 hour
+Upper bound
+Constant
+Constant
+Atmospheric pressure (used if pAtmSou=Parameter)
+Ceiling height (used if ceiHei=Parameter)
+Total sky cover (used if totSkyCov=Parameter). Use 0 <= totSkyCov <= 1
+Opaque sky cover (used if opaSkyCov=Parameter). Use 0 <= opaSkyCov <= 1
+Dry bulb temperature (used if TDryBul=Parameter)
+Dew point temperature (used if TDewPoi=Parameter)
+Black-body sky temperature (used if TBlaSkySou=Parameter)
+Relative humidity (used if relHum=Parameter)
+Wind speed (used if winSpe=Parameter)
+Wind direction (used if winDir=Parameter)
+Infrared horizontal radiation (used if HInfHorSou=Parameter)
+Minimum allowed temperature
+Maximum allowed temperature
+Minimum allowed temperature
+Maximum allowed temperature
+Gain of upper input
+Gain of lower input
+Minimum allowed temperature
+Maximum allowed temperature
+
+
+
+
+
+
+
+
+
+
+
+
+
+Longitude
+Longitude of the location
+Longitude
+Longitude
+Longitude of the location
+Latitude
+Latitude
+Latitude
+Latitude of the location
+Latitude of the location
+Time zone
+Time zone
+Constant output value
+Difference between local and clock time
+Gain value multiplied with input signal
+Gain value multiplied with input signal
+= 1, if table was successfully read from file
+= 1, if table was successfully read from file
+Needed to connect to conditional connector
+Atmospheric pressure
+Input pressure
+Pressure
+Atmospheric pressure
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Connector of Real output signals
+Value of relative humidity in percentage
+Connector of Real output signals
+Sky cover [0, 1]
+Sky cover [0, 1]
+Radiation
+Radiation
+Radiation
+Radiation
+Radiation
+Radiation
+Ceiling height
+Ceiling height
+Wind speed
+Wind speed
+Wind direction
+Wind direction
+Opaque sky cover [0, 1]
+Sky cover [0, 1]
+Sky cover [0, 1]
+Horizontal infrared irradiation
+Horizontal infrared irradiation
+Horizontal infrared irradiation
+Dewpoint temperature
+Black-body absorptivity of sky
+Opaque sky cover in [0, 10]
+Connector of Real input signal 2
+Connector of Real output signal
+Clock time
+Day number with units of seconds
+Simulation time
+Zero-based day number in seconds (January 1=0, January 2=86400)
+Connector of Real output signal
+Connector of Real output signal
+Simulation time
+Local civil time
+Local time
+Calendar time
+Connector of Real input signal
+Calendar time
+Connector of Real input signal
+Equation of time
+Equation of time
+Intermediate variable
+Needed to connect to conditional connector
+Connector of Real output signals
+Input ceiling height
+Needed to connect to conditional connector
+Input sky cover [0, 10]
+Output signal connector
+Needed to connect to conditional connector
+Output signal connector
+Input sky cover [0, 10]
+Needed to connect to conditional connector
+Connector of Real output signal containing input signal u in another unit
+Output temperature
+Output temperature
+Dew point temperature
+Input Temperature
+Needed to connect to conditional connector
+Black-body sky temperature
+Black-body sky temperature
+Black-body sky temperature
+Black-body sky temperature
+Needed to connect to conditional connector
+Relative humidity between 0 and 1
+Input relative humidity
+Needed to connect to conditional connector
+Input wind speed
+Connector of Real output signals
+Needed to connect to conditional connector
+Input wind direction
+Connector of Real output signal containing input signal u in another unit
+Needed to connect to conditional connector
+Connector of Real output signals
+Radiation
+Input radiation
+Input radiation
+Needed to connect to conditional connector
+Input radiation
+Input radiation
+Radiation
+Connector of Real output signals
+Needed to connect to conditional connector
+Input radiation
+Input radiation
+Radiation
+Connector of Real output signals
+Needed to connect to conditional connector
+Input radiation
+Input horizontal infrared irradiation
+Connector of Real output signals
+Radiation
+Connector of Real input signal to be converted
+Connector of Real output signals
+Connector of Real input signal to be converted
+Connector of Real output signals
+Connector of Real input signal to be converted
+Connector of Real output signals
+Relative humidity
+Relative humidity
+Relative air humidity
+Zenith angle
+Zenith angle
+Zenith angle
+Solar altitude angle
+Solar altitude angle
+Solar declination angle
+Solar declination angle
+Solar declination angle
+Solar time
+Solar time
+Solar time
+Solar hour angle
+Solar hour angle
+Solar hour angle
+Dry bulb temperature
+Dry bulb temperature at ground level
+Connector of Real output signal containing input signal u in another unit
+Input Temperature
+Needed to connect to conditional connector
+Output temperature
+Output temperature
+Wet bulb temperature
+Wet bulb temperature
+Water vapor mass fraction at dry bulb state
+Water vapor mass fraction at saturation
+Input signal connector
+Connector of Real output signals
+Input signal connector
+Connector of Real output signals
+Start time of period
+Start time of period
+
+
+
+
+
+
+
+
+
+
+
+
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Number of outputs
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Number of outputs
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Columns of table to be interpolated
+Atmospheric pressure
+Ceiling height
+Total sky cover
+Infrared horizontal radiation
+Wind direction
+Relative humidity
+Black-body sky temperature
+Wind speed
+Dry bulb temperature
+Dew point temperature
+Opaque sky cover
+Global, diffuse, and direct normal radiation
+Computation of black-body sky temperature
+Computation of black-body sky temperature
+Smoothness of table interpolation
+Smoothness of table interpolation
+
+
+= true, if info message that file is loading is to be printed
+= true, if info message that file is loading is to be printed
+
+
+
+
+
+
+
+
+
+
+
+
+
+If true, then this model computes the wet bulb temperature
+= true, if table is defined on file or in function usertab
+= true, if table is defined on file or in function usertab
+Set to true to approximate wet bulb temperature
+
+
+
+int dataInfo(320,4)
+0 1 0 -1 # time
+1 2 0 -1 # epw.epsCos
+1 2 0 -1 # epw.cheWinSpe.winSpeMin
+1 3 0 -1 # epw.chePre.PMin
+1 4 0 -1 # epw.chePre.PMax
+1 5 0 -1 # epw.cheTotSkyCov.delta
+1 5 0 -1 # epw.cheRelHum.delta
+1 5 0 -1 # epw.cheRelHum.relHumMin
+1 5 0 -1 # epw.cheTotSkyCov.nMin
+1 5 0 -1 # epw.cheOpaSkyCov.nMin
+1 5 0 -1 # epw.cheWinDir.delta
+1 5 0 -1 # epw.cheOpaSkyCov.delta
+1 6 0 -1 # epw.cheTotSkyCov.nMax
+1 6 0 -1 # epw.cheOpaSkyCov.nMax
+1 7 0 -1 # epw.cheGloHorRad.HMin
+1 7 0 -1 # epw.cheDifHorRad.HMin
+1 7 0 -1 # epw.cheDirNorRad.HMin
+1 7 0 -1 # epw.cheHorRad.HMin
+1 8 0 -1 # epw.cheCeiHei.ceiHeiMin
+1 8 0 -1 # epw.tWetBul_TDryBulXi.rh_per
+1 8 0 -1 # epw.tWetBul_TDryBulXi.TDryBul_degC
+1 8 0 -1 # epw.cheWinDir.nMin
+1 9 0 -1 # epw.cheWinDir.nMax
+1 10 0 -1 # epw.add.u1
+1 10 0 -1 # epw.con30mins.y
+1 11 0 -1 # epw.conTim1.year
+1 11 0 -1 # epw.conTim.year
+1 12 0 -1 # epw.conHorRad.Hou
+1 12 0 -1 # epw.conDifHorRad.Hou
+1 12 0 -1 # epw.conGloHorRad.Hou
+1 12 0 -1 # epw.conDirNorRad.Hou
+1 13 0 -1 # epw.cheRelHum.relHumMax
+1 14 0 -1 # epw.decAng.k1
+1 15 0 -1 # epw.decAng.k2
+1 16 0 -1 # epw.pAtm
+1 17 0 -1 # epw.ceiHei
+1 18 0 -1 # epw.totSkyCov
+1 19 0 -1 # epw.opaSkyCov
+1 20 0 -1 # epw.TDryBul
+1 21 0 -1 # epw.TDewPoi
+1 22 0 -1 # epw.TBlaSky
+1 23 0 -1 # epw.relHum
+1 24 0 -1 # epw.winSpe
+1 25 0 -1 # epw.winDir
+1 26 0 -1 # epw.HInfHor
+1 27 0 -1 # epw.cheTemDryBul.TMin
+1 28 0 -1 # epw.cheTemDryBul.TMax
+1 29 0 -1 # epw.cheTemDewPoi.TMin
+1 30 0 -1 # epw.cheTemDewPoi.TMax
+1 31 0 -1 # epw.add.k1
+1 32 0 -1 # epw.add.k2
+1 33 0 -1 # epw.cheTemBlaSky.TMin
+1 34 0 -1 # epw.cheTemBlaSky.TMax
+1 35 0 -1 # _block_jacobian_check_tol
+1 36 0 -1 # _cs_rel_tol
+1 37 0 -1 # _cs_step_size
+1 38 0 -1 # _events_default_tol
+1 39 0 -1 # _events_tol_factor
+1 40 0 -1 # _nle_jacobian_finite_difference_delta
+1 41 0 -1 # _nle_solver_default_tol
+1 42 0 -1 # _nle_solver_max_residual_scaling_factor
+1 43 0 -1 # _nle_solver_min_residual_scaling_factor
+1 44 0 -1 # _nle_solver_min_tol
+1 45 0 -1 # _nle_solver_regularization_tolerance
+1 46 0 -1 # _nle_solver_step_limit_factor
+1 47 0 -1 # _nle_solver_tol_factor
+1 48 0 -1 # epw.lon
+1 48 0 -1 # epw.longitude.y
+1 48 0 -1 # epw.locTim.lon
+1 48 0 -1 # epw.longitude.longitude
+1 48 0 -1 # epw.weaBus.lon
+1 49 0 -1 # epw.lat
+1 49 0 -1 # epw.zenAng.lat
+1 49 0 -1 # epw.latitude.latitude
+1 49 0 -1 # epw.latitude.y
+1 49 0 -1 # epw.weaBus.lat
+1 50 0 -1 # epw.timZon
+1 50 0 -1 # epw.locTim.timZon
+1 51 0 -1 # epw.con30mins.k
+1 52 0 -1 # epw.locTim.diff
+1 53 0 -1 # epw.conTotSkyCov.k
+1 53 0 -1 # epw.conOpaSkyCov.k
+1 54 0 -1 # epw.datRea.tableOnFileRead
+1 55 0 -1 # epw.datRea1.tableOnFileRead
+1 56 0 -1 # epw.pAtm_in_internal
+1 57 0 -1 # epw.chePre.POut
+1 58 0 -1 # epw.chePre.PIn
+1 59 0 -1 # epw.tWetBul_TDryBulXi.p
+1 60 0 -1 # epw.weaBus.pAtm
+2 2 0 -1 # epw.datRea.y[4]
+2 3 0 -1 # epw.datRea.y[5]
+2 4 0 -1 # epw.datRea.y[6]
+2 5 0 -1 # epw.datRea.y[7]
+2 6 0 -1 # epw.datRea.y[8]
+2 7 0 -1 # epw.datRea.y[9]
+2 8 0 -1 # epw.datRea.y[10]
+2 9 0 -1 # epw.datRea.y[15]
+2 10 0 -1 # epw.datRea.y[17]
+2 11 0 -1 # epw.datRea.y[18]
+2 12 0 -1 # epw.datRea.y[19]
+2 13 0 -1 # epw.datRea.y[20]
+2 14 0 -1 # epw.datRea.y[21]
+2 15 0 -1 # epw.datRea.y[22]
+2 16 0 -1 # epw.datRea.y[23]
+2 17 0 -1 # epw.datRea.y[24]
+2 18 0 -1 # epw.datRea.y[25]
+2 19 0 -1 # epw.conRelHum.relHumIn
+2 19 0 -1 # epw.datRea.y[3]
+2 20 0 -1 # epw.cheTotSkyCov.nOut
+2 20 0 -1 # epw.weaBus.nTot
+2 21 0 -1 # epw.cheGloHorRad.HOut
+2 21 0 -1 # epw.weaBus.HGloHor
+2 22 0 -1 # epw.cheDifHorRad.HOut
+2 22 0 -1 # epw.weaBus.HDifHor
+2 23 0 -1 # epw.cheDirNorRad.HOut
+2 23 0 -1 # epw.weaBus.HDirNor
+2 24 0 -1 # epw.cheCeiHei.ceiHeiOut
+2 24 0 -1 # epw.weaBus.celHei
+2 25 0 -1 # epw.cheWinSpe.winSpeOut
+2 25 0 -1 # epw.weaBus.winSpe
+2 26 0 -1 # epw.cheWinDir.nOut
+2 26 0 -1 # epw.weaBus.winDir
+2 27 0 -1 # epw.TBlaSkyCom.nOpa
+2 27 0 -1 # epw.weaBus.nOpa
+2 27 0 -1 # epw.cheOpaSkyCov.nOut
+2 28 0 -1 # epw.TBlaSkyCom.HHorIR
+2 28 0 -1 # epw.weaBus.HHorIR
+2 28 0 -1 # epw.cheHorRad.HOut
+2 29 0 -1 # epw.TBlaSkyCom.TDewPoiK
+2 30 0 -1 # epw.TBlaSkyCom.epsSky
+2 31 0 -1 # epw.TBlaSkyCom.nOpa10
+2 32 0 -1 # epw.add.u2
+2 32 0 -1 # epw.modTim.y
+2 32 0 -1 # epw.locTim.cloTim
+2 32 0 -1 # epw.decAng.nDay
+2 32 0 -1 # epw.conTim.modTim
+2 32 0 -1 # epw.eqnTim.nDay
+2 32 0 -1 # epw.weaBus.cloTim
+2 33 0 -1 # epw.add.y
+2 33 0 -1 # epw.conTim1.modTim
+2 34 0 -1 # epw.locTim.locTim
+2 34 0 -1 # epw.solTim.locTim
+2 35 0 -1 # epw.conTim1.calTim
+2 35 0 -1 # epw.datRea1.u
+2 36 0 -1 # epw.conTim.calTim
+2 36 0 -1 # epw.datRea.u
+2 37 0 -1 # epw.eqnTim.eqnTim
+2 37 0 -1 # epw.solTim.equTim
+2 38 0 -1 # epw.eqnTim.Bt
+2 39 0 -1 # epw.ceiHei_in_internal
+2 39 0 -1 # epw.datRea.y[16]
+2 39 0 -1 # epw.cheCeiHei.ceiHeiIn
+2 40 0 -1 # epw.totSkyCov_in_internal
+2 40 0 -1 # epw.cheTotSkyCov.nIn
+2 40 0 -1 # epw.conTotSkyCov.y
+2 41 0 -1 # epw.opaSkyCov_in_internal
+2 41 0 -1 # epw.conOpaSkyCov.y
+2 41 0 -1 # epw.cheOpaSkyCov.nIn
+2 42 0 -1 # epw.TDewPoi_in_internal
+2 42 0 -1 # epw.conTDewPoi.y
+2 42 0 -1 # epw.cheTemDewPoi.TOut
+2 42 0 -1 # epw.weaBus.TDewPoi
+2 42 0 -1 # epw.TBlaSkyCom.TDewPoi
+2 42 0 -1 # epw.cheTemDewPoi.TIn
+2 43 0 -1 # epw.TBlaSky_in_internal
+2 43 0 -1 # epw.weaBus.TBlaSky
+2 43 0 -1 # epw.cheTemBlaSky.TOut
+2 43 0 -1 # epw.TBlaSkyCom.TBlaSky
+2 43 0 -1 # epw.cheTemBlaSky.TIn
+2 44 0 -1 # epw.relHum_in_internal
+2 44 0 -1 # epw.conRelHum.relHumOut
+2 44 0 -1 # epw.cheRelHum.relHumIn
+2 45 0 -1 # epw.winSpe_in_internal
+2 45 0 -1 # epw.cheWinSpe.winSpeIn
+2 45 0 -1 # epw.datRea.y[12]
+2 46 0 -1 # epw.winDir_in_internal
+2 46 0 -1 # epw.cheWinDir.nIn
+2 46 0 -1 # epw.conWinDir.y
+2 47 0 -1 # epw.HGloHor_in_internal
+2 47 0 -1 # epw.datRea1.y[2]
+2 47 0 -1 # epw.conGloHorRad.HOut
+2 47 0 -1 # epw.conGloHorRad.HIn
+2 47 0 -1 # epw.cheGloHorRad.HIn
+2 48 0 -1 # epw.HDifHor_in_internal
+2 48 0 -1 # epw.cheDifHorRad.HIn
+2 48 0 -1 # epw.conDifHorRad.HIn
+2 48 0 -1 # epw.conDifHorRad.HOut
+2 48 0 -1 # epw.datRea1.y[4]
+2 49 0 -1 # epw.HDirNor_in_internal
+2 49 0 -1 # epw.cheDirNorRad.HIn
+2 49 0 -1 # epw.conDirNorRad.HIn
+2 49 0 -1 # epw.conDirNorRad.HOut
+2 49 0 -1 # epw.datRea1.y[3]
+2 50 0 -1 # epw.HInfHor_in_internal
+2 50 0 -1 # epw.conHorRad.HIn
+2 50 0 -1 # epw.cheHorRad.HIn
+2 50 0 -1 # epw.datRea1.y[1]
+2 50 0 -1 # epw.conHorRad.HOut
+2 51 0 -1 # epw.conWinDir.u
+2 51 0 -1 # epw.datRea.y[11]
+2 52 0 -1 # epw.conTDryBul.u
+2 52 0 -1 # epw.datRea.y[1]
+2 53 0 -1 # epw.conTDewPoi.u
+2 53 0 -1 # epw.datRea.y[2]
+2 54 0 -1 # epw.cheRelHum.relHumOut
+2 54 0 -1 # epw.weaBus.relHum
+2 54 0 -1 # epw.tWetBul_TDryBulXi.phi
+2 55 0 -1 # epw.altAng.zen
+2 55 0 -1 # epw.zenAng.zen
+2 55 0 -1 # epw.weaBus.solZen
+2 56 0 -1 # epw.altAng.alt
+2 56 0 -1 # epw.weaBus.solAlt
+2 57 0 -1 # epw.decAng.decAng
+2 57 0 -1 # epw.zenAng.decAng
+2 57 0 -1 # epw.weaBus.solDec
+2 58 0 -1 # epw.solHouAng.solTim
+2 58 0 -1 # epw.weaBus.solTim
+2 58 0 -1 # epw.solTim.solTim
+2 59 0 -1 # epw.solHouAng.solHouAng
+2 59 0 -1 # epw.zenAng.solHouAng
+2 59 0 -1 # epw.weaBus.solHouAng
+2 60 0 -1 # epw.tWetBul_TDryBulXi.TDryBul
+2 60 0 -1 # epw.TBlaSkyCom.TDryBul
+2 60 0 -1 # epw.conTDryBul.y
+2 60 0 -1 # epw.cheTemDryBul.TIn
+2 60 0 -1 # epw.TDryBul_in_internal
+2 60 0 -1 # epw.cheTemDryBul.TOut
+2 60 0 -1 # epw.weaBus.TDryBul
+2 61 0 -1 # epw.tWetBul_TDryBulXi.TWetBul
+2 61 0 -1 # epw.weaBus.TWetBul
+2 62 0 -1 # epw.tWetBul_TDryBulXi.XiDryBul
+2 63 0 -1 # epw.tWetBul_TDryBulXi.XiSat
+2 64 0 -1 # epw.conTotSkyCov.u
+2 64 0 -1 # epw.datRea.y[13]
+2 65 0 -1 # epw.conOpaSkyCov.u
+2 65 0 -1 # epw.datRea.y[14]
+2 66 0 -1 # epw.conTim1.tStart
+2 67 0 -1 # epw.conTim.tStart
+1 61 0 -1 # _block_solver_experimental_mode
+1 62 0 -1 # _cs_experimental_mode
+1 63 0 -1 # _cs_solver
+1 64 0 -1 # _iteration_variable_scaling
+1 65 0 -1 # _log_level
+1 66 0 -1 # _nle_active_bounds_mode
+1 67 0 -1 # _nle_jacobian_calculation_mode
+1 68 0 -1 # _nle_jacobian_update_mode
+1 69 0 -1 # _nle_solver_exit_criterion
+1 70 0 -1 # _nle_solver_max_iter
+1 71 0 -1 # _nle_solver_max_iter_no_jacobian
+1 72 0 -1 # _residual_equation_scaling
+1 73 0 -1 # epw.datRea.columns[1]
+1 74 0 -1 # epw.datRea.columns[2]
+1 75 0 -1 # epw.datRea.columns[3]
+1 75 0 -1 # epw.datRea1.nout
+1 76 0 -1 # epw.datRea.columns[4]
+1 77 0 -1 # epw.datRea.columns[5]
+1 78 0 -1 # epw.datRea.columns[6]
+1 78 0 -1 # epw.datRea1.columns[4]
+1 79 0 -1 # epw.datRea.columns[7]
+1 80 0 -1 # epw.datRea.columns[8]
+1 81 0 -1 # epw.datRea.columns[9]
+1 82 0 -1 # epw.datRea.columns[10]
+1 83 0 -1 # epw.datRea.columns[11]
+1 84 0 -1 # epw.datRea.columns[12]
+1 85 0 -1 # epw.datRea.columns[13]
+1 86 0 -1 # epw.datRea.columns[14]
+1 87 0 -1 # epw.datRea.columns[15]
+1 88 0 -1 # epw.datRea.columns[16]
+1 89 0 -1 # epw.datRea.columns[17]
+1 90 0 -1 # epw.datRea.columns[18]
+1 91 0 -1 # epw.datRea.columns[19]
+1 92 0 -1 # epw.datRea.columns[20]
+1 92 0 -1 # epw.datRea.nout
+1 93 0 -1 # epw.datRea.columns[21]
+1 94 0 -1 # epw.datRea.columns[22]
+1 95 0 -1 # epw.datRea.columns[23]
+1 96 0 -1 # epw.datRea.columns[24]
+1 97 0 -1 # epw.datRea.columns[25]
+1 98 0 -1 # epw.datRea1.columns[1]
+1 99 0 -1 # epw.datRea1.columns[2]
+1 100 0 -1 # epw.datRea1.columns[3]
+1 101 0 -1 # epw.pAtmSou
+1 102 0 -1 # epw.ceiHeiSou
+1 102 0 -1 # epw.totSkyCovSou
+1 102 0 -1 # epw.HInfHorSou
+1 102 0 -1 # epw.winDirSou
+1 102 0 -1 # epw.relHumSou
+1 102 0 -1 # epw.TBlaSkySou
+1 102 0 -1 # epw.winSpeSou
+1 102 0 -1 # epw.TDryBulSou
+1 102 0 -1 # epw.TDewPoiSou
+1 102 0 -1 # epw.opaSkyCovSou
+1 103 0 -1 # epw.HSou
+1 104 0 -1 # epw.calTSky
+1 104 0 -1 # epw.TBlaSkyCom.calTSky
+1 105 0 -1 # epw.datRea.smoothness
+1 105 0 -1 # epw.datRea1.smoothness
+2 68 0 -1 # temp_1
+2 69 0 -1 # temp_2
+1 106 0 -1 # epw.datRea.verboseRead
+1 107 0 -1 # epw.datRea1.verboseRead
+1 108 0 -1 # _block_jacobian_check
+1 109 0 -1 # _block_solver_profiling
+1 110 0 -1 # _enforce_bounds
+1 111 0 -1 # _nle_brent_ignore_error
+1 112 0 -1 # _nle_solver_check_jac_cond
+1 113 0 -1 # _nle_solver_use_last_integrator_step
+1 114 0 -1 # _nle_solver_use_nominals_as_fallback
+1 115 0 -1 # _rescale_after_singular_jac
+1 116 0 -1 # _rescale_each_step
+1 117 0 -1 # _runtime_log_to_file
+1 118 0 -1 # _use_Brent_in_1d
+1 119 0 -1 # _use_jacobian_equilibration
+1 120 0 -1 # _use_newton_for_brent
+1 121 0 -1 # epw.computeWetBulbTemperature
+1 121 0 -1 # epw.datRea1.tableOnFile
+1 121 0 -1 # epw.datRea.tableOnFile
+1 122 0 -1 # epw.tWetBul_TDryBulXi.approximateWetBulb
+2 70 0 -1 # temp_3
+2 71 0 -1 # temp_4
+
+float data_1(2,122)
+0.00000000000000E+00 1.00000000000000E-06 3.10000000000000E+03 1.20000000000000E+05 1.00000000000000E-02 9.99000000000000E+00 1.00000000000000E-04 0.00000000000000E+00 6.28318530717959E+00 1.80000000000000E+03 3.15360000000000E+07 3.60000000000000E+03 9.90000000000000E-01 3.97948631307610E-01 1.72024238389585E-02 1.01325000000000E+05 2.00000000000000E+04 5.00000000000000E-01 5.00000000000000E-01 2.93150000000000E+02 2.83150000000000E+02 2.73150000000000E+02 5.00000000000000E-01 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 2.03150000000000E+02 3.43150000000000E+02 2.03150000000000E+02 3.43150000000000E+02 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 3.43150000000000E+02 1.00000000000000E-06 1.00000000000000E-06 1.00000000000000E-03 1.00000000000000E-10 1.00000000000000E-04 1.49011611938477E-08 1.00000000000000E-10 1.00000000000000E+10 1.00000000000000E-10 1.00000000000000E-12 -1.00000000000000E+00 1.00000000000000E+01 1.00000000000000E-04 -1.53449347835341E+00 7.32689219987220E-01 -2.16000000000000E+04 1.80000000000000E+03 4.99200000000001E+02 1.00000000000000E-01 1.00000000000000E+00 1.00000000000000E+00 1.01325000000000E+05 1.01325000000000E+05 1.01325000000000E+05 1.01325000000000E+05 1.01325000000000E+05 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 3.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.00000000000000E+00 3.00000000000000E+00 1.00000000000000E+02 1.00000000000000E+01 1.00000000000000E+00 2.00000000000000E+00 3.00000000000000E+00 4.00000000000000E+00 5.00000000000000E+00 6.00000000000000E+00 1.10000000000000E+01 1.20000000000000E+01 1.30000000000000E+01 1.40000000000000E+01 1.50000000000000E+01 1.60000000000000E+01 1.70000000000000E+01 1.80000000000000E+01 1.90000000000000E+01 2.00000000000000E+01 2.10000000000000E+01 2.20000000000000E+01 2.30000000000000E+01 2.40000000000000E+01 2.50000000000000E+01 2.60000000000000E+01 2.70000000000000E+01 2.80000000000000E+01 2.90000000000000E+01 3.00000000000000E+01 8.00000000000000E+00 9.00000000000000E+00 1.00000000000000E+01 2.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 2.00000000000000E+00 2.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00
+8.64000000000000E+04         1.00000000000000E-06 3.10000000000000E+03 1.20000000000000E+05 1.00000000000000E-02 9.99000000000000E+00 1.00000000000000E-04 0.00000000000000E+00 6.28318530717959E+00 1.80000000000000E+03 3.15360000000000E+07 3.60000000000000E+03 9.90000000000000E-01 3.97948631307610E-01 1.72024238389585E-02 1.01325000000000E+05 2.00000000000000E+04 5.00000000000000E-01 5.00000000000000E-01 2.93150000000000E+02 2.83150000000000E+02 2.73150000000000E+02 5.00000000000000E-01 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 2.03150000000000E+02 3.43150000000000E+02 2.03150000000000E+02 3.43150000000000E+02 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 3.43150000000000E+02 1.00000000000000E-06 1.00000000000000E-06 1.00000000000000E-03 1.00000000000000E-10 1.00000000000000E-04 1.49011611938477E-08 1.00000000000000E-10 1.00000000000000E+10 1.00000000000000E-10 1.00000000000000E-12 -1.00000000000000E+00 1.00000000000000E+01 1.00000000000000E-04 -1.53449347835341E+00 7.32689219987220E-01 -2.16000000000000E+04 1.80000000000000E+03 4.99200000000001E+02 1.00000000000000E-01 1.00000000000000E+00 1.00000000000000E+00 1.01325000000000E+05 1.01325000000000E+05 1.01325000000000E+05 1.01325000000000E+05 1.01325000000000E+05 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 3.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.00000000000000E+00 3.00000000000000E+00 1.00000000000000E+02 1.00000000000000E+01 1.00000000000000E+00 2.00000000000000E+00 3.00000000000000E+00 4.00000000000000E+00 5.00000000000000E+00 6.00000000000000E+00 1.10000000000000E+01 1.20000000000000E+01 1.30000000000000E+01 1.40000000000000E+01 1.50000000000000E+01 1.60000000000000E+01 1.70000000000000E+01 1.80000000000000E+01 1.90000000000000E+01 2.00000000000000E+01 2.10000000000000E+01 2.20000000000000E+01 2.30000000000000E+01 2.40000000000000E+01 2.50000000000000E+01 2.60000000000000E+01 2.70000000000000E+01 2.80000000000000E+01 2.90000000000000E+01 3.00000000000000E+01 8.00000000000000E+00 9.00000000000000E+00 1.00000000000000E+01 2.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 2.00000000000000E+00 2.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00 1.00000000000000E+00 1.00000000000000E+00 0.00000000000000E+00
+
+float data_2(25,71)                          
+ 0.00000000000000E+00 9.95000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 4.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.30000000000000E+01 9.00000000000000E-01 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 2.74000000000000E+03 2.60000000000000E+00 4.71238898038469E+00 9.00000000000000E-01 2.16762500000000E+02 2.57050000000000E+02 8.31101134737295E-01 9.00000000000000E+00 0.00000000000000E+00 1.80000000000000E+03 4.99200000000001E+02 1.80000000000000E+03 0.00000000000000E+00 -2.16412398939308E+02 -1.38091984773178E+00 2.74000000000000E+03 9.00000000000000E-01 9.00000000000000E-01 2.57050000000000E+02 2.49155667253264E+02 7.30000000000000E-01 2.60000000000000E+00 4.71238898038469E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.16762500000000E+02 2.70000000000000E+02 -1.22000000000000E+01 -1.61000000000000E+01 7.30000000000000E-01 2.81134335864098E+00 -1.24054703184609E+00 -4.02886133720508E-01 2.82787601060693E+02 -3.12102775891344E+00 2.60950000000000E+02 2.60130571836001E+02 1.07465564668638E-03 1.37764737231161E-03 9.00000000000000E+00 9.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 3.60000000000000E+03 9.95000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 4.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.30000000000000E+01 9.00000000000000E-01 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 2.74000000000000E+03 2.60000000000000E+00 4.71238898038469E+00 9.00000000000000E-01 2.22612500000000E+02 2.57050000000000E+02 8.31101134737295E-01 9.00000000000000E+00 3.60000000000000E+03 5.40000000000000E+03 4.09920000000000E+03 5.40000000000000E+03 3.60000000000000E+03 -2.17534662609251E+02 -1.38020061864442E+00 2.74000000000000E+03 9.00000000000000E-01 9.00000000000000E-01 2.57050000000000E+02 2.49155667253264E+02 7.30000000000000E-01 2.60000000000000E+00 4.71238898038469E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.22612500000000E+02 2.70000000000000E+02 -1.22000000000000E+01 -1.61000000000000E+01 7.30000000000000E-01 2.73639022457458E+00 -1.16559389777968E+00 -4.02832949276805E-01 3.88166533739075E+03 -2.85930998443144E+00 2.60950000000000E+02 2.60130571836001E+02 1.07465564668638E-03 1.37764737231161E-03 9.00000000000000E+00 9.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 7.20000000000000E+03 9.96000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 5.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.30000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 1.68000000000000E+03 2.60000000000000E+00 4.36332312998582E+00 1.00000000000000E+00 2.28968750000000E+02 2.57550000000000E+02 8.56350262675101E-01 1.00000000000000E+01 7.20000000000000E+03 9.00000000000000E+03 7.69920000000000E+03 9.00000000000000E+03 7.20000000000000E+03 -2.18656471851391E+02 -1.37948138955706E+00 1.68000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.57550000000000E+02 2.51507827003720E+02 7.30000000000000E-01 2.60000000000000E+00 4.36332312998582E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.28968750000000E+02 2.50000000000000E+02 -1.17000000000000E+01 -1.56000000000000E+01 7.30000000000000E-01 2.58176898247466E+00 -1.01097265567976E+00 -4.02779547113245E-01 7.48054352814861E+03 -2.59759217690252E+00 2.61450000000000E+02 2.60603925860310E+02 1.11893560321264E-03 1.43174525723365E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 1.08000000000000E+04 9.95000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 5.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.30000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 1.40000000000000E+03 2.10000000000000E+00 4.18879020478639E+00 1.00000000000000E+00 2.29943750000000E+02 2.58150000000000E+02 8.58401819156357E-01 1.00000000000000E+01 1.08000000000000E+04 1.26000000000000E+04 1.12992000000000E+04 1.26000000000000E+04 1.08000000000000E+04 -2.19777824858702E+02 -1.37876216046970E+00 1.40000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.58150000000000E+02 2.52235855202313E+02 7.30000000000000E-01 2.10000000000000E+00 4.18879020478639E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.29943750000000E+02 2.40000000000000E+02 -1.11000000000000E+01 -1.50000000000000E+01 7.30000000000000E-01 2.39766897836351E+00 -8.26872651568615E-01 -4.02725927271973E-01 1.10794221751413E+04 -2.33587433619526E+00 2.62050000000000E+02 2.61171225361692E+02 1.17421162282669E-03 1.49906871629719E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 1.44000000000000E+04 9.95000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 5.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.30000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 1.40000000000000E+03 2.60000000000000E+00 4.01425727958696E+00 1.00000000000000E+00 2.31150000000000E+02 2.58150000000000E+02 8.58401819156357E-01 1.00000000000000E+01 1.44000000000000E+04 1.62000000000000E+04 1.48992000000000E+04 1.62000000000000E+04 1.44000000000000E+04 -2.20898719825101E+02 -1.37804293138234E+00 1.40000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.58150000000000E+02 2.52235855202313E+02 7.30000000000000E-01 2.60000000000000E+00 4.01425727958696E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.31150000000000E+02 2.30000000000000E+02 -1.11000000000000E+01 -1.50000000000000E+01 7.30000000000000E-01 2.20435926398412E+00 -6.33562937189227E-01 -4.02672089795297E-01 1.46783012801749E+04 -2.07415646217833E+00 2.62050000000000E+02 2.61171225361692E+02 1.17421162282669E-03 1.49906871629719E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 1.80000000000000E+04 9.95000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 5.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.30000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 1.40000000000000E+03 2.60000000000000E+00 4.18879020478639E+00 1.00000000000000E+00 2.32000000000000E+02 2.58750000000000E+02 8.60448612878876E-01 1.00000000000000E+01 1.80000000000000E+04 1.98000000000000E+04 1.84992000000000E+04 1.98000000000000E+04 1.80000000000000E+04 -2.22019154945454E+02 -1.37732370229498E+00 1.40000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.58750000000000E+02 2.52867641161565E+02 7.30000000000000E-01 2.60000000000000E+00 4.18879020478639E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.32000000000000E+02 2.40000000000000E+02 -1.06000000000000E+01 -1.44000000000000E+01 7.30000000000000E-01 2.01058359581846E+00 -4.39787269023567E-01 -4.02618034725694E-01 1.82771808450545E+04 -1.81243855472045E+00 2.62550000000000E+02 2.61643373051478E+02 1.22211861858507E-03 1.55723590318595E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 2.16000000000000E+04 9.95000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 5.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.30000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 1.83000000000000E+03 2.60000000000000E+00 3.66519142918809E+00 1.00000000000000E+00 2.32000000000000E+02 2.58750000000000E+02 8.60448612878876E-01 1.00000000000000E+01 2.16000000000000E+04 2.34000000000000E+04 2.20992000000000E+04 2.34000000000000E+04 2.16000000000000E+04 -2.23139128415585E+02 -1.37660447320762E+00 1.83000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.58750000000000E+02 2.52867641161565E+02 7.30000000000000E-01 2.60000000000000E+00 3.66519142918809E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.32000000000000E+02 2.10000000000000E+02 -1.06000000000000E+01 -1.44000000000000E+01 7.30000000000000E-01 1.82174124390227E+00 -2.50944917107374E-01 -4.02563762105805E-01 2.18760608715844E+04 -1.55072061369042E+00 2.62550000000000E+02 2.61643373051478E+02 1.22211861858507E-03 1.55723590318595E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 2.52000000000000E+04 9.95000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 5.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.70000000000000E+01 1.00000000000000E+00 9.07894736842105E-01 2.28260869565217E+00 3.56038647342995E+00 1.68000000000000E+03 3.10000000000000E+00 3.14159265358979E+00 1.00000000000000E+00 2.29281250000000E+02 2.59250000000000E+02 8.62150652017517E-01 1.00000000000000E+01 2.52000000000000E+04 2.70000000000000E+04 2.56992000000000E+04 2.70000000000000E+04 2.52000000000000E+04 -2.24258638432267E+02 -1.37588524412026E+00 1.68000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.59250000000000E+02 2.52992596832331E+02 7.70000000000000E-01 3.10000000000000E+00 3.14159265358979E+00 9.07894736842105E-01 2.28260869565217E+00 3.56038647342995E+00 2.29281250000000E+02 1.80000000000000E+02 -1.06000000000000E+01 -1.39000000000000E+01 7.70000000000000E-01 1.64267674352360E+00 -7.18804167287046E-02 -4.02509271978433E-01 2.54749413615677E+04 -1.28900263895711E+00 2.62550000000000E+02 2.61778624383746E+02 1.28913649293810E-03 1.57426482968228E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 2.88000000000000E+04 9.95000000000000E+04 4.30000000000000E+01 1.00000000000000E+01 1.27200000000000E+03 8.73000000000000E+02 1.22600000000000E+03 2.05000000000000E+02 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 5.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.70000000000000E+01 8.00000000000000E-01 5.33126337184424E+01 2.76370341614907E+01 1.88533222123855E+02 2.13000000000000E+03 2.60000000000000E+00 3.14159265358979E+00 8.00000000000000E-01 2.13343750000000E+02 2.59850000000000E+02 8.22671764728708E-01 8.00000000000000E+00 2.88000000000000E+04 3.06000000000000E+04 2.92992000000000E+04 3.06000000000000E+04 2.88000000000000E+04 -2.25377683193240E+02 -1.37516601503289E+00 2.13000000000000E+03 8.00000000000000E-01 8.00000000000000E-01 2.59850000000000E+02 2.50616708792206E+02 7.70000000000000E-01 2.60000000000000E+00 3.14159265358979E+00 5.33126337184424E+01 2.76370341614907E+01 1.88533222123855E+02 2.13343750000000E+02 1.80000000000000E+02 -1.00000000000000E+01 -1.33000000000000E+01 7.70000000000000E-01 1.47893038314089E+00 9.18659436540048E-02 -4.02454564386551E-01 2.90738223168068E+04 -1.02728463038944E+00 2.63150000000000E+02 2.62349639806847E+02 1.35219719286038E-03 1.64800215430745E-03 8.00000000000000E+00 8.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 3.24000000000000E+04 9.95000000000000E+04 2.36000000000000E+02 4.70000000000000E+01 1.15600000000000E+04 2.80420000000000E+04 6.84900000000000E+03 8.28000000000000E+02 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 5.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.10000000000000E+01 1.10000000000000E-02 1.79694471544715E+02 5.99388130252101E+01 5.01199713698521E+02 2.00000000000000E+03 3.10000000000000E+00 3.31612557878923E+00 1.10000000000000E-02 2.10500000000000E+02 2.59850000000000E+02 7.50677518206631E-01 1.10000000000000E-01 3.24000000000000E+04 3.42000000000000E+04 3.28992000000000E+04 3.42000000000000E+04 3.24000000000000E+04 -2.26496260897202E+02 -1.37444678594553E+00 2.00000000000000E+03 0.00000000000000E+00 0.00000000000000E+00 2.59850000000000E+02 2.45967851908588E+02 7.10000000000000E-01 3.10000000000000E+00 3.31612557878923E+00 1.79694471544715E+02 5.99388130252101E+01 5.01199713698521E+02 2.10500000000000E+02 1.90000000000000E+02 -8.90000000000000E+00 -1.33000000000000E+01 7.10000000000000E-01 1.33747626660829E+00 2.33320060186603E-01 -4.02399639373294E-01 3.26727037391028E+04 -7.65566587856434E-01 2.64250000000000E+02 2.63169373377036E+02 1.35994695048552E-03 1.75923557442830E-03 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 3.60000000000000E+04 9.95000000000000E+04 4.10000000000000E+02 7.10000000000000E+01 2.49780000000000E+04 5.12570000000000E+04 1.00620000000000E+04 1.32200000000000E+03 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 5.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 6.00000000000000E+01 2.00000000000000E-01 2.97034468085106E+02 7.51415441176471E+01 6.54292294142550E+02 2.00000000000000E+03 5.70000000000000E+00 3.83972435438753E+00 1.10000000000000E-02 2.17500000000000E+02 2.59850000000000E+02 7.50677518206631E-01 1.10000000000000E-01 3.60000000000000E+04 3.78000000000000E+04 3.64992000000000E+04 3.78000000000000E+04 3.60000000000000E+04 -2.27614369743821E+02 -1.37372755685817E+00 2.00000000000000E+03 2.00000000000000E-01 0.00000000000000E+00 2.59850000000000E+02 2.48015644810002E+02 6.00000000000000E-01 5.70000000000000E+00 3.83972435438753E+00 2.97034468085106E+02 7.51415441176471E+01 6.54292294142550E+02 2.17500000000000E+02 2.20000000000000E+02 -6.70000000000000E+00 -1.33000000000000E+01 6.00000000000000E-01 1.22696158741215E+00 3.43834739382751E-01 -4.02344496981962E-01 3.62715856302562E+04 -5.03848511227156E-01 2.66450000000000E+02 2.64747948397626E+02 1.36383453927710E-03 1.99242920148382E-03 2.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 3.96000000000000E+04 9.94000000000000E+04 5.31000000000000E+02 8.00000000000000E+01 3.55720000000000E+04 6.47250000000000E+04 1.11770000000000E+04 1.58100000000000E+03 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 6.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 6.30000000000000E+01 1.10000000000000E-02 3.69425531914894E+02 1.10197674418605E+02 6.40359623857392E+02 2.00000000000000E+03 5.70000000000000E+00 3.66519142918809E+00 1.10000000000000E-02 2.27205882352941E+02 2.62050000000000E+02 7.57134237560899E-01 1.10000000000000E-01 3.96000000000000E+04 4.14000000000000E+04 4.00992000000000E+04 4.14000000000000E+04 3.96000000000000E+04 -2.28732007933733E+02 -1.37300832777081E+00 2.00000000000000E+03 0.00000000000000E+00 0.00000000000000E+00 2.62050000000000E+02 2.50133017709323E+02 6.30000000000000E-01 5.70000000000000E+00 3.66519142918809E+00 3.69425531914894E+02 1.10197674418605E+02 6.40359623857392E+02 2.27205882352941E+02 2.10000000000000E+02 -5.00000000000000E+00 -1.11000000000000E+01 6.30000000000000E-01 1.15687957314737E+00 4.13916753647524E-01 -4.02289137256019E-01 3.98704679920663E+04 -2.42130400370757E-01 2.68150000000000E+02 2.66421598178633E+02 1.63119757688593E-03 2.26933405224483E-03 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 4.32000000000000E+04 9.93000000000000E+04 5.91000000000000E+02 1.44000000000000E+02 3.80260000000000E+04 5.04670000000000E+04 1.68540000000000E+04 2.86300000000000E+03 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 6.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 6.30000000000000E+01 6.00000000000000E-01 2.98175149700599E+02 1.59336979046742E+02 3.28370025190977E+02 2.00000000000000E+03 5.70000000000000E+00 3.83972435438753E+00 2.00000000000000E-01 2.46020680147059E+02 2.63750000000000E+02 7.85363671161304E-01 2.00000000000000E+00 4.32000000000000E+04 4.50000000000000E+04 4.36992000000000E+04 4.50000000000000E+04 4.32000000000000E+04 -2.29849173668550E+02 -1.37228909868345E+00 2.00000000000000E+03 6.00000000000000E-01 2.00000000000000E-01 2.63750000000000E+02 2.54032992619536E+02 6.30000000000000E-01 5.70000000000000E+00 3.83972435438753E+00 2.98175149700599E+02 1.59336979046742E+02 3.28370025190977E+02 2.46020680147059E+02 2.20000000000000E+02 -3.30000000000000E+00 -9.40000000000000E+00 6.30000000000000E-01 1.13506753360082E+00 4.35728793194075E-01 -4.02233560239096E-01 4.34693508263315E+04 1.95877448435467E-02 2.69850000000000E+02 2.67957521693015E+02 1.85451462415501E-03 2.55302562058289E-03 6.00000000000000E+00 2.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 4.68000000000000E+04 9.92000000000000E+04 5.86000000000000E+02 1.68000000000000E+02 2.51740000000000E+04 1.49900000000000E+04 1.89390000000000E+04 3.96900000000000E+03 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 7.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 6.30000000000000E+01 1.00000000000000E+00 2.06077628077179E+02 1.71664326126490E+02 7.62324987409166E+01 6.71000000000000E+03 5.20000000000000E+00 4.01425727958696E+00 8.00000000000000E-01 2.62960937500000E+02 2.64850000000000E+02 8.38668053008990E-01 8.00000000000000E+00 4.68000000000000E+04 4.86000000000000E+04 4.72992000000000E+04 4.86000000000000E+04 4.68000000000000E+04 -2.30965865150859E+02 -1.37156986959609E+00 6.71000000000000E+03 1.00000000000000E+00 8.00000000000000E-01 2.64850000000000E+02 2.59290544867261E+02 6.30000000000000E-01 5.20000000000000E+00 4.01425727958696E+00 2.06077628077179E+02 1.71664326126490E+02 7.62324987409166E+01 2.62960937500000E+02 2.30000000000000E+02 -2.20000000000000E+00 -8.30000000000000E+00 6.30000000000000E-01 1.16433116620321E+00 4.06465160591687E-01 -4.02177765974986E-01 4.70682341348491E+04 2.81305924546466E-01 2.70950000000000E+02 2.68947325710035E+02 2.01308328034189E-03 2.75213795252125E-03 1.00000000000000E+01 8.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 5.04000000000000E+04 9.92000000000000E+04 5.16000000000000E+02 1.61000000000000E+02 1.98050000000000E+04 5.14500000000000E+03 1.79200000000000E+04 4.31700000000000E+03 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 7.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 6.10000000000000E+01 1.00000000000000E+00 1.49411695906433E+02 1.27920883421862E+02 7.94721402309565E+01 6.71000000000000E+03 4.10000000000000E+00 4.53785605518526E+00 9.00000000000000E-01 2.67068750000000E+02 2.65350000000000E+02 8.58347767009692E-01 9.00000000000000E+00 5.04000000000000E+04 5.22000000000000E+04 5.08992000000000E+04 5.22000000000000E+04 5.04000000000000E+04 -2.32082080584229E+02 -1.37085064050873E+00 6.71000000000000E+03 1.00000000000000E+00 9.00000000000000E-01 2.65350000000000E+02 2.61857218653667E+02 6.10000000000000E-01 4.10000000000000E+00 4.53785605518526E+00 1.49411695906433E+02 1.27920883421862E+02 7.94721402309565E+01 2.67068750000000E+02 2.60000000000000E+02 -1.10000000000000E+00 -7.80000000000000E+00 6.10000000000000E-01 1.24094889804141E+00 3.29847428753482E-01 -4.02121754507648E-01 5.06671179194158E+04 5.43024138868641E-01 2.72050000000000E+02 2.69816503127712E+02 2.11415118416309E-03 2.93823379885277E-03 1.00000000000000E+01 9.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 5.40000000000000E+04 9.92000000000000E+04 3.86000000000000E+02 9.30000000000000E+01 1.30010000000000E+04 8.25100000000000E+03 1.07390000000000E+04 2.05600000000000E+03 2.41000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 7.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 6.40000000000000E+01 9.00000000000000E-01 8.31235697940503E+01 6.71007252215955E+01 6.41960046323104E+01 3.66000000000000E+03 3.10000000000000E+00 4.53785605518526E+00 9.00000000000000E-01 2.71837500000000E+02 2.65950000000000E+02 8.60284246839121E-01 9.00000000000000E+00 5.40000000000000E+04 5.58000000000000E+04 5.44992000000000E+04 5.58000000000000E+04 5.40000000000000E+04 -2.33197818173212E+02 -1.37013141142137E+00 3.66000000000000E+03 9.00000000000000E-01 9.00000000000000E-01 2.65950000000000E+02 2.62004784944426E+02 6.40000000000000E-01 3.10000000000000E+00 4.53785605518526E+00 8.31235697940503E+01 6.71007252215955E+01 6.41960046323104E+01 2.71837500000000E+02 2.60000000000000E+02 -1.10000000000000E+00 -7.20000000000000E+00 6.40000000000000E-01 1.35662274816324E+00 2.14173578631655E-01 -4.02065525881203E-01 5.42660021818268E+04 8.04742387940640E-01 2.72050000000000E+02 2.69992819865813E+02 2.21826601954493E-03 2.97731901578595E-03 9.00000000000000E+00 9.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 5.76000000000000E+04 9.92000000000000E+04 2.06000000000000E+02 4.30000000000000E+01 5.29400000000000E+03 2.63500000000000E+03 4.90800000000000E+03 1.08300000000000E+03 1.93000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 8.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 6.90000000000000E+01 1.00000000000000E+00 1.97041440217391E+01 2.01176470588235E+01 1.27840909090909E+01 3.66000000000000E+03 1.50000000000000E+00 3.66519142918809E+00 1.00000000000000E+00 2.76618750000000E+02 2.67050000000000E+02 8.88285633439346E-01 1.00000000000000E+01 5.76000000000000E+04 5.94000000000000E+04 5.80992000000000E+04 5.94000000000000E+04 5.76000000000000E+04 -2.34313076123349E+02 -1.36941218233401E+00 3.66000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.67050000000000E+02 2.64111243377933E+02 6.90000000000000E-01 1.50000000000000E+00 3.66519142918809E+00 1.97041440217391E+01 2.01176470588235E+01 1.27840909090909E+01 2.76618750000000E+02 2.10000000000000E+02 -1.10000000000000E+00 -6.10000000000000E+00 6.90000000000000E-01 1.50186813851193E+00 6.89281882829660E-02 -4.02009080139939E-01 5.78648869238766E+04 1.06646067189296E+00 2.72050000000000E+02 2.70284993295837E+02 2.39181999326044E-03 3.04310387160377E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 6.12000000000000E+04 9.92000000000000E+04 2.50000000000000E+01 5.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.93000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 8.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 6.90000000000000E+01 1.00000000000000E+00 1.13281250000000E+00 6.61764705882352E-01 1.00000000000000E-04 3.66000000000000E+03 1.00000000000000E-06 1.00000000000000E-03 1.00000000000000E+00 2.74500000000000E+02 2.67050000000000E+02 8.88285633439346E-01 1.00000000000000E+01 6.12000000000000E+04 6.30000000000000E+04 6.16992000000000E+04 6.30000000000000E+04 6.12000000000000E+04 -2.35427852641171E+02 -1.36869295324665E+00 3.66000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.67050000000000E+02 2.64111243377933E+02 6.90000000000000E-01 0.00000000000000E+00 0.00000000000000E+00 1.13281250000000E+00 6.61764705882352E-01 0.00000000000000E+00 2.74500000000000E+02 0.00000000000000E+00 -1.10000000000000E+00 -6.10000000000000E+00 6.90000000000000E-01 1.66826532419542E+00 -9.74689974005198E-02 -4.01952417328305E-01 6.14637721473588E+04 1.32817899085603E+00 2.72050000000000E+02 2.70284993295837E+02 2.39181999326044E-03 3.04310387160377E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 6.48000000000000E+04 9.92000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.61000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 8.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.20000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 2.44000000000000E+03 1.00000000000000E-06 1.00000000000000E-03 1.00000000000000E+00 2.71787500000000E+02 2.67050000000000E+02 8.88285633439346E-01 1.00000000000000E+01 6.48000000000000E+04 6.66000000000000E+04 6.52992000000000E+04 6.66000000000000E+04 6.48000000000000E+04 -2.36542145934203E+02 -1.36797372415929E+00 2.44000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.67050000000000E+02 2.63528752122551E+02 7.20000000000000E-01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.71787500000000E+02 0.00000000000000E+00 -1.70000000000000E+00 -6.10000000000000E+00 7.20000000000000E-01 1.84907933940036E+00 -2.78283012605467E-01 -4.01895537490917E-01 6.50626578540658E+04 1.58989734496019E+00 2.71450000000000E+02 2.69905497301742E+02 2.38792028269414E-03 2.95790436880426E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 6.84000000000000E+04 9.92000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.61000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 8.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.50000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 2.44000000000000E+03 2.10000000000000E+00 2.79252680319093E+00 1.00000000000000E+00 2.73275000000000E+02 2.67050000000000E+02 8.88285633439346E-01 1.00000000000000E+01 6.84000000000000E+04 7.02000000000000E+04 6.88992000000000E+04 7.02000000000000E+04 6.84000000000000E+04 -2.37655954210969E+02 -1.36725449507193E+00 2.44000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.67050000000000E+02 2.63043342743066E+02 7.50000000000000E-01 2.10000000000000E+00 2.79252680319093E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.73275000000000E+02 1.60000000000000E+02 -2.20000000000000E+00 -6.10000000000000E+00 7.50000000000000E-01 2.03892156508153E+00 -4.68125238286635E-01 -4.01838440672553E-01 6.86615440457890E+04 1.85161573433573E+00 2.70950000000000E+02 2.69607636269984E+02 2.39708638130480E-03 2.89252298113736E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 7.20000000000000E+04 9.92000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.61000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 8.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.20000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 3.05000000000000E+03 2.60000000000000E+00 2.79252680319093E+00 1.00000000000000E+00 2.75652419354839E+02 2.67550000000000E+02 8.89934822098297E-01 1.00000000000000E+01 7.20000000000000E+04 7.38000000000000E+04 7.24992000000000E+04 7.38000000000000E+04 7.20000000000000E+04 -2.38769275680992E+02 -1.36653526598457E+00 3.05000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.67550000000000E+02 2.64233745173848E+02 7.20000000000000E-01 2.60000000000000E+00 2.79252680319093E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.75652419354839E+02 1.60000000000000E+02 -1.10000000000000E+00 -5.60000000000000E+00 7.20000000000000E-01 2.23295066421515E+00 -6.62154337420255E-01 -4.01781126918153E-01 7.22604307243190E+04 2.11333415911286E+00 2.72050000000000E+02 2.70459288244651E+02 2.49596993040458E-03 3.08295913568888E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 7.56000000000000E+04 9.91000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.61000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 8.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.80000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 3.05000000000000E+03 1.00000000000000E-06 1.00000000000000E-03 1.00000000000000E+00 2.76191001697793E+02 2.68150000000000E+02 8.91909785029795E-01 1.00000000000000E+01 7.56000000000000E+04 7.74000000000000E+04 7.60992000000000E+04 7.74000000000000E+04 7.56000000000000E+04 -2.39882108554804E+02 -1.36581603689721E+00 3.05000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.68150000000000E+02 2.63797137185198E+02 7.80000000000000E-01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.76191001697793E+02 0.00000000000000E+00 -1.70000000000000E+00 -5.00000000000000E+00 7.80000000000000E-01 2.42548927737833E+00 -8.54692950583433E-01 -4.01723596272824E-01 7.58593178914452E+04 2.37505261942171E+00 2.71450000000000E+02 2.70241517534497E+02 2.58722656413376E-03 3.03323401520765E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 7.92000000000000E+04 9.91000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.61000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 8.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.50000000000000E+01 1.00000000000000E+00 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 3.05000000000000E+03 2.60000000000000E+00 2.79252680319093E+00 1.00000000000000E+00 2.66345864661654E+02 2.68150000000000E+02 8.91909785029795E-01 1.00000000000000E+01 7.92000000000000E+04 8.10000000000000E+04 7.96992000000000E+04 8.10000000000000E+04 7.92000000000000E+04 -2.40994451043940E+02 -1.36509680780985E+00 3.05000000000000E+03 1.00000000000000E+00 1.00000000000000E+00 2.68150000000000E+02 2.64380221665990E+02 7.50000000000000E-01 2.60000000000000E+00 2.79252680319093E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.66345864661654E+02 1.60000000000000E+02 -1.10000000000000E+00 -5.00000000000000E+00 7.50000000000000E-01 2.60677576805285E+00 -1.03597944125795E+00 -4.01665848781834E-01 7.94582055489561E+04 2.63677111539234E+00 2.72050000000000E+02 2.70632829116957E+02 2.60013303528630E-03 3.12310162542307E-03 1.00000000000000E+01 1.00000000000000E+01 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 8.28000000000000E+04 9.90000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.61000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 8.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.80000000000000E+01 6.00000000000000E-01 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 3.05000000000000E+03 2.60000000000000E+00 3.14159265358979E+00 6.00000000000000E-01 2.50473214285714E+02 2.68150000000000E+02 8.26121777315986E-01 6.00000000000000E+00 8.28000000000000E+04 8.46000000000000E+04 8.32992000000000E+04 8.46000000000000E+04 8.28000000000000E+04 -2.42106301360950E+02 -1.36437757872249E+00 3.05000000000000E+03 6.00000000000000E-01 6.00000000000000E-01 2.68150000000000E+02 2.58792009979733E+02 7.80000000000000E-01 2.60000000000000E+00 3.14159265358979E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.50473214285714E+02 1.80000000000000E+02 -1.70000000000000E+00 -5.00000000000000E+00 7.80000000000000E-01 2.75334029032974E+00 -1.18254396353485E+00 -4.01607884490615E-01 8.30570936986390E+04 2.89848964715473E+00 2.71450000000000E+02 2.70241517534497E+02 2.58722656413376E-03 3.03323401520765E-03 6.00000000000000E+00 6.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
+ 8.64000000000000E+04 9.90000000000000E+04 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 1.61000000000000E+01 9.00000000000000E+00 9.99999999000000E+08 8.00000000000000E+01 1.18000000000000E-01 0.00000000000000E+00 8.80000000000000E+01 9.99000000000000E+02 9.99000000000000E+02 9.90000000000000E+01 7.20000000000000E+01 3.00000000000000E-01 1.00000000000000E-04 1.00000000000000E-04 1.00000000000000E-04 2.00000000000000E+03 2.60000000000000E+00 3.31612557878923E+00 3.00000000000000E-01 2.41725961538462E+02 2.67050000000000E+02 8.03044081405487E-01 3.00000000000000E+00 8.64000000000000E+04 8.82000000000000E+04 8.68992000000000E+04 8.82000000000000E+04 8.64000000000000E+04 -2.43217657719399E+02 -1.36365834963513E+00 2.00000000000000E+03 3.00000000000000E-01 3.00000000000000E-01 2.67050000000000E+02 2.56965424979274E+02 7.20000000000000E-01 2.60000000000000E+00 3.31612557878923E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 2.41725961538462E+02 1.90000000000000E+02 -1.70000000000000E+00 -6.10000000000000E+00 7.20000000000000E-01 2.81008867868493E+00 -1.23929235189003E+00 -4.01549703444762E-01 8.66559823422806E+04 3.16020821483881E+00 2.71450000000000E+02 2.69905497301742E+02 2.38792028269414E-03 2.95790436880426E-03 3.00000000000000E+00 3.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00 0.00000000000000E+00
