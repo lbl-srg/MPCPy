@@ -31,4 +31,4 @@ MPCPy is available under the following open-source [license](https://github.com/
 ## Development and Contribution
 You are welcome to report any issues in [Issues](https://github.com/lbl-srg/MPCPy/issues).
 
-You are welcome to suggest contributions in the form of [Pull Requests](https://github.com/lbl-srg/MPCPy/pulls).  Please visit the [Contribution Workflow](https://github.com/lbl-srg/MPCPy/wiki/Contribution-Workflow) page for guidance.
+You are welcome make a contribution by following the steps outlined on the [Contribution Workflow](https://github.com/lbl-srg/MPCPy/wiki/Contribution-Workflow) page.
