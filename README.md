@@ -6,7 +6,7 @@ MPCPy facilitates the testing and implementation of Model Predictive Control (MP
 
 ## Dependencies
 
-MPCPy takes advantage of many third-party software packages.  The following is a list of packages that the current version of MPCPy has been tested with:
+MPCPy takes advantage of many third-party software packages, listed below.  It has been tested on Ubuntu 16.04.
 
 **Python Packages**
 - matplotlib 1.5.1
