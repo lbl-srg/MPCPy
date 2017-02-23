@@ -1,4 +1,12 @@
-## Users Guide ##
+## User Guide ##
+Compile the user guide by running from the command line:
+
+    > cd userGuide
+    > make latex
+
+The user guide will be created as a PDF in the resulting build directory.
+
+
 
 ## UML Diagrams ##
 UML diagrams of MPCPy may be generated using the code in [PlantUMLs.txt](https://github.com/lbl-srg/MPCPy/blob/master/doc/PlantUMLs.txt).  The UML diagram for a single module is defined between the lines @startuml and @enduml, inclusive.  
