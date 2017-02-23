@@ -28,3 +28,7 @@ request
 stat
 status
 stop
+
+# UserGuide Build
+#########################
+doc/userGuide/build

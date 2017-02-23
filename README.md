@@ -42,7 +42,7 @@ MPCPy takes advantage of many third-party software packages, listed below.  It h
 5. Test the installation and explore MPCPy use-cases by running the [unittests](https://github.com/lbl-srg/MPCPy/tree/master/unittests).  See the [README](https://github.com/lbl-srg/MPCPy/blob/master/bin/README.md) on how to run unit tests.
 
 ## License
-MPCPy is available under the following open-source [license](https://github.com/lbl-srg/MPCPy/blob/master/license.txt)
+MPCPy is available under the following open-source [license](https://github.com/lbl-srg/MPCPy/blob/master/license.txt).
 
 ## Development and Contribution
 You are welcome to report any issues in [Issues](https://github.com/lbl-srg/MPCPy/issues).
