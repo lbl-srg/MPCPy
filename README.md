@@ -21,9 +21,25 @@ MPCPy takes advantage of many third-party software packages, listed below.  It h
 - JModelica 1.17
 
 ## Installation
-Install MPCPy by placing the parent directory on the PYTHONPATH environmental variable.  Modules and classes can then be imported into a python environment.
+1. Install all dependencies listed above according to their respective processes.
 
-Explore the [unittests](https://github.com/lbl-srg/MPCPy/tree/master/unittests) directory for example MPCPy use-cases.  See the [README](https://github.com/lbl-srg/MPCPy/blob/master/bin/README.md) on how to run unit tests.
+2. Create the following environmental variables, where ".../" is replaced by the full directory:
+
+    - JMODELICA_HOME        = ".../Jmodelica-1.17"
+    - IPOPT_HOME            = ".../Ipop-3.12.5"
+    - SUNDIALS_HOME         = ".../Jmodelica-1.17/ThirdParty/Sundials"
+    - CPPAD_HOME            = ".../Jmodelica-1.17/ThirdParty/CppAD/"
+    - SEPARATE_PROCESS_JVM  = ".../jvm/java-8-openjdk-amd64/"
+    - JAVA_HOME             = ".../jvm/java-8-openjdk-amd64/"
+
+3. Add the following to the PYTHONPATH environmental variable, where ".../" is replaced by the full directory:
+    - ".../Jmodelica-1.17/Python"
+    - ".../Jmodelica-1.17/Python/pymodelica"
+    - ".../MPCPy"
+
+4. MPCPY modules and classes can then be imported into a python environment.
+
+5. Test the installation and explore MPCPy use-cases by running the [unittests](https://github.com/lbl-srg/MPCPy/tree/master/unittests).  See the [README](https://github.com/lbl-srg/MPCPy/blob/master/bin/README.md) on how to run unit tests.
 
 ## License
 MPCPy is available under the following open-source [license](https://github.com/lbl-srg/MPCPy/blob/master/license.txt)

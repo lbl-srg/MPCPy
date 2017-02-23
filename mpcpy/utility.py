@@ -9,7 +9,6 @@ from abc import ABCMeta
 import sys
 import numpy as np
 import pandas as pd
-import os
 from pyfmi.common import core
 from pyfmi.common import xmlparser
 import inspect
@@ -18,13 +17,6 @@ from mpcpy import units
 from tzwhere import tzwhere
 from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
-# Jmodelica
-os.environ['JMODELICA_HOME'] = '/home/dhblum/Jmodelica-1.17';
-os.environ['IPOPT_HOME'] = '/home/dhblum/Ipop-3.12.5';
-os.environ['SUNDIALS_HOME'] = '/home/dhblum/Jmodelica-1.17/ThirdParty/Sundials';
-os.environ['CPPAD_HOME'] = '/home/dhblum/Jmodelica-1.17/ThirdParty/CppAD/';
-os.environ['SEPARATE_PROCESS_JVM'] = '/usr/lib/jvm/java-8-openjdk-amd64/';
-os.environ['JAVA_HOME'] = '/usr/lib/jvm/java-8-openjdk-amd64/';
 from pyfmi import load_fmu
 
 #%%

@@ -7,7 +7,6 @@ This module contains the classes and interfaces for mpc models.
 """
 
 from abc import ABCMeta, abstractmethod
-import os
 from collections import OrderedDict
 import numpy as np
 from matplotlib import pyplot as plt
@@ -15,14 +14,6 @@ import pandas as pd
 from mpcpy import utility
 from mpcpy import variables
 from mpcpy import units
-
-# Jmodelica
-os.environ['JMODELICA_HOME'] = '/home/dhblum/Jmodelica-1.17';
-os.environ['IPOPT_HOME'] = '/home/dhblum/Ipop-3.12.5';
-os.environ['SUNDIALS_HOME'] = '/home/dhblum/Jmodelica-1.17/ThirdParty/Sundials';
-os.environ['CPPAD_HOME'] = '/home/dhblum/Jmodelica-1.17/ThirdParty/CppAD/';
-os.environ['SEPARATE_PROCESS_JVM'] = '/usr/lib/jvm/java-8-openjdk-amd64/';
-os.environ['JAVA_HOME'] = '/usr/lib/jvm/java-8-openjdk-amd64/';
 from pymodelica import compile_fmu
 from pyjmi import transfer_optimization_problem;
 from pyjmi.optimization.casadi_collocation import ExternalData

@@ -9,7 +9,6 @@ This module contains the classes and interfaces for reduced order models (Model)
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from matplotlib import pyplot as plt
-import os
 import pandas as pd
 import csv
 import logging
@@ -27,14 +26,6 @@ from occupant.presence.queueing.parameter_inference_given_segments import parame
 from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
-
-# Jmodelica
-os.environ['JMODELICA_HOME'] = '/home/dhblum/Jmodelica-1.17';
-os.environ['IPOPT_HOME'] = '/home/dhblum/Ipop-3.12.5';
-os.environ['SUNDIALS_HOME'] = '/home/dhblum/Jmodelica-1.17/ThirdParty/Sundials';
-os.environ['CPPAD_HOME'] = '/home/dhblum/Jmodelica-1.17/ThirdParty/CppAD/';
-os.environ['SEPARATE_PROCESS_JVM'] = '/usr/lib/jvm/java-8-openjdk-amd64/';
-os.environ['JAVA_HOME'] = '/usr/lib/jvm/java-8-openjdk-amd64/';
 from pymodelica import compile_fmu
 
 #%% Model Class
