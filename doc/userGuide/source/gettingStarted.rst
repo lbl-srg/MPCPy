@@ -52,13 +52,19 @@ The script bin/runUnitTests.py runs the unit tests of MPCPy.  By default, all of
 
 To run all unit tests from command-line, use the command (shown from the parent directory):
 
-	> python bin/runUnitTests
+    .. code-block:: text
+
+    	> python bin/runUnitTests
 
 To run only unit tests in the module test_models from command-line, use the command (shown from the parent directory):
 
-	> python bin/runUnitTests -s test_models
+    .. code-block:: text
+
+	   > python bin/runUnitTests -s test_models
 
 To run only unit tests in the class Estimate_Jmo from the module test_models from the command-line, use the command (shown from the parent directory):
 
-	> python bin/runUnitTests -s test_models.Estimate_Jmo
+    .. code-block:: text
+
+	   > python bin/runUnitTests -s test_models.Estimate_Jmo
 
