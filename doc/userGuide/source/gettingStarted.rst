@@ -13,6 +13,7 @@ MPCPy takes advantage of many third-party software packages, listed below.  It h
     - pytz 2014.10
     - scikit-learn 0.18.1
     - tzwhere 2.3
+    - sphinx 1.3.6
     - estimationpy
 
 **Modelica Compiler and Optimizer, FMU Simulator**
