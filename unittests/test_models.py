@@ -14,6 +14,7 @@ from mpcpy import units
 from mpcpy import variables
 from matplotlib import pyplot as plt
 import pickle
+import os
 
 #%% Temperature tests
 class Estimate_Jmo(unittest.TestCase):
@@ -51,8 +52,7 @@ class Estimate_Jmo(unittest.TestCase):
         ## Setup model
         self.mopath = self.MPCPyPath + '/resources/model/LBNL71T_MPC.mo';
         self.modelpath = 'LBNL71T_MPC.MPC';
-        self.libraries = ['/home/dhblum/git/buildings/modelica-buildings/', \
-                        '/mnt/hgfs/LBNL/CERC/Development/MPC/'];
+        self.libraries = os.environ.get('MODELICAPATH');
         self.estimate_method = models.JModelica; 
         self.validation_method = models.RMSE;
             

@@ -6,6 +6,7 @@ by David Blum
 This module contains the classes for testing the optimization module of mpcpy.
 """
 import unittest
+import os
 from matplotlib import pyplot as plt
 from mpcpy import models
 from mpcpy import optimization
@@ -22,8 +23,7 @@ class Optimize_Jmo(unittest.TestCase):
         ## Setup model
         self.mopath = self.MPCPyPath + '/resources/model/LBNL71T_MPC.mo';
         self.modelpath = 'LBNL71T_MPC.MPC';
-        self.libraries = ['/home/dhblum/git/buildings/modelica-buildings/', \
-                        '/mnt/hgfs/LBNL/CERC/Development/MPC/'];
+        self.libraries = os.environ.get('MODELICAPATH');
         self.estimate_method = models.JModelica; 
         self.validation_method = models.RMSE;
         self.zone_names = ['wes', 'hal', 'eas'];                   
