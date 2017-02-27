@@ -17,6 +17,10 @@ MPCPy takes advantage of many third-party software packages, listed below.  It h
 - tzwhere 2.3
 - estimationpy
 
+**Modelica Packages**
+- Modelica Standard Library 3.2.2
+- Modelica Buildings Library 3.0.0
+
 **Modelica Compiler and Optimizer, FMU Simulator**
 - JModelica 1.17
 
@@ -37,7 +41,7 @@ MPCPy takes advantage of many third-party software packages, listed below.  It h
     - ".../Jmodelica-1.17/Python/pymodelica"
     - ".../MPCPy"
 
-4. MPCPY modules and classes can then be imported into a python environment.
+4. Add the Modelica Standard Library and Modelica Buildings Library to the MODELICAPATH environmental variable
 
 5. Test the installation and explore MPCPy use-cases by running the [unittests](https://github.com/lbl-srg/MPCPy/tree/master/unittests).  See the [README](https://github.com/lbl-srg/MPCPy/blob/master/bin/README.md) on how to run unit tests.
 
