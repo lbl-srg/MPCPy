@@ -9,7 +9,6 @@ User Guide
    gettingStarted
    units
    variables
-   utility
    exodata
    systems
    models
