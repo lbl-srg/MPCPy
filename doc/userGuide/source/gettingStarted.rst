@@ -42,7 +42,10 @@ Installation
     - ".../Jmodelica-1.17/Python/pymodelica"
     - ".../MPCPy"
 
-4. Add the Modelica Standard Library and Modelica Buildings Library to the MODELICAPATH environmental variable.
+4. Add the following to the MODELICAPATH environmental variable:
+
+    - Modelica Standard Library
+    - Modelica Buildings Library
 
 5. Test the installation and explore MPCPy use-cases by running the unit tests.
 
