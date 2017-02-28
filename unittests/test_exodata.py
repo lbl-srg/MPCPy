@@ -248,7 +248,6 @@ class Parameters_csv(TestExodata):
         self.parameters = exodata.ParameterFromCSV(self.csv_filepath);
         # Get coefficient data
         self.parameters.collect_data();
-        print('PARAMETERS %%%%%%%%%%%%%%%%%%%\n',self.parameters.data)
 
     def test_print(self):
         self.print_data(self.parameters);

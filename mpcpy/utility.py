@@ -33,11 +33,8 @@ class mpcpyPandas(object):
         try:
             df = pd.DataFrame(d).interpolate(method='linear');
         except ValueError:
-            print('Start Printing Line_____________________________________________');
             for mpcpy_ts_name in d.keys():
-                print(mpcpy_ts_name);
                 d[mpcpy_ts_name].to_frame().to_csv(getMPCPyPath() + '/' + mpcpy_ts_name);
-            print('End Printing Line_______________________________________________');
         return df
     
     def dataframe_to_mpcpy_ts_variable(self, df, key, varname, unit, **kwargs):
