@@ -65,7 +65,7 @@ Exogenous weather data has the following organization:
 
     weather.data = {"Weather Variable Name" : mpcpy.Variables.Timeseries}
 
-The weather data dictionary variable names should be chosen from the following list:
+The weather variable names should match those input variables in the model and be chosen from the following list:
 
 - weaPAtm - atmospheric pressure
 - weaTDewPoi - dew point temperature
@@ -131,13 +131,13 @@ Exogenous internal data has the following organization:
     internal.data = {"Zone Name" : {
                         "Internal Variable Name" : mpcpy.Variables.Timeseries}}
 
-The internal data dictionary variable names should be chosen from the following list:
+The internal variable names should be chosen from the following list:
 
 - intCon - convective internal load
 - intRad - radiative internal load
 - intLat - latent internal load
 
-The internal variable names in the model should follow the convention ``internalVariableName_zoneName``.  For example, the convective load input for the zone "west" should have the name ``intCon_west``.
+The internal variable names input in the model should follow the convention ``internalVariableName_zoneName``.  For example, the convective load input for the zone "west" should have the name ``intCon_west``.
 
 Classes
 -------
@@ -174,7 +174,7 @@ Exogenous control data has the following organization:
 
     control.data = {"Control Variable Name" : mpcpy.Variables.Timeseries}
 
-The control variable names should match those of the model.
+The control variable names should match the control input variables of the model.
 
 Classes
 -------
