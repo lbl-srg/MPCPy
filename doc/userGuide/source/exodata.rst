@@ -5,7 +5,7 @@ ExoData
 General
 =======
 
-``ExoData`` classes are responsible for the representation of exogenous data, with methods to collect this data from various sources and process it for use within MPCPy.  This data comes from sources outside of MPCPy and are not measurements of the system of interest.  The data is split into categories, or types, in order to standardize the organization of variables within the data for a particular type, in the form of a python dictionary, and to allow for any specific data processing that may be required.  This allows exogenous data objects to be used throughout MPCPy regardless of their data source.  To add a data source, one only need to create a class that can convert the data format in the source to that standardized in MPCPy.  The following is a list of exogenous data types:
+``exodata`` classes are responsible for the representation of exogenous data, with methods to collect this data from various sources and process it for use within MPCPy.  This data comes from sources outside of MPCPy and are not measurements of the system of interest.  The data is split into categories, or types, in order to standardize the organization of variables within the data for a particular type, in the form of a python dictionary, and to allow for any specific data processing that may be required.  This allows exogenous data objects to be used throughout MPCPy regardless of their data source.  To add a data source, one only need to create a class that can convert the data format in the source to that standardized in MPCPy.  The following is a list of exogenous data types:
 
 - Weather
 - Internal
@@ -18,18 +18,33 @@ General
 Instantiation
 -------------
 
-``ExoData`` objects may be instantiated using classes of the naming convention ``TypeFromSource``.  For example, the class for collecting weather data from an EPW file is called ``WeatherFromEPW``.  Required arguments for instantiation will differ among the classes depending on the data type and source.  However, all ``ExoData`` classes have the following optional keyword arguments upon instantiation:
+``exodata`` objects may be instantiated using classes of the naming convention ``TypeFromSource``.  For example, the class for collecting weather data from an EPW file is called ``WeatherFromEPW``.  Required arguments for instantiation will differ among the classes depending on the data type and source.  However, all ``exodata`` classes have the following optional keyword arguments upon instantiation:
 
-- geography - tuple containing (latitude,longitude) in degrees.  Is required for weather data other than from an EPW.  May also be used to detect time zone of data.
-- tz_name - the name of the timezone as defined by ``tzwhere``.  If "from_geography" is specified, the latitude and longitude coordinates are used to specify the timezone.
-- time_format - timestamp format of the data in a timespec string.  Timestamps naturally read by ``pandas`` do not have to be specified.
-- time_header - name of the column or variable containing timestamps of the data.  The names "Time", "time", "Timestamp", and "timestamp" do not have to be specified.
-- clean_data - dictionary of the form ``{ "columnHeader" : "cleaning_type" = mpcpy.Variables.cleaning_type, "cleaning_args" = (cleaning_args)}``.  See the ``Variables`` section for more information on data cleaning.
+    geography
+    
+        Tuple containing (latitude,longitude) in degrees.  Is required for weather data other than from an EPW.  May also be used to detect time zone of data.
+    
+    tz_name
+    
+        The name of the timezone as defined by ``tzwhere``.  If "from_geography" is specified, the latitude and longitude coordinates are used to specify the timezone.
+
+    time_format
+    
+        Timestamp format of the data in a timespec string.  Timestamps naturally read by ``pandas`` do not have to be specified.
+    
+    time_header
+    
+        Name of the column or variable containing timestamps of the data.  The names "Time", "time", "Timestamp", and "timestamp" do not have to be specified.
+    
+    clean_data
+    
+        Dictionary of the form ``{ "columnHeader" : "cleaning_type" = mpcpy.Variables.cleaning_type, "cleaning_args" = (cleaning_args)}``.  See the ``Variables`` section for more information on data cleaning.
+
 
 Collecting Data
 ---------------
 
-Once instantiated, an ``ExoData`` object may collect data using the ``collect_data()`` method.
+Once instantiated, an ``exodata`` object may collect data using the ``collect_data()`` method.
 
 ::
 
@@ -102,11 +117,11 @@ Classes
 
 Weather data may be collected using the following classes:
 
-    **WeatherFromEPW**
+    WeatherFromEPW
     
         Collects weather data from an EPW file.
     
-    **WeatherFromCSV**
+    WeatherFromCSV
     
         Collects weather data from a CSV file.  This class requires a variable map to match CSV column headers with weather variable names.  The variable map is a python dictionary of the form: 
 
@@ -144,7 +159,7 @@ Classes
 
 Internal data may be collected using the following classes:
 
-    **InternalFromCSV**
+    InternalFromCSV
     
         Collects internal data from a CSV file.  This class requires a variable map to match CSV column headers with internal variable names.  The variable map is a python dictionary of the form: 
 
@@ -155,7 +170,7 @@ Internal data may be collected using the following classes:
                                             mpcpy.Units.unit)}
 \
  
-    **InternalFromOccupancyModel**
+    InternalFromOccupancyModel
     
         Generates internal load data from an occupancy prediction model.  This class requires a zone list in the form ["Zone Name 1", "Zone Name 2", "Zone Name 3"], a list of numeric values representing the loads per person in the form [Convective, Radiative, Latent] for each zone and collected in a list, the units of the indicated loads from ``mpcpy.Units.unit``, and a list of occupancy model objects with predicted occupancy, one for each zone.
 
@@ -181,7 +196,7 @@ Classes
 
 Control data may be collected using the following classes:
 
-    **ControlFromCSV**
+    ControlFromCSV
     
         Collects control data from a CSV file.  This class requires a variable map to match CSV column headers with control variable names.  The variable map is a python dictionary of the form: 
 
@@ -212,7 +227,7 @@ Classes
 
 Other input data may be collected using the following classes:
 
-    **OtherInputFromCSV**
+    OtherInputFromCSV
     
         Collect other input data from a CSV file.  This class requires a variable map to match CSV column headers with other input variable names.  The variable map is a python dictionary of the form: 
 
@@ -245,7 +260,7 @@ Classes
 
 Price data may be collected using the following classes:
 
-    **PriceFromCSV**
+    PriceFromCSV
     
         Collects price data from a CSV file.  This class requires a variable map to match CSV column headers with price variable names.  The variable map is a python dictionary of the form: 
 
@@ -284,7 +299,7 @@ Classes
 
 Constraint data may be collected using the following classes:
 
-    **ConstraintFromCSV**
+    ConstraintFromCSV
     
         Collects timeseries constraint data from a CSV file.  Static constraint data must be added by editing the data dictionary directly.  This class requires a variable map to match CSV column headers with constraint variable names.  The variable map is a python dictionary of the form: 
 
@@ -295,7 +310,7 @@ Constraint data may be collected using the following classes:
                                             mpcpy.Units.unit)}
 \
 
-    **ConstraintFromOccupancyModel**
+    ConstraintFromOccupancyModel
         
         Generates LTE, GTE, and E constraint data from an occupancy prediction model by implementing occupied and unoccupied values.  This class requires a state or control variable list in the form ["Variable Name 1", "Variable Name 2", "Variable Name 3"], a list of numeric values representing the occupied and unoccupied constraint values in the form [Occupied, Unoccupied] for each variable collected in a list, a list of constraint variable names, one for each variable, and a list of the units of the indicated numeric values from ``mpcpy.Units.unit``.
 
@@ -328,6 +343,6 @@ Classes
 
 Parameter data may be collected using the following classes:
 
-    **ParameterFromCSV**
+    ParameterFromCSV
     
         Collects parameter data from a CSV file.  The CSV file rows must be named as the parameter names and the columns must be named as the parameter variable names.

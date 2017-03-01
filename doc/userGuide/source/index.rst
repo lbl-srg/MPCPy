@@ -7,8 +7,7 @@ User Guide
 
    introduction
    gettingStarted
-   units
-   variables
+   variables_units
    exodata
    systems
    models
