@@ -104,7 +104,7 @@ class Occupancy(Model):
         # Initialize variables and model method
         self.name = 'occupancy';
         self.measurements = measurements;
-        self._occupant_presence_method = occupant_presence_method();
+        self._occupant_presence_method = occupant_presence_method(self);
         self.parameters_data = {};
         self._parse_time_zone_kwargs(kwargs);
         
@@ -337,7 +337,7 @@ class QueueModel(OccupancyMethod):
     
     '''
     
-    def __init__(self):
+    def __init__(self, Model):
         '''Constructor of an occupancy prediction object using a queueing approach.'''
         # Initialize options
         self.estimate_options = {};
@@ -346,7 +346,6 @@ class QueueModel(OccupancyMethod):
         self.estimate_options['n_max'] = 24;
         self.simulate_options = {};
         self.simulate_options['iter_num'] = 100;
-        pass;
         
     def _estimate(self, Model):
         '''Use measured occupancy data to estimate the queue model parameters.'''
@@ -485,7 +484,12 @@ class QueueModel(OccupancyMethod):
         # Specify the weekday number of each measurement point
         self.df_data_train['day'] = self.df_data_train.index.weekday;
         # Calculate the number of measurement points in a full day
-        self.points_per_day = 3600*24/Model.measurements[self.occ_key]['Sample'].get_base_data();
+        self.points_per_day = 3600*24.0/Model.measurements[self.occ_key]['Sample'].get_base_data();
+        # Check that points_per_day is whole number and convert to integer
+        if self.points_per_day.is_integer():
+            self.points_per_day = int(self.points_per_day);
+        else:
+            raise ValueError('Points per day of {} is not a whole number. Check occupancy measurement sampling rate.'.format(self.points_per_day));        
         # Isolate the measurement data for the day of interest
         df_interest = self.df_data_train[self.df_data_train['day'] == day];
         # Format isolated data for use in parameter estimation procedure
