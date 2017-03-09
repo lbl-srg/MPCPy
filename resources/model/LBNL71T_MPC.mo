@@ -737,11 +737,11 @@ package LBNL71T_MPC
   package Modules "RC modules for multi-zone building"
     model modZon
       parameter Modelica.SIunits.Area A_zon = 1;
-      parameter RapidMPC.Units.HeatCapacityCoefficient c_zon=2500
+      parameter Units.HeatCapacityCoefficient c_zon=2500
         annotation (Fixed=false);
-      parameter RapidMPC.Units.HeatCapacityCoefficient c_int=150000
+      parameter Units.HeatCapacityCoefficient c_int=150000
         annotation (Fixed=false);
-      parameter RapidMPC.Units.HeatResistanceCoefficient r_int=0.2
+      parameter Units.HeatResistanceCoefficient r_int=0.2
         annotation (Fixed=false);
       Modelica.Thermal.HeatTransfer.Components.HeatCapacitor capZon(C = c_zon*A_zon)
         annotation (Placement(transformation(extent={{-24,-14},{-4,-34}})));
@@ -808,11 +808,10 @@ package LBNL71T_MPC
 
     model modExt
       parameter Modelica.SIunits.Area A_ext = 1;
-      parameter RapidMPC.Units.HeatResistanceCoefficient r_out=0.1
+      parameter Units.HeatResistanceCoefficient r_out=0.1
         annotation (Fixed=false);
-      parameter RapidMPC.Units.HeatResistanceCoefficient r_zon=2
-        annotation (Fixed=false);
-      parameter RapidMPC.Units.HeatCapacityCoefficient c_bou=15000
+      parameter Units.HeatResistanceCoefficient r_zon=2 annotation (Fixed=false);
+      parameter Units.HeatCapacityCoefficient c_bou=15000
         annotation (Fixed=false);
       parameter Modelica.SIunits.DimensionlessRatio abs = 0.6 annotation(Fixed=false);
       parameter Modelica.SIunits.Angle til = Modelica.Constants.pi/2;
@@ -904,7 +903,7 @@ package LBNL71T_MPC
 
     model modWin
       parameter Modelica.SIunits.Area A_win = 1;
-      parameter RapidMPC.Units.HeatResistanceCoefficient r_win=0.3
+      parameter Units.HeatResistanceCoefficient r_win=0.3
         annotation (Fixed=false);
       parameter Modelica.SIunits.DimensionlessRatio g = 0.75 annotation(Fixed=false);
       parameter Modelica.SIunits.Angle til = Modelica.Constants.pi/2;
@@ -988,11 +987,11 @@ package LBNL71T_MPC
 
     model modAdj
       parameter Modelica.SIunits.Area A_adj = 1;
-      parameter RapidMPC.Units.HeatResistanceCoefficient r_adj=0.3
+      parameter Units.HeatResistanceCoefficient r_adj=0.3
         annotation (Fixed=false);
-      parameter RapidMPC.Units.HeatResistanceCoefficient r_zon=0.3
+      parameter Units.HeatResistanceCoefficient r_zon=0.3
         annotation (Fixed=false);
-      parameter RapidMPC.Units.HeatCapacityCoefficient c_bou=15000
+      parameter Units.HeatCapacityCoefficient c_bou=15000
         annotation (Fixed=false);
       Modelica.Thermal.HeatTransfer.Components.HeatCapacitor capBou(C = c_bou*A_adj)
         annotation (Placement(transformation(extent={{-10,-12},{10,-32}})));
@@ -1033,11 +1032,11 @@ package LBNL71T_MPC
 
     model modGnd
       parameter Modelica.SIunits.Area A_gnd = 1;
-      parameter RapidMPC.Units.HeatResistanceCoefficient r_out=0.3
+      parameter Units.HeatResistanceCoefficient r_out=0.3
         annotation (Fixed=false);
-      parameter RapidMPC.Units.HeatResistanceCoefficient r_zon=0.3
+      parameter Units.HeatResistanceCoefficient r_zon=0.3
         annotation (Fixed=false);
-      parameter RapidMPC.Units.HeatCapacityCoefficient c_sla=200000
+      parameter Units.HeatCapacityCoefficient c_sla=200000
         annotation (Fixed=false);
       Modelica.Thermal.HeatTransfer.Components.HeatCapacitor capSla(C = c_sla*A_gnd)
         annotation (Placement(transformation(extent={{-10,-12},{10,-32}})));
@@ -3378,5 +3377,10 @@ First implementation.
             coordinateSystem(preserveAspectRatio=false)));
     end DualSetpoint;
   end Controllers;
+
+  package Units
+    type HeatCapacityCoefficient = Real (final quantity="HeatCapacityCoefficient", final unit="J/(m2.K)");
+    type HeatResistanceCoefficient = Real (final quantity="HeatResistanceCoefficient", final unit="(m2.K)/W");
+  end Units;
   annotation (uses(Modelica(version="3.2.2"), Buildings(version="3.0.1")));
 end LBNL71T_MPC;
