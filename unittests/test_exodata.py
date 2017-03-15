@@ -39,12 +39,12 @@ class Weather_epw(TestExodata):
                               'weaHDifHor', 'weaTBlaSky', 'weaTWetBul', 'weaSolZen', \
                               'weaCloTim', 'weaSolTim'];
         # Instantiate weather object
-        self.epw_filepath = utility.getMPCPyPath()+'/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
+        self.epw_filepath = utility.get_MPCPy_path()+'/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
         self.weather = exodata.WeatherFromEPW(self.epw_filepath);
         # Get weather data
         self.weather.collect_data(self.start_time, self.final_time);
-        self.initial_ref = utility.getMPCPyPath() + '/unittests/resources/exodata_epw_dymola_out.csv';
-        self.test_ref = utility.getMPCPyPath() + '/unittests/resources/exodata_epw_ref_out.csv';
+        self.initial_ref = utility.get_MPCPy_path() + '/unittests/resources/exodata_epw_dymola_out.csv';
+        self.test_ref = utility.get_MPCPy_path() + '/unittests/resources/exodata_epw_ref_out.csv';
 
     def test_values(self):
         '''Compare the values of collected weather data to a reference.'''
@@ -92,7 +92,7 @@ class Weather_epw(TestExodata):
 class Weather_csv(TestExodata):
     '''Test the collection of weather data from a CSV file.'''
     def setUp(self):
-        self.csv_filepath = utility.getMPCPyPath()+'/resources/weather/BerkeleyCSV.csv';
+        self.csv_filepath = utility.get_MPCPy_path()+'/resources/weather/BerkeleyCSV.csv';
         self.start_time = '2016-10-19 19:53:00';
         self.final_time = '2016-10-20 06:53:00';
         self.geography = [37.8716, -122.2727];
@@ -153,7 +153,7 @@ class Weather_csv(TestExodata):
 class Internal_csv(TestExodata):
     '''Test the collection of internal data from a CSV file.'''
     def setUp(self):
-        self.csv_filepath = utility.getMPCPyPath()+'/resources/internal/sampleCSV.csv';
+        self.csv_filepath = utility.get_MPCPy_path()+'/resources/internal/sampleCSV.csv';
         self.start_time = '2015-1-1';
         self.final_time = '2015-1-2';
         self.variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
@@ -183,7 +183,7 @@ class Internal_occupancy(TestExodata):
         self.start_time_internal = '4/2/2013';
         self.final_time_internal = '4/4/2013';
         # Load occupancy models
-        with open(utility.getMPCPyPath()+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+        with open(utility.get_MPCPy_path()+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
             self.occupancy_model = pickle.load(f);
         # Define zones and loads
         self.zone_list = ['wes', 'hal', 'eas'];
@@ -207,7 +207,7 @@ class Internal_occupancy(TestExodata):
 class Control_csv(TestExodata):
     '''Test the collection of control data from a CSV file.'''
     def setUp(self):
-        self.csv_filepath = utility.getMPCPyPath()+'/resources/building/ControlCSV_0.csv';
+        self.csv_filepath = utility.get_MPCPy_path()+'/resources/building/ControlCSV_0.csv';
         self.start_time = '1/1/2015 13:00:00';
         self.final_time = '1/2/2015';
         self.variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
@@ -226,7 +226,7 @@ class Control_csv(TestExodata):
 class OtherInput_csv(TestExodata):
     '''Test the collection of other input data from a CSV file.'''
     def setUp(self):
-        self.csv_filepath = utility.getMPCPyPath()+'/resources/weather/Tamb.csv';
+        self.csv_filepath = utility.get_MPCPy_path()+'/resources/weather/Tamb.csv';
         self.start_time = '1/1/2015 00:00:00';
         self.final_time = '1/1/2015 02:00:00';
         self.variable_map = {'T' : ('Tamb', units.degC)};
@@ -243,7 +243,7 @@ class OtherInput_csv(TestExodata):
 class Parameters_csv(TestExodata):
     '''Test the collection of parameter data from a CSV file.'''
     def setUp(self):
-        self.csv_filepath = utility.getMPCPyPath()+'/resources/model/LBNL71T_Parameters.csv';
+        self.csv_filepath = utility.get_MPCPy_path()+'/resources/model/LBNL71T_Parameters.csv';
         # Instantiate weather object
         self.parameters = exodata.ParameterFromCSV(self.csv_filepath);
         # Get coefficient data
@@ -256,7 +256,7 @@ class Parameters_csv(TestExodata):
 class Constraint_csv(TestExodata):
     '''Test the collection of constraint data from a CSV file.'''
     def setUp(self):
-        self.csv_filepath = utility.getMPCPyPath()+'/resources/optimization/sampleConstraintCSV_Setback.csv';
+        self.csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/sampleConstraintCSV_Setback.csv';
         self.start_time = '1/1/2015 13:00:00';
         self.final_time = '1/2/2015';
         self.variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
@@ -289,7 +289,7 @@ class Constraint_occupancy(TestExodata):
         self.start_time_internal = '3/2/2012';
         self.final_time_internal = '3/4/2012';
         # Load occupancy models
-        with open(utility.getMPCPyPath()+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+        with open(utility.get_MPCPy_path()+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
             self.occupancy_model = pickle.load(f);
         # Define state variables and values
         self.state_variable_list = ['wesTdb', 'wesTdb', 'easTdb', 'easTdb', 'halTdb', 'halTdb'];
@@ -312,7 +312,7 @@ class Constraint_occupancy(TestExodata):
 class Price_csv(TestExodata):
     '''Test the collection of control data from a CSV file.'''
     def setUp(self):
-        self.csv_filepath = utility.getMPCPyPath()+'/resources/optimization/PriceCSV.csv';
+        self.csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/PriceCSV.csv';
         self.start_time = '1/1/2015 13:00:00';
         self.final_time = '1/2/2015';
         self.variable_map = {'pi_e' : ('pi_e', units.unit1)};
@@ -329,7 +329,7 @@ class Price_csv(TestExodata):
 class Source(unittest.TestCase):
     '''Test the general methods of a Source object.'''
     def setUp(self):
-        self.epw_filepath = utility.getMPCPyPath()+'/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
+        self.epw_filepath = utility.get_MPCPy_path()+'/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
         self.weather = exodata.WeatherFromEPW(self.epw_filepath);
     def test_set_time_interval(self):
         '''Test this method sets the time metrics properly in the exodata source.'''

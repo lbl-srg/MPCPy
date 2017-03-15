@@ -20,7 +20,7 @@ import os
 class Estimate_Jmo(unittest.TestCase):
     '''Test the parameter estimation of a model using JModelica.'''
     def setUp(self):
-        self.MPCPyPath = utility.getMPCPyPath();
+        self.MPCPyPath = utility.get_MPCPy_path();
         ## Setup building fmu emulation
         self.building_source_file_path = self.MPCPyPath + '/resources/building/Examples_LBNL71T_Emulation_WithHeaters_ME1.fmu';   
         self.zone_names = ['wes', 'hal', 'eas'];
@@ -178,7 +178,7 @@ class Estimate_Jmo(unittest.TestCase):
 class Queueing(unittest.TestCase):
     def setUp(self):
         # Set path variable(s)
-        self.MPCPyPath = utility.getMPCPyPath();
+        self.MPCPyPath = utility.get_MPCPy_path();
         # Setup building measurement collection from csv
         self.csv_filepath = self.MPCPyPath+'/resources/building/OccData.csv';   
         # Measurements

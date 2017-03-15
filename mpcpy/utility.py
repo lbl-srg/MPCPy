@@ -6,7 +6,7 @@ by David Blum
 This module contains commonly used functions in the mpcpy library.
 """
 from abc import ABCMeta
-import sys
+import os
 import numpy as np
 import pandas as pd
 from pyfmi.common import core
@@ -34,7 +34,7 @@ class mpcpyPandas(object):
             df = pd.DataFrame(d).interpolate(method='linear');
         except ValueError:
             for mpcpy_ts_name in d.keys():
-                d[mpcpy_ts_name].to_frame().to_csv(getMPCPyPath() + '/' + mpcpy_ts_name);
+                d[mpcpy_ts_name].to_frame().to_csv(get_MPCPy_path() + '/' + mpcpy_ts_name);
         return df
     
     def dataframe_to_mpcpy_ts_variable(self, df, key, varname, unit, **kwargs):
@@ -371,13 +371,19 @@ class DAQ(object):
     
         
 #%% Get the MPCPy path
-def getMPCPyPath():
-    '''Get the MPCPy path.'''
-    for directory in sys.path:
-        if 'MPCPy' == directory[-5:]:
-            MPCPyPath = directory;
-            break
-    return MPCPyPath
+def get_MPCPy_path():
+    '''Get the MPCPy home path.
+
+    Returns
+    -------
+    MPCPy_path : string
+        Absolute path to the MPCPy home directory.
+
+    '''
+    
+    rel_path = '/mpcpy/utility.py'
+    MPCPy_path = os.path.abspath(__file__)[:-len(rel_path)];
+    return MPCPy_path
     
 #%% Get a unit class from a unit string
 def get_unit_class_from_unit_string(unit_string):

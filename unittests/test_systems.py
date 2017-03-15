@@ -19,7 +19,7 @@ class EmulationfromFMU(unittest.TestCase):
     #%% FMU
     def setUp(self):
         # Set path variable(s)
-        self.MPCPyPath = utility.getMPCPyPath();
+        self.MPCPyPath = utility.get_MPCPy_path();
         # Simulation time
         self.start_time = '1/1/2015';
         self.final_time = '1/4/2015';
@@ -112,7 +112,7 @@ class RealfromCSV(unittest.TestCase):
     #%% CSV
     def setUp(self):
         # Set path variable(s)
-        self.MPCPyPath = utility.getMPCPyPath();
+        self.MPCPyPath = utility.get_MPCPy_path();
         # Simulation time
         self.start_time = '2/1/2013';
         self.final_time = '2/20/2013 23:55';
