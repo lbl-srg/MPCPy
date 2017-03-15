@@ -19,7 +19,7 @@ from mpcpy import units
 class Optimize_Jmo(unittest.TestCase):
     '''Tests for the optimization of a model using JModelica.'''
     def setUp(self):
-        self.MPCPyPath = utility.getMPCPyPath();
+        self.MPCPyPath = utility.get_MPCPy_path();
         ## Setup model
         self.mopath = self.MPCPyPath + '/resources/model/LBNL71T_MPC.mo';
         self.modelpath = 'LBNL71T_MPC.MPC';
