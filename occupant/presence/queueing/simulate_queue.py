@@ -54,7 +54,7 @@ def simulate_queue(maxtime,lam,mu,nstart,empty_time):
 
     # the set of accepted events
     r = np.random.uniform(0,1,arrtimes.size)
-    if empty_time == None: # if the segment does not contain the empty region
+    if empty_time is None: # if the segment does not contain the empty region
         E = arrtimes[np.where(r-lam_vec <0)]
     else:
         # with warnings.catch_warnings():
@@ -73,7 +73,7 @@ def simulate_queue(maxtime,lam,mu,nstart,empty_time):
         return jmptimes,syssize
 
     # total number of customers
-    E = np.insert(E,0,np.zeros((nstart,)))
+    E = np.insert(E,0,np.zeros((int(nstart),)))
     ntotal = E.size
     keeptimes = np.floor(E).astype(int)
 
@@ -141,4 +141,5 @@ def simulate_service_with_trunc(arrtime,mu,trunc_length):
         answer = temp[0][0]
         return answer
     except:
+        print('temp = ', temp)
         pdb.set_trace()

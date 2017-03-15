@@ -276,7 +276,22 @@ class Queueing(unittest.TestCase):
         plt.ylabel('Temperature [degC]');
         plt.xlabel('Time');
         plt.savefig(self.MPCPyPath+'/unittests/resources/occupancy_model_constraint.png');
-        plt.close();        
+        plt.close();
+        
+    def test_error_points_per_day(self):
+        '''Test occupancy prediction.'''
+        plt.close('all');
+        # Time
+        self.start_time = '3/1/2013';
+        self.final_time = '3/7/2013 23:59';        
+        # Load occupancy model
+        with open(self.MPCPyPath+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+            self.occupancy = pickle.load(f);
+        # Change occupant measurements to not be whole number in points per day
+        self.occupancy.measurements['occupancy']['Sample'] = variables.Static('occupancy_sample', 299, units.s);
+        # Estimate occupancy model parameters and expect error
+        with self.assertRaises(ValueError):
+            self.occupancy.estimate(self.start_time, self.final_time);
                                                     
     
 if __name__ == '__main__':

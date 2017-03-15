@@ -346,7 +346,6 @@ class QueueModel(OccupancyMethod):
         self.estimate_options['n_max'] = 24;
         self.simulate_options = {};
         self.simulate_options['iter_num'] = 100;
-        pass;
         
     def _estimate(self, Model):
         '''Use measured occupancy data to estimate the queue model parameters.'''
@@ -408,8 +407,7 @@ class QueueModel(OccupancyMethod):
         '''Use Monte Carlo simulation to predict an occupancy timeseries.'''
         # Set the number of simulations for the Monte Carlo 
         iter_num = self.simulate_options['iter_num'];
-        # Initialize variables
-        maxtime = self.points_per_day;   
+        # Initialize variables 
         ts_pred = pd.Series();
         ts_std = pd.Series();
         d = 0;
@@ -417,15 +415,15 @@ class QueueModel(OccupancyMethod):
         date_range = pd.date_range(Model.start_time, Model.final_time, freq = 'D');
         # Monte Carlo simulate each day of the simulation time period
         for day in date_range.weekday:
-            seg_point_added = np.concatenate((np.array([0]),self.seg_point[day], np.array([maxtime])))
-            lam_vec = np.empty((maxtime,))
+            seg_point_added = np.concatenate((np.array([0]),self.seg_point[day], np.array([self.points_per_day])))
+            lam_vec = np.empty((self.points_per_day,))
             lam_vec[:] = np.NAN
-            mu_vec = np.empty((maxtime,))
+            mu_vec = np.empty((self.points_per_day,))
             mu_vec[:] = np.NAN
             jmptimes_mc = [None]*iter_num # create an empty list of size iter_num
-            syssize_mc = np.empty((maxtime,iter_num))
+            syssize_mc = np.empty((self.points_per_day,iter_num))
             syssize_mc[:] = np.NAN
-            time_int = np.arange(maxtime)
+            time_int = np.arange(self.points_per_day)
             nstart = 0
             for i in range(len(seg_point_added)-1):
                 lam = Model.parameters_data['lam'][day]['Value'].get_base_data()[i];
@@ -433,10 +431,10 @@ class QueueModel(OccupancyMethod):
                 lam_vec[seg_point_added[i]:seg_point_added[i+1]] = lam;
                 mu_vec[seg_point_added[i]:seg_point_added[i+1]] = mu;
             for iter_idx in range(iter_num):
-                jmptimes, syssize = simulate_queue(maxtime, lam_vec, mu_vec, nstart, self.empty_time[day])
+                jmptimes, syssize = simulate_queue(self.points_per_day, lam_vec, mu_vec, nstart, self.empty_time[day])
                 if syssize is None:
                     jmptimes_mc[iter_idx] = None
-                    syssize_mc[:, iter_idx] = np.zeros((maxtime,))
+                    syssize_mc[:, iter_idx] = np.zeros((self.points_per_day,))
                     continue
                 if np.any(syssize <0):
                     pdb.set_trace()
@@ -485,7 +483,12 @@ class QueueModel(OccupancyMethod):
         # Specify the weekday number of each measurement point
         self.df_data_train['day'] = self.df_data_train.index.weekday;
         # Calculate the number of measurement points in a full day
-        self.points_per_day = 3600*24/Model.measurements[self.occ_key]['Sample'].get_base_data();
+        self.points_per_day = 3600*24.0/Model.measurements[self.occ_key]['Sample'].get_base_data();
+        # Check that points_per_day is whole number and convert to integer
+        if self.points_per_day.is_integer():
+            self.points_per_day = int(self.points_per_day);
+        else:
+            raise ValueError('Points per day of {} is not a whole number. Check occupancy measurement sampling rate.'.format(self.points_per_day));      
         # Isolate the measurement data for the day of interest
         df_interest = self.df_data_train[self.df_data_train['day'] == day];
         # Format isolated data for use in parameter estimation procedure
