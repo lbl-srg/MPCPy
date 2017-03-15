@@ -104,7 +104,7 @@ class Occupancy(Model):
         # Initialize variables and model method
         self.name = 'occupancy';
         self.measurements = measurements;
-        self._occupant_presence_method = occupant_presence_method(self);
+        self._occupant_presence_method = occupant_presence_method();
         self.parameters_data = {};
         self._parse_time_zone_kwargs(kwargs);
         
@@ -337,7 +337,7 @@ class QueueModel(OccupancyMethod):
     
     '''
     
-    def __init__(self, Model):
+    def __init__(self):
         '''Constructor of an occupancy prediction object using a queueing approach.'''
         # Initialize options
         self.estimate_options = {};
