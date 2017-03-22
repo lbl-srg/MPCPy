@@ -333,10 +333,12 @@ class RMSE(Validate):
 class QueueModel(OccupancyMethod):
     '''Occupant presence prediction based on a queueing approach.
     
-    Based on Jia and Spanos et al. (2017).
+    Based on Jia, R. and C. Spanos (2016). "Occupancy modelling in shared 
+    spaces of buildings: a queueing approach." Journal of Building Performance 
+    Simulation. DOI: 10.1080/19401493.2016.1267802.
     
     '''
-    
+
     def __init__(self):
         '''Constructor of an occupancy prediction object using a queueing approach.'''
         # Initialize options
