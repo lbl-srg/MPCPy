@@ -67,8 +67,8 @@ class Estimate_Jmo(unittest.TestCase):
         self.parameters.data['lat'] = {};
         self.parameters.data['lat']['Value'] = self.weather.lat;    
         # Instantiate building
-        self.building = systems.EmulationFromFMU(self.building_source_file_path, \
-                                                 self.measurements, \
+        self.building = systems.EmulationFromFMU(self.measurements, \
+                                                 fmupath = self.building_source_file_path, \
                                                  zone_names = self.zone_names, \
                                                  parameter_data = self.parameters.data);
                                                  

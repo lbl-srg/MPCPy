@@ -18,6 +18,7 @@ from tzwhere import tzwhere
 from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
 from pyfmi import load_fmu
+from pymodelica import compile_fmu
 
 #%%
 class mpcpyPandas(object):
@@ -194,7 +195,22 @@ class FMU(mpcpyPandas):
     def _create_input_object_from_input_mpcpy_ts_list(self, input_mpcpy_ts_list):
         '''Create an input object for a list of mpcpy timeseries for input into fmu.'''
         self.input_df = self.mpcpy_ts_list_to_dataframe(input_mpcpy_ts_list);
-        self.input_object = self.dataframe_to_input_object(self.input_df[self.start_time_utc:self.final_time_utc]);   
+        self.input_object = self.dataframe_to_input_object(self.input_df[self.start_time_utc:self.final_time_utc]);
+    
+    def _create_fmu(self, kwargs):
+        '''Store FMU or compile FMU and store from Modelica code.'''
+        if 'fmupath' in kwargs:
+            self.fmupath = kwargs['fmupath'];
+            self.mopath = None;
+            self.modelpath = None
+            self.libraries = None;
+        if 'moinfo' in kwargs:
+            self.mopath = kwargs['moinfo'][0];
+            self.modelpath = kwargs['moinfo'][1];
+            self.libraries = kwargs['moinfo'][2];
+            self.fmupath = compile_fmu(self.modelpath, \
+                                       self.mopath, \
+                                       compiler_options = {'extra_lib_dirs':self.libraries});        
         
     def dataframe_to_input_object(self, df):
         '''Create an input object for an fmu simulated in Jmodelica.'''
