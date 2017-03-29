@@ -58,10 +58,10 @@ class Real(System):
 #%% Source implementations
 class EmulationFromFMU(Emulation, utility.FMU):
     ''' A system source interface for an fmu source.'''
-    def __init__(self, file_path, measurements, **kwargs):
+    def __init__(self, measurements, **kwargs):
         ''' Constructor of a system fmu simulation source.'''
         self.name = 'emulation_from_fmu';
-        self.fmupath = file_path;
+        self._create_fmu(kwargs);
         self.measurements = measurements
         self.input_names = self.get_input_names();        
         self._parse_building_kwargs(kwargs);

@@ -26,7 +26,6 @@ from occupant.presence.queueing.parameter_inference_given_segments import parame
 from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
-from pymodelica import compile_fmu
 
 #%% Model Class
 class Model(utility.mpcpyPandas):
@@ -48,18 +47,7 @@ class Modelica(Model, utility.FMU, utility.Building):
     def __init__(self, estimate_method, validate_method, measurements, **kwargs):
         self.name = 'modelica';    
         self.measurements = measurements;
-        if 'fmupath' in kwargs:
-            self.fmupath = kwargs['fmupath'];
-            self.mopath = None;
-            self.modelpath = None
-            self.libraries = None;
-        if 'moinfo' in kwargs:
-            self.mopath = kwargs['moinfo'][0];
-            self.modelpath = kwargs['moinfo'][1];
-            self.libraries = kwargs['moinfo'][2];
-            self.fmupath = compile_fmu(self.modelpath, \
-                                       self.mopath, \
-                                       compiler_options = {'extra_lib_dirs':self.libraries});
+        self._create_fmu(kwargs);
         self.input_names = self.get_input_names();                                       
         self._estimate_method = estimate_method(self);
         self._validate_method = validate_method(self);

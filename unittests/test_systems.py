@@ -60,8 +60,8 @@ class EmulationfromFMU(unittest.TestCase):
         self.parameter_data['lat']['Value'] = self.weather.lat;
         
         # Instantiate building source
-        self.building = systems.EmulationFromFMU(self.building_source_file_path, \
-                                                 self.measurements, \
+        self.building = systems.EmulationFromFMU(self.measurements, \
+                                                 fmupath = self.building_source_file_path, \
                                                  zone_names = self.zone_names, \
                                                  weather_data = self.weather.data, \
                                                  internal_data = self.internal.data, \
