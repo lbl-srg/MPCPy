@@ -14,7 +14,7 @@ from mpcpy import systems
 
 
 #%% General methods test
-class Units(unittest.TestCase):
+class EmulationFromFMU(unittest.TestCase):
     def setUp(self):
         self.parameter_data = {};
         self.parameter_data['par'] = {};
@@ -34,6 +34,15 @@ class Units(unittest.TestCase):
         self.assertEqual(self.building.parameter_data['par']['Free'].get_base_data(), 0);
     def tearDown(self):
         os.remove('RapidMPC_Examples_LBNL71T_0Emulate_Emulation_log.txt');
+        
+class FmuInteractions(unittest.TestCase):
+    def test_get_input_names(self):
+        self.building = systems.EmulationFromFMU({}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}));
+        self.assertEqual(self.building.input_names, ['Tamb']);
+        print(self.building.input_names);
+    def test_get_parameter_names(self):
+        self.building = systems.EmulationFromFMU({}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}));
+        print(self.building.parameter_names);
         
 if __name__ == '__main__':
     unittest.main()
