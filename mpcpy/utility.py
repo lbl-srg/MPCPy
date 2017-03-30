@@ -211,7 +211,8 @@ class FMU(mpcpyPandas):
             self.libraries = kwargs['moinfo'][2];
             self.fmupath = compile_fmu(self.modelpath, \
                                        self.mopath, \
-                                       compiler_options = {'extra_lib_dirs':self.libraries});        
+                                       compiler_options = {'extra_lib_dirs':self.libraries});
+        self.fmu = load_fmu(self.fmupath);
         
     def dataframe_to_input_object(self, df):
         '''Create an input object for an fmu simulated in Jmodelica.'''
@@ -225,15 +226,8 @@ class FMU(mpcpyPandas):
                           
     def get_input_names(self):
         '''Get the names of the input variables of an fmu.'''
-        fmu = load_fmu(self.fmupath);
-        input_names = fmu.get_model_variables(causality = 0).keys();
+        input_names = self.fmu.get_model_variables(causality = 0).keys();
         return input_names;
-        
-    def get_parameter_names(self):
-        '''Get the names of the parameters the fmu.'''
-        fmu = load_fmu(self.fmupath);
-        parameter_names = fmu.get_model_variables(causality = 0).keys();
-        return parameter_names;
         
     def get_fmu_variable_units(self):
         '''Get fmu model variable units.'''
