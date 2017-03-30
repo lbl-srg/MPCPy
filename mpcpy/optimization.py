@@ -141,12 +141,17 @@ class JModelica(Package, utility.FMU):
                 self.mopfile.write(line);
         mofile.close();                
         # Add initialization model to package.mop (must be same name as model in optimization)
+        
         self.mopfile.write('\n');
         self.mopfile.write('  model ' + self.Model.modelpath.split('.')[-1] + '_initialize\n');
         self.mopfile.write('    ' + self.Model.modelpath.split('.')[-1] + ' mpc_model(\n');
-        for key in self.Model.parameter_data.keys()[:-1]:
-            self.mopfile.write('     ' + key + '=' + str(self.Model.parameter_data[key]['Value'].get_base_data()) + ',\n');
-        self.mopfile.write('     ' + self.Model.parameter_data.keys()[-1] + '=' + str(self.Model.parameter_data[self.Model.parameter_data.keys()[-1]]['Value'].get_base_data()) + ');\n');
+        # Add parameters if they exist
+        if self.Model.parameter_data:
+            for key in self.Model.parameter_data.keys()[:-1]:
+                self.mopfile.write('     ' + key + '=' + str(self.Model.parameter_data[key]['Value'].get_base_data()) + ',\n');
+            self.mopfile.write('     ' + self.Model.parameter_data.keys()[-1] + '=' + str(self.Model.parameter_data[self.Model.parameter_data.keys()[-1]]['Value'].get_base_data()) + ');\n');
+        else:
+            self.mopfile.write(');\n');
         # Instantiate optimization model inputs
         for key in self.Model.input_names:
             self.mopfile.write('    input Real ' + key + '= mpc_model.' + key + ';\n');
@@ -205,8 +210,9 @@ class JModelica(Package, utility.FMU):
                     self.mopfile.write('    mpc_model.' + key + '(startTime)=mpc_model.' + key + '(finalTime);\n');                   
         # End optimization portion of package.mop
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_optimize;\n');
-        # End package.mop and save    
+        # End package.mop and save
         self.mopfile.write('end ' + self.Model.modelpath.split('.')[0] + ';\n'); 
+            
         # Close files
         self.mopfile.close();      
         

@@ -118,10 +118,11 @@ class FMU(mpcpyPandas):
         self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list);       
         # Load simulation fmu  
         simulate_model = load_fmu(self.fmupath);
-        # Set parameters in fmu
-        for key in self.parameter_data.keys():
-            if not self.parameter_data[key]['Free'].get_base_data():
-                simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
+        # Set parameters in fmu if they exist
+        if self.Model.parameter_data:
+            for key in self.parameter_data.keys():
+                if not self.parameter_data[key]['Free'].get_base_data():
+                    simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
         # Get minimum measurement sample rate for simulation
         min_sample = 3600;
         for key in self.measurements.keys():
@@ -225,8 +226,14 @@ class FMU(mpcpyPandas):
     def get_input_names(self):
         '''Get the names of the input variables of an fmu.'''
         fmu = load_fmu(self.fmupath);
-        input_names = fmu.get_model_variables(include_alias = False, variability = None, causality = 0).keys();
+        input_names = fmu.get_model_variables(causality = 0).keys();
         return input_names;
+        
+    def get_parameter_names(self):
+        '''Get the names of the parameters the fmu.'''
+        fmu = load_fmu(self.fmupath);
+        parameter_names = fmu.get_model_variables(causality = 0).keys();
+        return parameter_names;
         
     def get_fmu_variable_units(self):
         '''Get fmu model variable units.'''
