@@ -209,9 +209,14 @@ class FMU(mpcpyPandas):
             self.mopath = kwargs['moinfo'][0];
             self.modelpath = kwargs['moinfo'][1];
             self.libraries = kwargs['moinfo'][2];
+            if 'version' in kwargs:
+                version = kwargs['version'];
+            else:
+                version = '2.0';
             self.fmupath = compile_fmu(self.modelpath, \
                                        self.mopath, \
-                                       compiler_options = {'extra_lib_dirs':self.libraries});
+                                       compiler_options = {'extra_lib_dirs':self.libraries}, 
+                                       version = version);
         self.fmu = load_fmu(self.fmupath);
         
     def dataframe_to_input_object(self, df):
@@ -226,7 +231,14 @@ class FMU(mpcpyPandas):
                           
     def get_input_names(self):
         '''Get the names of the input variables of an fmu.'''
-        input_names = self.fmu.get_model_variables(causality = 0).keys();
+        fmu_version = self.fmu.get_version();
+        if fmu_version == '1.0':
+            input_names = self.fmu.get_model_variables(causality = 0).keys();
+        elif fmu_version == '2.0':
+            input_names = self.fmu.get_model_variables(causality = 2).keys();
+        else:
+            raise TypeError ('fmu version {0} is not compatable.'.format(fmu_version));
+
         return input_names;
         
     def get_fmu_variable_units(self):

@@ -64,7 +64,6 @@ class EmulationFromFMU(Emulation, utility.FMU):
         self._create_fmu(kwargs);
         self.measurements = measurements
         self.input_names = self.get_input_names();
-        self.parameter_names = self.get_parameter_names();
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
         

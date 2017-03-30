@@ -11,10 +11,10 @@ import os
 from mpcpy import utility
 from mpcpy import units
 from mpcpy import systems
-
+from mpcpy import models
 
 #%% General methods test
-class EmulationFromFMU(unittest.TestCase):
+class TestEmulationFromFMU(unittest.TestCase):
     def setUp(self):
         self.parameter_data = {};
         self.parameter_data['par'] = {};
@@ -30,19 +30,27 @@ class EmulationFromFMU(unittest.TestCase):
     def test_get_unit_class_from_unit_string(self):
         unit_class = utility.get_unit_class_from_unit_string('(m2.K)/W');
         self.assertIs(unit_class, units.m2K_W);
-    def test_parameter_check(self):
+    def test_free_parameter_check(self):
         self.assertEqual(self.building.parameter_data['par']['Free'].get_base_data(), 0);
     def tearDown(self):
         os.remove('RapidMPC_Examples_LBNL71T_0Emulate_Emulation_log.txt');
         
-class FmuInteractions(unittest.TestCase):
-    def test_get_input_names(self):
+class TestGetInputNames(unittest.TestCase):
+    def test_fmi_default(self):
         self.building = systems.EmulationFromFMU({}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}));
         self.assertEqual(self.building.input_names, ['Tamb']);
-        print(self.building.input_names);
-    def test_get_parameter_names(self):
-        self.building = systems.EmulationFromFMU({}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}));
-        print(self.building.parameter_names);
+        self.model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}));
+        self.assertEqual(self.model.input_names, ['Tamb']);        
+    def test_fmi_1_0(self):
+        self.building = systems.EmulationFromFMU({}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}), version = '1.0');
+        self.assertEqual(self.building.input_names, ['Tamb']);
+        self.model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}), version = '1.0');
+        self.assertEqual(self.model.input_names, ['Tamb']);             
+    def test_fmi_2_0(self):
+        self.building = systems.EmulationFromFMU({}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}), version = '2.0');
+        self.assertEqual(self.building.input_names, ['Tamb']);
+        self.model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}), version = '2.0');
+        self.assertEqual(self.model.input_names, ['Tamb']);
         
 if __name__ == '__main__':
     unittest.main()
