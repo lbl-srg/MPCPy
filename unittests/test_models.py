@@ -16,13 +16,47 @@ from matplotlib import pyplot as plt
 import pickle
 import os
 
-#%% Temperature tests
+#%%
+class SimpleRC(unittest.TestCase):
+    '''Test simple model simulate and optimization functions.'''
+    def setUp(self):
+        self.start_time = '1/1/2017';
+        self.final_time = '1/2/2017';
+        self.MPCPyPath = utility.get_MPCPy_path();
+        # Set model paths
+        mopath = self.MPCPyPath+'resources/model/Simple.mo';
+        modelpath = 'Simple.RC';
+        # Gather inputs
+        input_csv_filepath = self.MPCPyPath+'resources/model/SimpleRC_Input.csv';
+        variable_map = {'q_flow' : ('q_flow', units.W)};
+        self.other_input = exodata.OtherInputFromCSV(input_csv_filepath, variable_map);
+        self.other_input.collect_data(self.start_time, self.final_time);
+        # Set measurements
+        self.measurements = {};
+        self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}), \
+                                     other_inputs = self.other_input.data);
+    def test_simulate(self):
+        self.model.simulate(self.start_time, self.final_time);
+        plt.figure(1)
+        self.model.measurements['T_db']['Simulated'].display_data().plot();
+        quantity = self.model.measurements['T_db']['Simulated'].quantity_name;
+        unit_name = self.model.measurements['T_db']['Simulated'].display_unit.name;
+        plt.ylabel(quantity + ' [' + unit_name + ']');
+        plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_simulation' + '.png');
+        plt.close();
+
+#%%    
 class Estimate_Jmo(unittest.TestCase):
     '''Test the parameter estimation of a model using JModelica.'''
     def setUp(self):
         self.MPCPyPath = utility.get_MPCPy_path();
         ## Setup building fmu emulation
-        self.building_source_file_path = self.MPCPyPath + '/resources/building/Examples_LBNL71T_Emulation_WithHeaters_ME1.fmu';   
+        self.building_source_file_path = self.MPCPyPath + '/resources/building/Examples_LBNL71T_Emulation_WithHeaters_ME1.fmu';
         self.zone_names = ['wes', 'hal', 'eas'];
         self.weather_path = self.MPCPyPath + '/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
         self.internal_path = self.MPCPyPath + '/resources/internal/sampleCSV.csv';
@@ -173,7 +207,7 @@ class Estimate_Jmo(unittest.TestCase):
             for key in self.model.RMSE.keys():
                 f.write(str(key) + ',' + str(self.model.RMSE[key].display_data()) + ',' + self.model.RMSE[key].display_unit.name);
                 f.write('\n');
-                
+         
 #%% Occupancy tests
 class Queueing(unittest.TestCase):
     def setUp(self):

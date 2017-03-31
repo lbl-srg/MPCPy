@@ -36,19 +36,27 @@ class TestEmulationFromFMU(unittest.TestCase):
         os.remove('RapidMPC_Examples_LBNL71T_0Emulate_Emulation_log.txt');
 
 class TestFMIVersionDefault(unittest.TestCase):
+    def setUp(self):
+        self.mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
+        self.modelpath = 'Simple.RC';
+        
     def test_fmi_default(self):
-        building = systems.EmulationFromFMU({}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}));
+        building = systems.EmulationFromFMU({}, moinfo = (self.mopath, self.modelpath, {}));
         self.assertEqual(building.fmu.get_version(), '2.0');
-        model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}));
+        model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}));
         self.assertEqual(model.fmu.get_version(), '2.0');
         
 class TestGetInputNames(unittest.TestCase):
+    def setUp(self):
+        self.mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
+        self.modelpath = 'Simple.RC';
+        
     def test_fmi_version(self):
         for version in ['1.0', '2.0']:
-            building = systems.EmulationFromFMU({}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}), version = version);
-            self.assertEqual(building.input_names, ['Tamb']);
-            model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (utility.get_MPCPy_path()+'/resources/model/SimpleRC.mo', 'SimpleRC', {}), version = version);
-            self.assertEqual(model.input_names, ['Tamb']);
+            building = systems.EmulationFromFMU({}, moinfo = (self.mopath, self.modelpath, {}), version = version);
+            self.assertEqual(building.input_names, ['q_flow']);
+            model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}), version = version);
+            self.assertEqual(model.input_names, ['q_flow']);
 
 if __name__ == '__main__':
     unittest.main()

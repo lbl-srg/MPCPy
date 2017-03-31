@@ -15,6 +15,59 @@ from mpcpy import utility
 from mpcpy import variables
 from mpcpy import units
 
+#%%
+class SimpleRC(unittest.TestCase):
+    '''Test simple model optimization functions.'''
+    def setUp(self):
+        self.start_time = '1/1/2017';
+        self.final_time = '1/2/2017';
+        self.MPCPyPath = utility.get_MPCPy_path();
+        # Set model paths
+        mopath = utility.get_MPCPy_path()+'resources/model/Simple.mo';
+        modelpath = 'Simple.RC';
+        # Gather inputs
+        control_csv_filepath = utility.get_MPCPy_path()+'resources/model/SimpleRC_Input.csv';
+        control_variable_map = {'q_flow' : ('q_flow', units.W)};
+        self.controls = exodata.OtherInputFromCSV(control_csv_filepath, control_variable_map);
+        self.controls.collect_data(self.start_time, self.final_time);
+        # Set measurements
+        self.measurements = {};
+        self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}), \
+                                     control_data = self.controls.data);
+        # Gather constraints       
+        constraint_csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/SimpleRC_Constraints.csv';
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'GTE', units.K), \
+                                   'T_db_max' : ('T_db', 'LTE', units.K)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time, self.final_time);
+        self.constraints.data['T_db']['Initial'] = variables.Static('T_db_start', 295, units.K);
+        # Instantiate optimization problem
+        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyMin, optimization.JModelica, 'q_flow', constraint_data = self.constraints.data);
+        
+    def test_optimize(self):
+        self.opt_problem.optimize(self.start_time, self.final_time);
+        plt.figure(1)
+        self.model.measurements['T_db']['Simulated'].display_data().plot();
+        quantity = self.model.measurements['T_db']['Simulated'].quantity_name;
+        unit_name = self.model.measurements['T_db']['Simulated'].display_unit.name;
+        plt.ylabel(quantity + ' [' + unit_name + ']');
+        plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_optimization_T_db' + '.png');
+        plt.close();
+        
+        plt.figure(1)
+        self.model.control_data['q_flow'].display_data().plot();
+        quantity = self.model.control_data['q_flow'].quantity_name;
+        unit_name = self.model.control_data['q_flow'].display_unit.name;
+        plt.ylabel(quantity + ' [' + unit_name + ']');
+        plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_optimization_q_flow' + '.png');
+        plt.close();
+        
 #%% Temperature tests
 class Optimize_Jmo(unittest.TestCase):
     '''Tests for the optimization of a model using JModelica.'''
