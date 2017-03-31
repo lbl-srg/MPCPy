@@ -12,6 +12,7 @@ import pandas as pd
 from pyfmi.common import core
 from pyfmi.common import xmlparser
 import inspect
+import sets
 from mpcpy import variables
 from mpcpy import units
 from tzwhere import tzwhere
@@ -19,6 +20,7 @@ from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
 from pyfmi import load_fmu
 from pymodelica import compile_fmu
+
 
 #%%
 class mpcpyPandas(object):
@@ -118,10 +120,11 @@ class FMU(mpcpyPandas):
         self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list);       
         # Load simulation fmu  
         simulate_model = load_fmu(self.fmupath);
-        # Set parameters in fmu
-        for key in self.parameter_data.keys():
-            if not self.parameter_data[key]['Free'].get_base_data():
-                simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
+        # Set parameters in fmu if they exist
+        if self.parameter_data:
+            for key in self.parameter_data.keys():
+                if not self.parameter_data[key]['Free'].get_base_data():
+                    simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
         # Get minimum measurement sample rate for simulation
         min_sample = 3600;
         for key in self.measurements.keys():
@@ -208,9 +211,15 @@ class FMU(mpcpyPandas):
             self.mopath = kwargs['moinfo'][0];
             self.modelpath = kwargs['moinfo'][1];
             self.libraries = kwargs['moinfo'][2];
+            if 'version' in kwargs:
+                version = kwargs['version'];
+            else:
+                version = '2.0';
             self.fmupath = compile_fmu(self.modelpath, \
                                        self.mopath, \
-                                       compiler_options = {'extra_lib_dirs':self.libraries});        
+                                       compiler_options = {'extra_lib_dirs':self.libraries}, 
+                                       version = version);
+        self.fmu = load_fmu(self.fmupath);
         
     def dataframe_to_input_object(self, df):
         '''Create an input object for an fmu simulated in Jmodelica.'''
@@ -224,8 +233,14 @@ class FMU(mpcpyPandas):
                           
     def get_input_names(self):
         '''Get the names of the input variables of an fmu.'''
-        fmu = load_fmu(self.fmupath);
-        input_names = fmu.get_model_variables(include_alias = False, variability = None, causality = 0).keys();
+        fmu_version = self.fmu.get_version();
+        if fmu_version == '1.0':
+            input_names = self.fmu.get_model_variables(causality = 0).keys();
+        elif fmu_version == '2.0':
+            input_names = self.fmu.get_model_variables(causality = 2).keys();
+        else:
+            raise TypeError ('fmu version {0} is not compatable.'.format(fmu_version));
+
         return input_names;
         
     def get_fmu_variable_units(self):
