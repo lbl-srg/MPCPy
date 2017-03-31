@@ -1,10 +1,8 @@
 within ;
 model SimpleRC "A simple RC network for example purposes"
-   parameter Real C = 1e5 "Thermal capacitance of capacitor";
-   parameter Real R = 0.001 "Thermal resistance of resistor";
-  Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor(C=C)
+  Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor
     annotation (Placement(transformation(extent={{-10,0},{10,20}})));
-  Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor(R=R)
+  Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor
     annotation (Placement(transformation(extent={{-40,-10},{-20,10}})));
   Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature
     prescribedTemperature
