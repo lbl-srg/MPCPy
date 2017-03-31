@@ -12,6 +12,7 @@ import pandas as pd
 from pyfmi.common import core
 from pyfmi.common import xmlparser
 import inspect
+import sets
 from mpcpy import variables
 from mpcpy import units
 from tzwhere import tzwhere
@@ -19,6 +20,7 @@ from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
 from pyfmi import load_fmu
 from pymodelica import compile_fmu
+
 
 #%%
 class mpcpyPandas(object):
@@ -119,7 +121,7 @@ class FMU(mpcpyPandas):
         # Load simulation fmu  
         simulate_model = load_fmu(self.fmupath);
         # Set parameters in fmu if they exist
-        if self.Model.parameter_data:
+        if self.parameter_data:
             for key in self.parameter_data.keys():
                 if not self.parameter_data[key]['Free'].get_base_data():
                     simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
