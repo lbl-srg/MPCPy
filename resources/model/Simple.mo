@@ -16,7 +16,7 @@ package Simple "A package containing simple examples"
     Modelica.Blocks.Interfaces.RealOutput T_db
       "Absolute temperature as output signal"
       annotation (Placement(transformation(extent={{100,0},{120,20}})));
-    Modelica.Blocks.Interfaces.RealInput q_flow
+    Modelica.Blocks.Interfaces.RealInput q_flow(unit="W")
       annotation (Placement(transformation(extent={{-140,-50},{-100,-10}})));
     Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor(C=1e5)
       annotation (Placement(transformation(extent={{20,10},{40,30}})));
