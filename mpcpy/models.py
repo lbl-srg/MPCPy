@@ -184,21 +184,24 @@ class Validate(utility.mpcpyPandas):
     def plot_simple(self,Model,validate_filename):
         self.plot = {};
         i = 0;
+        colors = ['g', 'b', 'r']
         for key in Model.measurements.keys():
-            self.plot[key] = plt.figure(i);
-            measurement = Model.measurements[key]['Measured'];
-            estimated_measurement = Model.measurements[key]['Simulated'];
-            measurement.display_data(tz_name = Model.tz_name)[Model.start_time:Model.final_time].plot( \
-                   label = key+'_measured', linewidth = 2.0, linestyle = '-', rot = 90);
-            estimated_measurement.display_data()[Model.start_time:Model.final_time].plot( \
-                   label = key+'_estimated', linewidth = 2.0, linestyle = '--', rot = 90);
-            plt.legend();
-            plt.xlabel('Time (hr)');
-            yname = measurement.quantity_name;
-            yunit = measurement.get_display_unit_name();
-            plt.ylabel(yname + ' [' + yunit + ']');
-            plt.rcParams.update({'font.size': 16});
-            i = i + 1; 
+            if Model.measurements[key]['Measured'].quantity_name == 'Temperature':
+                measurement = Model.measurements[key]['Measured'];
+                measurement.set_display_unit(units.degC);                
+                estimated_measurement = Model.measurements[key]['Simulated'];
+                estimated_measurement.set_display_unit(units.degC);    
+                measurement.display_data(tz_name = Model.tz_name)[Model.start_time:Model.final_time].plot( \
+                       label = key+'_measured', linewidth = 2.0, linestyle = '-', rot = 90, color = colors[i]);
+                estimated_measurement.display_data()[Model.start_time:Model.final_time].plot( \
+                       label = key+'_estimated', linewidth = 2.0, linestyle = '--', rot = 90, color = colors[i]);
+                plt.xlabel('Time (hr)');
+                yname = measurement.quantity_name;
+                yunit = measurement.get_display_unit_name();
+                plt.ylim([8,22]);
+                plt.ylabel(yname + ' [' + yunit + ']');
+                plt.rcParams.update({'font.size': 16});
+                i = i + 1; 
         plt.savefig(validate_filename + '_.png');
 
 #%% OccupancyModelMethod Interface
