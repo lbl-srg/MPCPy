@@ -4,8 +4,7 @@ exodata.py
 by David Blum
 
 This module contains the classes and interfaces required for collecting 
-exogenous data and converting it into a form that is useable throughout the
-the mpcpy library.
+exogenous data and converting it into a form that is useable throughout MPCPy.
 
 """
 
@@ -42,42 +41,42 @@ class Type(utility.mpcpyPandas):
 class Weather(Type, utility.FMU):
     '''Interface for obtaining weather-related Exogenous data from a source.
         
-        To standardize data transfer within mpcpy, the returned weather data 
-        should be saved into a dictionary with the following format:
-        
-        {
-        'Variable Name' : Timeseries mpcpy.Variable 
-        }
+    To standardize data transfer within mpcpy, the returned weather data 
+    should be saved into a dictionary with the following format:
+    
+    {
+    'Variable Name' : Timeseries mpcpy.Variable 
+    }
 
-        In addition, the weather dictionary should only contain a subset from
-        the following Key Name list:
-        
-        ['weaPAtm', 'weaTDewPoi', 'weaTDryBul', 'weaRelHum', 'weaNOpa', 
-         'weaCelHei',  'weaNTot', 'weaWinSpe', 'weaWinDir', 'weaHHorIR', 
-         'weaHDirNor', 'weaHGloHor', 'weaHDifHor', 'weaIAveHor', 'weaIDirNor', 
-         'weaIDifHor', 'weaZLum', 'weaTBlaSky', 'weaTWetBul', 'weaSolZen', 
-         'weaCloTim', 'weaSolTim', 'weaTGnd']
-     
-        
-        'weaTGnd' is an exception to the dictionary format rule due
-        to the possibility of different temperatures at multiple depths.  
-        Therefore, the dictionary format for 'weaTGnd' is:
+    In addition, the weather dictionary should only contain a subset from
+    the following Key Name list:
+    
+    ['weaPAtm', 'weaTDewPoi', 'weaTDryBul', 'weaRelHum', 'weaNOpa', 
+     'weaCelHei',  'weaNTot', 'weaWinSpe', 'weaWinDir', 'weaHHorIR', 
+     'weaHDirNor', 'weaHGloHor', 'weaHDifHor', 'weaIAveHor', 'weaIDirNor', 
+     'weaIDifHor', 'weaZLum', 'weaTBlaSky', 'weaTWetBul', 'weaSolZen', 
+     'weaCloTim', 'weaSolTim', 'weaTGnd']
+ 
+    
+    'weaTGnd' is an exception to the dictionary format rule due
+    to the possibility of different temperatures at multiple depths.  
+    Therefore, the dictionary format for 'weaTGnd' is:
 
-        {
-        'weaTGnd' : {
-            'Depth' : mpcpy.Variable}
-        }
+    {
+    'weaTGnd' : {
+        'Depth' : mpcpy.Variable}
+    }
 
-        ‘lat’, ‘lon’, and ‘timZon’ are Static variables while the rest are
-        Timeseries Variables.
+    ‘lat’, ‘lon’, and ‘timZon’ are Static variables while the rest are
+    Timeseries Variables.
 
-        ‘weaCloTim’, ‘weaSolTim’, ‘lat’, and ‘Direct normal radiation’ 
-        can be used as inputs into 
-        Buildings.BoundaryConditions.SolarIrradiation.DirectTiltedSurface to 
-        find the direct solar radiation incident on a façade of given azimuth
-        and tilt.
+    ‘weaCloTim’, ‘weaSolTim’, ‘lat’, and ‘Direct normal radiation’ 
+    can be used as inputs into 
+    Buildings.BoundaryConditions.SolarIrradiation.DirectTiltedSurface to 
+    find the direct solar radiation incident on a façade of given azimuth
+    and tilt.
 
-        '''        
+    '''        
 
     def display_data(self):
         '''Display data as pandas dataframe.'''
@@ -92,6 +91,7 @@ class Weather(Type, utility.FMU):
         return df_weather;
         
     def _make_mpcpy_ts_list(self):
+        '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
         for key in self.data.keys():
             if self.data[key].variability == 'Timeseries':
@@ -107,7 +107,7 @@ class Weather(Type, utility.FMU):
                                                                  cleaning_args = self._cleaning_args);
                                                                  
     def _checkCelHei(self):
-        ''' Check and convert ceiling height data.
+        '''Check and convert ceiling height data.
         
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
@@ -127,7 +127,7 @@ class Weather(Type, utility.FMU):
         self.data['weaCelHei'] = var;
         
     def _checkPAtm(self):
-        ''' Check and convert atmospheric pressure data.
+        '''Check and convert atmospheric pressure data.
         
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
@@ -142,7 +142,7 @@ class Weather(Type, utility.FMU):
         self.data['weaPAtm'] = var;
         
     def _checkNOpa(self):
-        ''' Check and convert opaque sky data.
+        '''Check and convert opaque sky data.
         
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
@@ -166,7 +166,7 @@ class Weather(Type, utility.FMU):
         self.data['weaNOpa'] = var;
         
     def _checkNTot(self):
-        ''' Check and convert total sky coverage data.
+        '''Check and convert total sky coverage data.
         
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
@@ -190,7 +190,7 @@ class Weather(Type, utility.FMU):
         self.data['weaNTot'] = var;
         
     def _checkRelHum(self):
-        ''' Check and convert relative humidity data.
+        '''Check and convert relative humidity data.
         
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
@@ -243,6 +243,7 @@ class Weather(Type, utility.FMU):
             self.data[key] = self.measurements[key]['Simulated'];
 
     def _create_input_mpcpy_ts_list_sim(self):
+        '''Create the input list to the weather processing FMU.'''
         # Set input_object for fmu
         self._input_mpcpy_ts_list = (self.data['weaPAtm'], self.data['weaTDewPoi'], \
                                      self.data['weaTDryBul'], self.data['weaRelHum'], \
@@ -254,19 +255,21 @@ class Weather(Type, utility.FMU):
 ## Internal       
 class Internal(Type):
     '''Interface for obtaining internal-related Exogenous data from a source.
-        An object with an Internal interface must gather internal data.
+    
+    An object with an Internal interface must gather internal data.
+    
+    To standardize data transfer within mpcpy, the returned internal data 
+    should be saved into a dictionary with the following format:   
+    
+    {
+    “ZoneName” : {
+        “intCon” : Timeseries mpcpy.Variable,
+        “intRad” : Timeseries mpcpy.Variable,
+        “intLat” : Timeseries mpcpy.Variable           
+    }   
         
-        To standardize data transfer within mpcpy, the returned internal data 
-        should be saved into a dictionary with the following format:   
-        
-        {
-        “ZoneName” : {
-            “intCon” : Timeseries mpcpy.Variable,
-            “intRad” : Timeseries mpcpy.Variable,
-            “intLat” : Timeseries mpcpy.Variable           
-        }   
-        
-        '''
+    '''
+
     def display_data(self):
         '''Display data as pandas dataframe.'''
         self._make_mpcpy_ts_list();
@@ -280,6 +283,7 @@ class Internal(Type):
         return df_internal;  
         
     def _make_mpcpy_ts_list(self):
+        '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
         for zone in self.data.keys():
             for key in self.data[zone].keys():
@@ -287,7 +291,7 @@ class Internal(Type):
                     self._ts_list.append(self.data[zone][key]);
         
     def _translate_variable_map(self):
-        '''Translate csv column to data variable.'''
+        '''Translate csv column to data disctionary.'''
         zone = self.variable_map[self._key][0];
         load = self.variable_map[self._key][1];
         varname = load + '_' + zone;
@@ -308,16 +312,17 @@ class Internal(Type):
 ## Controls       
 class Control(Type):
     '''Interface for obtaining control-related Exogenous data from a source.
-        An object with an ControlType interface must gather control data.
-        
-        To standardize data transfer within mpcpy, the returned control data 
-        should be saved into a dictionary with the following format:   
-        
-        {
-        “ControlName” : Timeseries mpcpy.Variable          
-        }   
-        
-        '''
+    
+    An object with an ControlType interface must gather control data.
+    
+    To standardize data transfer within mpcpy, the returned control data 
+    should be saved into a dictionary with the following format:   
+    
+    {
+    “ControlName” : Timeseries mpcpy.Variable          
+    }   
+    
+    '''
 
     def display_data(self):
         '''Display data as pandas dataframe.'''
@@ -332,13 +337,14 @@ class Control(Type):
         return df_weather;
         
     def _make_mpcpy_ts_list(self):
+        '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
         for key in self.data.keys():
             if self.data[key].variability == 'Timeseries':
                 self._ts_list.append(self.data[key]);        
            
     def _translate_variable_map(self):
-        '''Translate csv column to data variable.'''
+        '''Translate csv column to data dictionary.'''
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
         self.data[varname] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
@@ -348,17 +354,18 @@ class Control(Type):
                                                                  
 ## Other_Inputs       
 class OtherInput(Type):
-    '''Interface for obtaining other input-related Exogenous data from a source.      
-        An object with an OtherInputType interface must gather other input data.
-        
-        To standardize data transfer within mpcpy, the returned other input data 
-        should be saved into a dictionary with the following format:   
-        
-        {
-        “OtherInputName” : Timeseries mpcpy.Variable          
-        }   
-        
-        '''
+    '''Interface for obtaining other input-related Exogenous data from a source.
+
+    An object with an OtherInputType interface must gather other input data.
+    
+    To standardize data transfer within mpcpy, the returned other input data 
+    should be saved into a dictionary with the following format:   
+    
+    {
+    “OtherInputName” : Timeseries mpcpy.Variable          
+    }   
+    
+    '''
 
     def display_data(self):
         '''Display data as pandas dataframe.'''
@@ -373,13 +380,14 @@ class OtherInput(Type):
         return df_weather;
         
     def _make_mpcpy_ts_list(self):
+        '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
         for key in self.data.keys():
             if self.data[key].variability == 'Timeseries':
                 self._ts_list.append(self.data[key]);        
            
     def _translate_variable_map(self):
-        '''Translate csv column to data variable.'''
+        '''Translate csv column to data dictionary.'''
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
         self.data[varname] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
@@ -390,21 +398,22 @@ class OtherInput(Type):
 ## Parameters       
 class Parameter(Type):
     '''Interface for obtaining coefficient-related Exogenous data from a source.    
-        An object with an CoefficientType interface must gather coefficient data.
+
+    An object with an CoefficientType interface must gather coefficient data.
+    
+    To standardize data transfer within mpcpy, the returned coefficient data 
+    should be saved into a dictionary with the following format:   
+    
+    {
+    “ParameterName” : {
+        "Free" : Static mpcpy.Variable,            
+        "Value" : Static mpcpy.Variable,
+        "Minimum" : Static mpcpy.Variable,
+        “Maximum” : Static mpcpy.Variable,
+        "Covariance" : Static mpcpy.Variable
+    }   
         
-        To standardize data transfer within mpcpy, the returned coefficient data 
-        should be saved into a dictionary with the following format:   
-        
-        {
-        “ParameterName” : {
-            "Free" : Static mpcpy.Variable,            
-            "Value" : Static mpcpy.Variable,
-            "Minimum" : Static mpcpy.Variable,
-            “Maximum” : Static mpcpy.Variable,
-            "Covariance" : Static mpcpy.Variable
-        }   
-        
-        '''
+    '''
         
     def display_data(self):
         '''Display data as pandas dataframe.'''
@@ -432,22 +441,24 @@ class Parameter(Type):
 ## Constraints       
 class Constraint(Type):
     '''Interface for obtaining constraint-related Exogenous data from a source.
-        An object with an ConstraintType interface must gather constraint data.
-        
-        To standardize data transfer within mpcpy, the returned constraint data 
-        should be saved into a dictionary with the following format:   
-        
-        {
-        “StateName” : {
-            "LTE" : Timeseries mpcpy.Variable,
-            "GTE" : Timeseries mpcpy.Variable,
-            "E" : Timeseries mpcpy.Variable,
-            "Initial" : Static mpcpy.Variable,
-            "Final" : Static mpcpy.Variable,
-            "Cyclic" : Static mpcpy.Variable,             
-        }   
-        
+
+    An object with an ConstraintType interface must gather constraint data.
+    
+    To standardize data transfer within mpcpy, the returned constraint data 
+    should be saved into a dictionary with the following format:   
+    
+    {
+    “StateName” : {
+        "LTE" : Timeseries mpcpy.Variable,
+        "GTE" : Timeseries mpcpy.Variable,
+        "E" : Timeseries mpcpy.Variable,
+        "Initial" : Static mpcpy.Variable,
+        "Final" : Static mpcpy.Variable,
+        "Cyclic" : Static mpcpy.Variable,             
+    }   
+    
         '''
+
     def display_data(self):
         '''Display data as pandas dataframe.'''
         self._make_mpcpy_ts_list();
@@ -461,6 +472,7 @@ class Constraint(Type):
         return df_internal;  
         
     def _make_mpcpy_ts_list(self):
+        '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
         for state in self.data.keys():
             for key in self.data[state].keys():
@@ -468,7 +480,7 @@ class Constraint(Type):
                     self._ts_list.append(self.data[state][key]);
         
     def _translate_variable_map(self):
-        '''Translate csv column to data variable.'''
+        '''Translate csv column to data dictionary.'''
         state = self.variable_map[self._key][0];
         key = self.variable_map[self._key][1];
         varname = state + '_' + key;
@@ -489,16 +501,17 @@ class Constraint(Type):
 ## Prices       
 class Price(Type):
     '''Interface for obtaining price-related Exogenous data from a source.
-        An object with an PriceType interface must gather price data.
-        
-        To standardize data transfer within mpcpy, the returned control data 
-        should be saved into a dictionary with the following format:   
-        
-        {
-        “PriceName” : Timeseries mpcpy.Variable          
-        }   
-        
-        '''
+
+    An object with an PriceType interface must gather price data.
+    
+    To standardize data transfer within mpcpy, the returned control data 
+    should be saved into a dictionary with the following format:   
+    
+    {
+    “PriceName” : Timeseries mpcpy.Variable          
+    }   
+    
+    '''
 
     def display_data(self):
         '''Display data as pandas dataframe.'''
@@ -513,13 +526,14 @@ class Price(Type):
         return df_weather;
         
     def _make_mpcpy_ts_list(self):
+        '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
         for key in self.data.keys():
             if self.data[key].variability == 'Timeseries':
                 self._ts_list.append(self.data[key]);        
            
     def _translate_variable_map(self):
-        '''Translate csv column to data variable.'''
+        '''Translate csv column to data dictionary.'''
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
         self.data[varname] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
@@ -546,7 +560,7 @@ class WeatherFromEPW(Weather):
                                   'weaSolZen'];         
 
     def collect_data(self, start_time, final_time):
-        ''' Read weather data from epw file into weather index.'''
+        '''Gather data from epw file into data dictionary.'''
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk timeseries weather data
@@ -557,13 +571,14 @@ class WeatherFromEPW(Weather):
         return self.data
         
     def _read_lat_lon_timZon_from_epw(self):
-        # Get Latitude, Longitude, and Time Zone from EPW
+        '''Get Latitude, Longitude, and Time Zone from EPW.'''
         df_epw = pd.read_csv(self.location, nrows = 1, header = None, usecols = [6,7,8], names = ['Latitude', 'Longitude', 'TimeZone']);
         self.lat = variables.Static('lat', df_epw.loc[0,'Latitude'], units.deg);
         self.lon = variables.Static('lon', df_epw.loc[0,'Longitude'], units.deg); 
         self.time_zone = variables.Static('timZon', df_epw.loc[0,'TimeZone'], units.hour);
         
     def _read_timeseries_from_epw(self):
+        '''Get timeseries data from EPW.'''
         # Define column headers to read in from epw
         header = ['Year', 'Month', 'Day', 'Hour', 'Second', 'Unknown', \
                   'Dry bulb temperature', 'Dew point temperature', \
@@ -709,6 +724,7 @@ class WeatherFromCSV(Weather, utility.DAQ):
         assert(bool(self.lon) == True);
            
     def collect_data(self, start_time, final_time):
+        '''Gather data from the csv file into data dictionary.'''
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
@@ -732,6 +748,7 @@ class InternalFromCSV(Internal, utility.DAQ):
         self._parse_time_zone_kwargs(kwargs);
                    
     def collect_data(self, start_time, final_time):
+        '''Gather data from the csv file into data dictionary.'''
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
@@ -751,6 +768,7 @@ class InternalFromOccupancyModel(Internal):
         self._parse_time_zone_kwargs(kwargs);
         
     def collect_data(self, start_time, final_time):
+        '''Use data from the occupancy model to create data dictionary.'''
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk time series
@@ -853,6 +871,7 @@ class ControlFromCSV(Control, utility.DAQ):
         self._parse_time_zone_kwargs(kwargs);             
                    
     def collect_data(self, start_time, final_time):
+        '''Gather data from the csv file into data dictionary.'''
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
@@ -873,6 +892,7 @@ class OtherInputFromCSV(OtherInput, utility.DAQ):
         self._parse_time_zone_kwargs(kwargs);             
                    
     def collect_data(self, start_time, final_time):
+        '''Gather data from the csv file into data dictionary.'''
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
@@ -887,6 +907,7 @@ class ParameterFromCSV(Parameter, utility.DAQ):
         self.location = csv_filepath;
         self.data = {};
     def collect_data(self):
+        '''Gather data from the csv file into data dictionary.'''
         # Read coefficients file
         df = pd.read_csv(self.location, index_col='Name', dtype={'Unit':str});
         # Create coefficient dictionary
@@ -918,6 +939,7 @@ class ConstraintFromCSV(Constraint, utility.DAQ):
         self._parse_time_zone_kwargs(kwargs);
             
     def collect_data(self, start_time, final_time):
+        '''Gather data from the csv file into data dictionary.'''
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
@@ -938,6 +960,7 @@ class ConstraintFromOccupancyModel(Constraint):
         self._parse_time_zone_kwargs(kwargs);
         
     def collect_data(self, start_time, final_time):
+        '''Use data from the occupancy model to create data dictionary.'''
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk time series
@@ -962,6 +985,7 @@ class PriceFromCSV(Price, utility.DAQ):
         self._parse_time_zone_kwargs(kwargs);
             
     def collect_data(self, start_time, final_time):
+        '''Gather data from the csv file into data dictionary.'''
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
