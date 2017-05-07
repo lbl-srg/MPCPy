@@ -55,11 +55,13 @@ class Modelica(Model, utility.FMU, utility.Building):
         self._parse_time_zone_kwargs(kwargs);
         
     def estimate(self, start_time, final_time, measurement_variable_list):
+        '''Use the measurement data to estimate the free parameters of the model.'''
         self._set_time_interval(start_time, final_time);        
         self.measurement_variable_list = measurement_variable_list;
         self._estimate_method._estimate(self);
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
+        '''Compare a simulation with estimated parameters with measurement data.'''
         # Change free parameters to fixed so they get simulated
         free_parameters = [];
         for key in self.parameter_data.keys():
@@ -80,9 +82,11 @@ class Modelica(Model, utility.FMU, utility.Building):
         self._simulate_fmu();
         
     def set_estimate_method(self, estimate_method):
+        '''Set the estimation method.'''
         self._estimate_method = estimate_method(self);  
         
     def set_validate_method(self, validate_method):
+        '''Set the validation method.'''
         self._validate_method = validate_method(self);
         
 class Occupancy(Model):
@@ -97,7 +101,7 @@ class Occupancy(Model):
         self._parse_time_zone_kwargs(kwargs);
         
     def estimate(self, start_time, final_time, **kwargs):
-        '''Estimate the parameters of the model using training data.'''
+        '''Use the measurement data to estimate the free parameters of the model.'''
         # Set the training time interval
         self._set_time_interval(start_time, final_time);
         # Set the estimation options
@@ -107,7 +111,7 @@ class Occupancy(Model):
         self._occupant_presence_method._estimate(self);
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
-        '''Compare the model predictions with measured data.'''
+        '''Compare a simulation with estimated parameters with measurement data.'''
         # Set the name of all validation output files
         self.validate_filename = validate_filename;
         # Set the validation time interval
@@ -182,6 +186,7 @@ class Validate(utility.mpcpyPandas):
     def _validate():
         pass;
     def plot_simple(self,Model,validate_filename):
+        '''Plot the estimated estimated and measured data.'''
         self.plot = {};
         i = 0;
         for key in Model.measurements.keys():
@@ -202,6 +207,7 @@ class Validate(utility.mpcpyPandas):
 
 #%% OccupancyModelMethod Interface
 class OccupancyMethod(utility.mpcpyPandas):
+    '''Interface for an occupancy model.'''
     __metaclass__ = ABCMeta;
     @abstractmethod
     def _estimate():
@@ -217,10 +223,12 @@ class OccupancyMethod(utility.mpcpyPandas):
 class UKF(Estimate):
     '''A Model interface for the UKF identification method.'''
     def __init__(self, Model):
+        '''Constructor of the ukf estimation method class.'''
         self.name = 'UKF';
         # Instantiate UKF model
         self.model = ukf_model.Model(Model.fmupath);          
     def _estimate(self, Model):
+        '''Perform the parameter or state estimation.'''
         estimationpy_logging.configure_logger(log_level = logging.DEBUG, log_level_console = logging.INFO, log_level_file = logging.DEBUG)
         # Write the inputs, measurements, and parameters to csv
         self.writeukfcsv(Model);
@@ -265,6 +273,7 @@ class UKF(Estimate):
         time, x, sqrtP, y, Sy, y_full = ukf_FMU.filter(start = t0, stop = t1);
         
     def writeukfcsv(self, Model):
+        '''Write the csv file needed to run the ukf algoriithm.'''
         ## Write the inputs, measurements, and coefficients to csv
         Model.csv_path = 'ukf.csv';        
         self.other_inputs = {};
@@ -293,19 +302,25 @@ class UKF(Estimate):
                 ukfwriter.writerow(input_object[1][i]);        
 
 class JModelica(Estimate):
+    '''Estimation method using JModelica optimization.'''
     def __init__(self, Model):
+        '''Constructor of the JModelica estimation method.'''
         self.name = 'Jmo';        
         
     def _estimate(self, Model):
+        '''Perform the estimation.'''
         self.opt_problem = optimization.Optimization(Model, optimization.ParameterEstimate, optimization.JModelica, {});
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
         
 #%% Validate Method Interfaces
 class RMSE(Validate):
+    '''Validation method that computes the RMSE between estimated and measured data.'''
     def __init__(self, Model):
+        '''Constructor of the RMSE validation method class.'''
         pass;
 
     def _validate(self, Model, validate_filename, plot = 1):
+        '''Perform the validation.'''
         Model.RMSE = {};
         for key in Model.measurements.keys():
             data = Model.measurements[key]['Measured'].get_base_data()[Model.start_time:Model.final_time];
