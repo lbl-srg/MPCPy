@@ -4,6 +4,7 @@ variables.py
 by David Blum
 
 This module contains the classes and interfaces for the variables of mpcpy.
+
 """
 
 from abc import ABCMeta, abstractmethod
@@ -12,13 +13,19 @@ import numpy as np
 
 #%% Variable abstract class
 class Variable(object):
+    '''Abstract class for mpcpy variables.'''
     __metaclass__ = ABCMeta;
+    
     @abstractmethod
     def set_data(self,data):
         pass;   
+        
     def get_base_data(self):
+        '''Get the variable data in base units.'''
         return self.data;
+        
     def display_data(self, **kwargs):
+        '''Get the variable data in display units.'''
         if type(self.data) is list:
             self._timeseries = [self.display_unit.convert_from_base(x) for x in self.data];
         else:
@@ -30,32 +37,46 @@ class Variable(object):
             self.tz_name = kwargs['tz_name'];
             self._timeseries = self._utc_to_local(self._timeseries);
         return self._timeseries;
+        
     def set_display_unit(self, display_unit):
+        '''Set the variable display units.'''
         quantity_old = self.quantity_name;
         self.display_unit = display_unit(self);
         if quantity_old != self.quantity_name:
-            raise(AssertionError, 'Display unit to be set has a different quantity than the existing variable display unit.');        
+            raise(AssertionError, 'Display unit to be set has a different quantity than the existing variable display unit.');   
+            
     def get_base_unit(self):
-        return self.base_unit;      
+        '''Get the variable base unit class.'''
+        return self.base_unit;  
+        
     def get_display_unit(self):
+        '''Get the variable display unit class.'''
         return type(self.display_unit);
+        
     def get_display_unit_name(self):
+        '''Get the variable display unit name string.'''
         return self.display_unit.name;
+        
     def __str__(self):
+        '''Print the information for the variable.'''
         string = 'Name: ' + self.name + '\n';
         string += 'Variability: ' + self.variability + '\n';
         string += 'Quantity: ' + self.quantity_name + '\n';       
         string += 'Display Unit: ' + self.display_unit.name + '\n';
         return string
+        
     def __add__(self,variable):
+        '''Add two variables.'''
         variable_out = self._perform_operation(variable, 'add');
         return variable_out;
         
     def __sub__(self,variable):
+        '''Subtract two variables.'''
         variable_out = self._perform_operation(variable, 'sub');
         return variable_out;        
         
     def _perform_operation(self, variable, operation):
+        '''Perform the indicated math operation on the variables.'''
         if self.display_unit.name == variable.display_unit.name:        
             data1 = self.display_data();
             data2 = variable.display_data();
@@ -87,6 +108,7 @@ class Variable(object):
         return df_local;        
         
     def _load_time_zone(self, geography):
+        '''Load the time zone from geography.'''
         try:
             self.tz_name = self.tz.tzNameAt(geography[0], geography[1]);
         except AttributeError:
@@ -95,12 +117,16 @@ class Variable(object):
 
 #%% Variable implementations
 class Static(Variable):
+    '''Variable class for time-invariant data.'''
     def __init__(self, name, data, display_unit):
+        '''Constructor of the static variable class.'''
         self.name = name;
         self.variability = 'Static';
         self.display_unit = display_unit(self);
         self.set_data(data);
+        
     def set_data(self, data):
+        '''Set the data for the variable.'''
         if type(data) is float:
             self.data = self.display_unit.convert_to_base(float(data));
         elif type(data) is int: 
@@ -113,12 +139,16 @@ class Static(Variable):
             self.data = self.display_unit.convert_to_base(data);
         
 class Timeseries(Variable):
+    '''Variable class for timeseries data.'''
     def __init__(self, name, timeseries, display_unit, tz_name = 'UTC', **kwargs):
+        '''Constructor of the timeseries variable class.'''
         self.variability = 'Timeseries';
         self.display_unit = display_unit(self);
         self.set_data(timeseries, tz_name, **kwargs);
         self.name = name;        
+        
     def set_data(self, timeseries, tz_name = 'UTC', **kwargs):
+        '''Set the data for the variable.'''
         self._timeseries = timeseries;       
         if 'cleaning_type' in kwargs and kwargs['cleaning_type'] is not None:       
             cleaning_type = kwargs['cleaning_type'];
@@ -132,5 +162,6 @@ class Timeseries(Variable):
             self._timeseries = self._local_to_utc(self._timeseries);
         self.data = self.display_unit.convert_to_base(self._timeseries.apply(float));
     def cleaning_replace(self, (to_replace, replace_with)):
+        '''Clean the data by replacement.'''
         timeseries = self._timeseries.replace(to_replace,replace_with);
         return timeseries           
