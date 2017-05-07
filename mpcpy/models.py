@@ -185,21 +185,20 @@ class Validate(utility.mpcpyPandas):
         self.plot = {};
         i = 0;
         for key in Model.measurements.keys():
-            self.plot[key] = plt.figure(i);
-            measurement = Model.measurements[key]['Measured'];
-            estimated_measurement = Model.measurements[key]['Simulated'];
+            measurement = Model.measurements[key]['Measured'];              
+            estimated_measurement = Model.measurements[key]['Simulated'];  
             measurement.display_data(tz_name = Model.tz_name)[Model.start_time:Model.final_time].plot( \
                    label = key+'_measured', linewidth = 2.0, linestyle = '-', rot = 90);
             estimated_measurement.display_data()[Model.start_time:Model.final_time].plot( \
                    label = key+'_estimated', linewidth = 2.0, linestyle = '--', rot = 90);
-            plt.legend();
             plt.xlabel('Time (hr)');
             yname = measurement.quantity_name;
             yunit = measurement.get_display_unit_name();
+            plt.ylim([8,22]);
             plt.ylabel(yname + ' [' + yunit + ']');
             plt.rcParams.update({'font.size': 16});
             i = i + 1; 
-        plt.savefig(validate_filename + '_.png');
+            plt.savefig(validate_filename + '_' + key + '.png');
 
 #%% OccupancyModelMethod Interface
 class OccupancyMethod(utility.mpcpyPandas):
