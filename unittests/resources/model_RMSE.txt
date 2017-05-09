@@ -1,7 +1,7 @@
 easPhvac,0.0,W
-wesTdb,0.32173861653,K
+wesTdb,0.182387352854,K
 wesPhvac,0.0,W
-halTdb,0.2682924327,K
+halTdb,0.200087679898,K
 halPhvac,0.0,W
 Ptot,0.0,W
-easTdb,0.403146371907,K
+easTdb,0.583661095318,K

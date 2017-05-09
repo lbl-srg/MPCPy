@@ -56,7 +56,7 @@ class Estimate_Jmo(unittest.TestCase):
     def setUp(self):
         self.MPCPyPath = utility.get_MPCPy_path();
         ## Setup building fmu emulation
-        self.building_source_file_path = self.MPCPyPath + '/resources/building/Examples_LBNL71T_Emulation_WithHeaters_ME1.fmu';
+        self.building_source_file_path = self.MPCPyPath + '/resources/building/Examples_LBNL71T_Emulation_WithHeaters_ME2.fmu';
         self.zone_names = ['wes', 'hal', 'eas'];
         self.weather_path = self.MPCPyPath + '/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
         self.internal_path = self.MPCPyPath + '/resources/internal/sampleCSV.csv';
@@ -161,11 +161,14 @@ class Estimate_Jmo(unittest.TestCase):
         self.final_time_exodata = '1/30/2015';    
         # Emulation time
         self.start_time_emulation = '1/1/2015';
-        self.final_time_emulation = '1/8/2015';
+        self.final_time_emulation = '1/4/2015';
         # Estimation time
         self.start_time_estimation = '1/1/2015';
         self.final_time_estimation = '1/4/2015';
-        
+        # Validation time
+        self.start_time_validation = '1/4/2015';
+        self.final_time_validation = '1/5/2015';
+                
         # Measurement variables for estimate
         self.measurement_variable_list = ['wesTdb', 'easTdb', 'halTdb'];        
 
@@ -197,8 +200,10 @@ class Estimate_Jmo(unittest.TestCase):
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         self.parameters.data = self.model.parameter_data;
         self.parameters.display_data().to_csv(self.MPCPyPath+'/unittests/resources/model_parameters_est.txt')        
-        # Validate on training data
-        self.model.validate(self.start_time_estimation, self.final_time_estimation, self.MPCPyPath+'/unittests/resources/model_validation');
+        # Validate on validation data
+        self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
+        self.model.measurements = self.building.measurements;
+        self.model.validate(self.start_time_validation, self.final_time_validation, self.MPCPyPath+'/unittests/resources/model_validation');
         # Save coefficients
         self.parameters.data = self.model.parameter_data;
         self.parameters.display_data().to_csv(self.MPCPyPath+'/unittests/resources/model_parameters.txt')
