@@ -188,10 +188,12 @@ class Validate(utility.mpcpyPandas):
     def plot_simple(self,Model,validate_filename):
         '''Plot the estimated estimated and measured data.'''
         self.plot = {};
-        i = 0;
         for key in Model.measurements.keys():
-            measurement = Model.measurements[key]['Measured'];              
-            estimated_measurement = Model.measurements[key]['Simulated'];  
+            plt.close('all');
+            measurement = Model.measurements[key]['Measured'];
+            measurement.set_display_unit(measurement.get_base_unit());
+            estimated_measurement = Model.measurements[key]['Simulated'];
+            estimated_measurement.set_display_unit(estimated_measurement.get_base_unit());
             measurement.display_data(tz_name = Model.tz_name)[Model.start_time:Model.final_time].plot( \
                    label = key+'_measured', linewidth = 2.0, linestyle = '-', rot = 90);
             estimated_measurement.display_data()[Model.start_time:Model.final_time].plot( \
@@ -199,10 +201,8 @@ class Validate(utility.mpcpyPandas):
             plt.xlabel('Time (hr)');
             yname = measurement.quantity_name;
             yunit = measurement.get_display_unit_name();
-            plt.ylim([8,22]);
             plt.ylabel(yname + ' [' + yunit + ']');
             plt.rcParams.update({'font.size': 16});
-            i = i + 1; 
             plt.savefig(validate_filename + '_' + key + '.png');
 
 #%% OccupancyModelMethod Interface
