@@ -57,6 +57,14 @@ class Variable(object):
         '''Get the variable display unit name string.'''
         return self.display_unit.name;
         
+    def get_base_unit_name(self):
+        '''Get the variable base unit name string.'''
+        display_unit = self.get_base_unit();
+        self.set_display_unit(self.get_base_unit());
+        base_unit_name = self.get_display_unit_name();
+        self.set_display_unit(display_unit);
+        return base_unit_name;
+        
     def __str__(self):
         '''Print the information for the variable.'''
         string = 'Name: ' + self.name + '\n';
