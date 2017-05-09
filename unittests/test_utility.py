@@ -20,6 +20,8 @@ class TestEmulationFromFMU(unittest.TestCase):
         self.parameter_data['par'] = {};
         self.parameter_data['par']['Value'] = 1;        
         self.building = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+'/resources/building/Examples_LBNL71T_Emulation_WithHeaters_ME1.fmu', parameter_data = self.parameter_data);
+    def test_fmu_version(self):
+        self.assertEqual(self.building.fmu_version, '1.0');
     def test_get_fmu_variable_units(self):
         fmu_variables_units = self.building.get_fmu_variable_units();
         self.assertEqual(fmu_variables_units['wesTdb'], 'K');
@@ -39,12 +41,12 @@ class TestFMIVersionDefault(unittest.TestCase):
     def setUp(self):
         self.mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
         self.modelpath = 'Simple.RC';
-        
+
     def test_fmi_default(self):
         building = systems.EmulationFromFMU({}, moinfo = (self.mopath, self.modelpath, {}));
-        self.assertEqual(building.fmu.get_version(), '2.0');
+        self.assertEqual(building.fmu_version, '2.0');
         model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}));
-        self.assertEqual(model.fmu.get_version(), '2.0');
+        self.assertEqual(model.fmu_version, '2.0');
         
 class TestGetInputNames(unittest.TestCase):
     def setUp(self):
