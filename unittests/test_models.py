@@ -24,11 +24,11 @@ class SimpleRC(unittest.TestCase):
         self.final_time = '1/2/2017';
         self.MPCPyPath = utility.get_MPCPy_path();
         # Set model paths
-        mopath = self.MPCPyPath+'resources/model/Simple.mo';
+        mopath = self.MPCPyPath+'/resources/model/Simple.mo';
         modelpath = 'Simple.RC';
         # Gather inputs
-        input_csv_filepath = self.MPCPyPath+'resources/model/SimpleRC_Input.csv';
-        variable_map = {'q_flow' : ('q_flow', units.W)};
+        input_csv_filepath = self.MPCPyPath+'/resources/model/SimpleRC_Input.csv';
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.other_input = exodata.OtherInputFromCSV(input_csv_filepath, variable_map);
         self.other_input.collect_data(self.start_time, self.final_time);
         # Set measurements
@@ -42,7 +42,7 @@ class SimpleRC(unittest.TestCase):
                                      other_inputs = self.other_input.data);
     def test_simulate(self):
         self.model.simulate(self.start_time, self.final_time);
-        plt.figure(1)
+        plt.close('all')
         self.model.measurements['T_db']['Simulated'].display_data().plot();
         quantity = self.model.measurements['T_db']['Simulated'].quantity_name;
         unit_name = self.model.measurements['T_db']['Simulated'].display_unit.name;

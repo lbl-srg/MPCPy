@@ -23,10 +23,10 @@ class SimpleRC(unittest.TestCase):
         self.final_time = '1/2/2017';
         self.MPCPyPath = utility.get_MPCPy_path();
         # Set model paths
-        mopath = utility.get_MPCPy_path()+'resources/model/Simple.mo';
+        mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
         modelpath = 'Simple.RC';
         # Gather inputs
-        control_csv_filepath = utility.get_MPCPy_path()+'resources/model/SimpleRC_Input.csv';
+        control_csv_filepath = utility.get_MPCPy_path()+'/resources/model/SimpleRC_Input.csv';
         control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
         self.controls.collect_data(self.start_time, self.final_time);
