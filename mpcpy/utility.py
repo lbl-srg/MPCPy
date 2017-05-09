@@ -267,11 +267,17 @@ class FMU(mpcpyPandas):
                     variable_type = real.get('declaredType');
                     for type_instance in types:
                         if variable_type == type_instance.get('name'):
-                            sub_type = type_instance.find('RealType');
+                            if self.fmu_version == '1.0':
+                                sub_type = type_instance.find('RealType');
+                            elif self.fmu_version == '2.0':
+                                sub_type = type_instance.find('Real');
+                            else:
+                                raise TypeError('Cannot get variable units for fmu {0}.'.format(self.fmu_version));
                             if sub_type is not None:
                                 unit = sub_type.get('unit');
                 else:
                     unit = None;
+                
                 fmu_variable_units[variable.get('name')] = unit;
             
         return fmu_variable_units
