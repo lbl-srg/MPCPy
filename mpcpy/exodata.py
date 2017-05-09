@@ -218,7 +218,7 @@ class Weather(Type, utility.FMU):
         # Set filepath for fmu
         weatherdir = utility.get_MPCPy_path() + '/resources/weather';
         fmuname = 'RapidMPC_BoundaryConditions_WeatherProcessor.fmu';
-        self.fmupath = weatherdir+'/'+fmuname;
+        self._create_fmu({'fmupath': weatherdir+'/'+fmuname});
         # Set parameters for fmu
         self.parameter_data = {};
         self.parameter_data['lat'] = {};
