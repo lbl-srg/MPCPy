@@ -20,9 +20,9 @@ class TestEmulationFromFMU(unittest.TestCase):
         self.parameter_data['par'] = {};
         self.parameter_data['par']['Value'] = 1;        
         # instantiate building fmu v1.0
-        self.building_1 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+'/resources/building/Examples_LBNL71T_Emulation_WithHeaters_ME1.fmu', parameter_data = self.parameter_data);
+        self.building_1 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+'/resources/building/LBNL71T_Emulation_JModelica_v1.fmu', parameter_data = self.parameter_data);
         # instantiate building fmu v2.0
-        self.building_2 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+'/resources/building/Examples_LBNL71T_Emulation_WithHeaters_ME2.fmu', parameter_data = self.parameter_data);
+        self.building_2 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+'/resources/building/LBNL71T_Emulation_JModelica_v2.fmu', parameter_data = self.parameter_data);
     def test_fmu_version(self):
         # fmu 1.0
         self.assertEqual(self.building_1.fmu_version, '1.0');
@@ -46,8 +46,6 @@ class TestEmulationFromFMU(unittest.TestCase):
         self.assertIs(unit_class, units.m2K_W);
     def test_free_parameter_check(self):
         self.assertEqual(self.building_1.parameter_data['par']['Free'].get_base_data(), 0);
-    def tearDown(self):
-        os.remove('RapidMPC_Examples_LBNL71T_0Emulate_Emulation_log.txt');
 
 class TestFMIVersionDefault(unittest.TestCase):
     def setUp(self):
