@@ -19,7 +19,7 @@ from mpcpy import units
 from mpcpy import variables
      
 #%% Abstract source interface class
-class Type(utility.mpcpyPandas):
+class _Type(utility.mpcpyPandas):
     '''Abstract class for exogenous data sources.'''
     __metaclass__ = ABCMeta;
     
@@ -38,7 +38,7 @@ class Type(utility.mpcpyPandas):
 #%% Source implementations
 
 ## Weather       
-class Weather(Type, utility.FMU):
+class _Weather(_Type, utility.FMU):
     '''Interface for obtaining weather-related Exogenous data from a source.
         
     To standardize data transfer within mpcpy, the returned weather data 
@@ -253,7 +253,7 @@ class Weather(Type, utility.FMU):
                                      self.data['weaHDirNor'], self.data['weaHGloHor']);        
         
 ## Internal       
-class Internal(Type):
+class _Internal(_Type):
     '''Interface for obtaining internal-related Exogenous data from a source.
     
     An object with an Internal interface must gather internal data.
@@ -310,7 +310,7 @@ class Internal(Type):
         
               
 ## Controls       
-class Control(Type):
+class _Control(_Type):
     '''Interface for obtaining control-related Exogenous data from a source.
     
     An object with an ControlType interface must gather control data.
@@ -353,7 +353,7 @@ class Control(Type):
                                                                  cleaning_args = self._cleaning_args);   
                                                                  
 ## Other_Inputs       
-class OtherInput(Type):
+class _OtherInput(_Type):
     '''Interface for obtaining other input-related Exogenous data from a source.
 
     An object with an OtherInputType interface must gather other input data.
@@ -396,7 +396,7 @@ class OtherInput(Type):
                                                                  cleaning_args = self._cleaning_args);
                                                                  
 ## Parameters       
-class Parameter(Type):
+class _Parameter(_Type):
     '''Interface for obtaining coefficient-related Exogenous data from a source.    
 
     An object with an CoefficientType interface must gather coefficient data.
@@ -439,7 +439,7 @@ class Parameter(Type):
         return df_coefficients;    
         
 ## Constraints       
-class Constraint(Type):
+class _Constraint(_Type):
     '''Interface for obtaining constraint-related Exogenous data from a source.
 
     An object with an ConstraintType interface must gather constraint data.
@@ -499,7 +499,7 @@ class Constraint(Type):
         
  
 ## Prices       
-class Price(Type):
+class _Price(_Type):
     '''Interface for obtaining price-related Exogenous data from a source.
 
     An object with an PriceType interface must gather price data.
@@ -542,7 +542,7 @@ class Price(Type):
                                                                  cleaning_args = self._cleaning_args);        
    
 #%% Weather source implementations    
-class WeatherFromEPW(Weather):
+class WeatherFromEPW(_Weather):
     ''' A weather source interface for an epw file data source.'''
     def __init__(self, epw_filepath):
         ''' Constructor of epw weather source.'''
@@ -702,7 +702,7 @@ class WeatherFromEPW(Weather):
                 ts = ts.ix[1:].append(ts_old.tail(n=1));
                 self.data[key].set_data(ts);
                      
-class WeatherFromCSV(Weather, utility.DAQ):
+class WeatherFromCSV(_Weather, utility.DAQ):
     '''A weather source interface for csv file data source.'''
     def __init__(self, csv_filepath, variable_map, **kwargs):
         ''' Constructor of csv weather source.'''
@@ -734,7 +734,7 @@ class WeatherFromCSV(Weather, utility.DAQ):
             self._process_weather_data();   
                                              
 #%% Internal source implementations
-class InternalFromCSV(Internal, utility.DAQ):
+class InternalFromCSV(_Internal, utility.DAQ):
     '''An internal source interface for csv file data source.'''
     def __init__(self, csv_filepath, variable_map, **kwargs):
         ''' Constructor of csv internal source.'''
@@ -754,7 +754,7 @@ class InternalFromCSV(Internal, utility.DAQ):
         # Get bulk time series        
         self._read_timeseries_from_csv();
         
-class InternalFromOccupancyModel(Internal):
+class InternalFromOccupancyModel(_Internal):
     '''An internal source interface for occupancy model data source.'''
     def __init__(self, zone_list, load_list, unit, occupancy_model_list, **kwargs):
         '''Constructor of occupancy model internal source.'''
@@ -778,7 +778,7 @@ class InternalFromOccupancyModel(Internal):
                 ts = occupancy_model.generate_load(load);
                 self.data[zone][varname] = variables.Timeseries(varname+'_'+zone, ts[self.start_time:self.final_time], self.unit);
 
-class InternalFromTable(Internal):
+class InternalFromTable(_Internal):
     ''' An internal source interface for a table file data source.'''       
     def __init__(self, table_filepath):
         ''' Constructor of a table file internal data source.'''   
@@ -857,7 +857,7 @@ class InternalFromTable(Internal):
         return internal
         
 #%% Control source implementations        
-class ControlFromCSV(Control, utility.DAQ):
+class ControlFromCSV(_Control, utility.DAQ):
     '''A control source interface for csv file data source.'''
     def __init__(self, csv_filepath, variable_map, **kwargs):
         ''' Constructor of csv control source.'''
@@ -878,7 +878,7 @@ class ControlFromCSV(Control, utility.DAQ):
         self._read_timeseries_from_csv();
         
 #%% Other input source implementations        
-class OtherInputFromCSV(OtherInput, utility.DAQ):
+class OtherInputFromCSV(_OtherInput, utility.DAQ):
     '''An other input source interface for csv file data source.'''
     def __init__(self, csv_filepath, variable_map, **kwargs):
         ''' Constructor of csv other input source.'''
@@ -899,7 +899,7 @@ class OtherInputFromCSV(OtherInput, utility.DAQ):
         self._read_timeseries_from_csv();        
         
 #%% Parameter source implementations 
-class ParameterFromCSV(Parameter, utility.DAQ):
+class ParameterFromCSV(_Parameter, utility.DAQ):
     '''A parameter source interface for csv file data source.'''
     def __init__(self, csv_filepath):
         ''' Constructor of csv parameter source.'''
@@ -925,7 +925,7 @@ class ParameterFromCSV(Parameter, utility.DAQ):
                 self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
             
 #%% Constraint source implementations
-class ConstraintFromCSV(Constraint, utility.DAQ):
+class ConstraintFromCSV(_Constraint, utility.DAQ):
     '''A constraint source interface for csv file data source.'''
     def __init__(self, csv_filepath, variable_map, **kwargs):
         ''' Constructor of csv constraint source.'''
@@ -945,7 +945,7 @@ class ConstraintFromCSV(Constraint, utility.DAQ):
         # Get bulk time series        
         self._read_timeseries_from_csv();
         
-class ConstraintFromOccupancyModel(Constraint):
+class ConstraintFromOccupancyModel(_Constraint):
     '''A constraint source interface for occupancy model data source.'''
     def __init__(self, state_variable_list, values_list, constraint_type_list, unit_list, occupancy_model, **kwargs):
         '''Constructor of occupancy model constraint source.'''
@@ -971,7 +971,7 @@ class ConstraintFromOccupancyModel(Constraint):
             self.data[state_variable][constraint_type] = variables.Timeseries(state_variable+'_'+constraint_type, ts[self.start_time:self.final_time], unit);
 
 #%% Price source implementations
-class PriceFromCSV(Price, utility.DAQ):
+class PriceFromCSV(_Price, utility.DAQ):
     '''A price source interface for csv file data source.'''
     def __init__(self, csv_filepath, variable_map, **kwargs):
         ''' Constructor of csv internal source.'''
