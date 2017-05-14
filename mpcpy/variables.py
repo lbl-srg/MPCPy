@@ -12,7 +12,7 @@ from tzwhere import tzwhere
 import numpy as np
 
 #%% Variable abstract class
-class Variable(object):
+class _Variable(object):
     '''Abstract class for mpcpy variables.'''
     __metaclass__ = ABCMeta;
     
@@ -124,7 +124,7 @@ class Variable(object):
             self.tz_name = self.tz.tzNameAt(geography[0], geography[1]);               
 
 #%% Variable implementations
-class Static(Variable):
+class Static(_Variable):
     '''Variable class for time-invariant data.'''
     def __init__(self, name, data, display_unit):
         '''Constructor of the static variable class.'''
@@ -146,7 +146,7 @@ class Static(Variable):
         else:
             self.data = self.display_unit.convert_to_base(data);
         
-class Timeseries(Variable):
+class Timeseries(_Variable):
     '''Variable class for timeseries data.'''
     def __init__(self, name, timeseries, display_unit, tz_name = 'UTC', **kwargs):
         '''Constructor of the timeseries variable class.'''
