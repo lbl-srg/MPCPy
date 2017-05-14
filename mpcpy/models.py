@@ -28,7 +28,7 @@ from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
 
 #%% Model Class
-class Model(utility.mpcpyPandas):
+class _Model(utility.mpcpyPandas):
     '''Abstract class for representing a model for MPC.'''
     __metaclass__ = ABCMeta;
     @abstractmethod
@@ -42,7 +42,7 @@ class Model(utility.mpcpyPandas):
         pass;
         
 #%% Model Implementations
-class Modelica(Model, utility.FMU, utility.Building):
+class Modelica(_Model, utility.FMU, utility.Building):
     '''An fmu implementation of an mpcpy Model.'''
     def __init__(self, estimate_method, validate_method, measurements, **kwargs):
         self.name = 'modelica';    
@@ -89,7 +89,7 @@ class Modelica(Model, utility.FMU, utility.Building):
         '''Set the validation method.'''
         self._validate_method = validate_method(self);
         
-class Occupancy(Model):
+class Occupancy(_Model):
     '''An occupant presence implementation of an mpcpy Model.'''
     def __init__(self, occupant_presence_method, measurements, **kwargs):
         '''Constructor of an occupant presence model.'''
@@ -171,7 +171,7 @@ class Occupancy(Model):
         
         
 #%% IdentifyMethod Interface
-class Estimate(utility.mpcpyPandas):
+class _Estimate(utility.mpcpyPandas):
     ''' Interface for a model identifcation method.'''
     __metaclass__ = ABCMeta;   
     @abstractmethod
@@ -179,13 +179,13 @@ class Estimate(utility.mpcpyPandas):
         pass;
         
 #%% ValidateMethod Interface
-class Validate(utility.mpcpyPandas):
+class _Validate(utility.mpcpyPandas):
     ''' Interface for a model validation method.'''
     __metaclass__ = ABCMeta;
     @abstractmethod
     def _validate():
         pass;
-    def plot_simple(self,Model,validate_filename):
+    def _plot_simple(self,Model,validate_filename):
         '''Plot the estimated estimated and measured data.'''
         self.plot = {};
         for key in Model.measurements.keys():
@@ -206,7 +206,7 @@ class Validate(utility.mpcpyPandas):
             plt.savefig(validate_filename + '_' + key + '.png');
 
 #%% OccupancyModelMethod Interface
-class OccupancyMethod(utility.mpcpyPandas):
+class _OccupancyMethod(utility.mpcpyPandas):
     '''Interface for an occupancy model.'''
     __metaclass__ = ABCMeta;
     @abstractmethod
@@ -220,7 +220,7 @@ class OccupancyMethod(utility.mpcpyPandas):
         pass            
              
 #%% IdentifyMethod Interface Implementations
-class UKF(Estimate):
+class UKF(_Estimate):
     '''A Model interface for the UKF identification method.'''
     def __init__(self, Model):
         '''Constructor of the ukf estimation method class.'''
@@ -231,7 +231,7 @@ class UKF(Estimate):
         '''Perform the parameter or state estimation.'''
         estimationpy_logging.configure_logger(log_level = logging.DEBUG, log_level_console = logging.INFO, log_level_file = logging.DEBUG)
         # Write the inputs, measurements, and parameters to csv
-        self.writeukfcsv(Model);
+        self._writeukfcsv(Model);
         # Select inputs
         for name in Model.input_names:
             inputvar = self.model.get_input_by_name(name);
@@ -272,7 +272,7 @@ class UKF(Estimate):
         t1 = pd.to_datetime(Model.final_time, unit = "s", utc = True);
         time, x, sqrtP, y, Sy, y_full = ukf_FMU.filter(start = t0, stop = t1);
         
-    def writeukfcsv(self, Model):
+    def _writeukfcsv(self, Model):
         '''Write the csv file needed to run the ukf algoriithm.'''
         ## Write the inputs, measurements, and coefficients to csv
         Model.csv_path = 'ukf.csv';        
@@ -301,7 +301,7 @@ class UKF(Estimate):
             for i in range(len(input_object[1][:,0])):
                 ukfwriter.writerow(input_object[1][i]);        
 
-class JModelica(Estimate):
+class JModelica(_Estimate):
     '''Estimation method using JModelica optimization.'''
     def __init__(self, Model):
         '''Constructor of the JModelica estimation method.'''
@@ -313,7 +313,7 @@ class JModelica(Estimate):
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
         
 #%% Validate Method Interfaces
-class RMSE(Validate):
+class RMSE(_Validate):
     '''Validation method that computes the RMSE between estimated and measured data.'''
     def __init__(self, Model):
         '''Constructor of the RMSE validation method class.'''
@@ -329,10 +329,10 @@ class RMSE(Validate):
             unit_class = Model.measurements[key]['Measured'].get_base_unit();
             Model.RMSE[key] = variables.Static('RMSE_'+key, RMSE, unit_class);
         if plot == 1:
-            self.plot_simple(Model, validate_filename);
+            self._plot_simple(Model, validate_filename);
             
 #%% OccupanctPresence Model Types
-class QueueModel(OccupancyMethod):
+class QueueModel(_OccupancyMethod):
     '''Occupant presence prediction based on a queueing approach.
     
     Based on Jia, R. and C. Spanos (2016). "Occupancy modelling in shared 
