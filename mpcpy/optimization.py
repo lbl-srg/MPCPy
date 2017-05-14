@@ -58,7 +58,7 @@ class Optimization(object):
         self._package_type = package_type(self);
         
 #%% Problem Type Abstract Interface
-class Problem(object):
+class _Problem(object):
     '''Interface for a problem type.'''
     __metaclass__ = ABCMeta;
     
@@ -71,48 +71,48 @@ class Problem(object):
         pass;      
         
 #%% Solver Type Abstract Interface
-class Package(object):
+class _Package(object):
     '''Interface for a solver package type.'''
     __metaclass__ = ABCMeta;
     
     @abstractmethod
-    def energymin(self):
+    def _energymin(self):
         pass;
     @abstractmethod
-    def energycostmin(self):
+    def _energycostmin(self):
         pass;
     @abstractmethod
-    def parameterestimate(self):
+    def _parameterestimate(self):
         pass;          
               
 #%% Problem Type Implementation
-class EnergyMin(Problem):
+class EnergyMin(_Problem):
     '''Energy minimization problem type.'''
     def optimize(self, Optimization, **kwargs):
         '''Solve the energy minimization problem.'''
-        Optimization._package_type.energymin(Optimization);
+        Optimization._package_type._energymin(Optimization);
         
-class EnergyCostMin(Problem):
+class EnergyCostMin(_Problem):
     '''Energy cost minimization problem type.'''
     def optimize(self, Optimization, **kwargs):
         '''Solve the energy cost minimization problem.'''
         price_data = kwargs['price_data'];
-        Optimization._package_type.energycostmin(Optimization, price_data);
+        Optimization._package_type._energycostmin(Optimization, price_data);
         
-class ParameterEstimate(Problem):
+class ParameterEstimate(_Problem):
     '''Parameter estimation problem type.'''
     def optimize(self, Optimization, **kwargs):
         '''Solve the parameter estimation problem type.'''
-        Optimization._package_type.parameterestimate(Optimization, kwargs['measurement_variable_list']);
+        Optimization._package_type._parameterestimate(Optimization, kwargs['measurement_variable_list']);
         
 #%% Solver Type Implementation
-class JModelica(Package, utility.FMU):
+class JModelica(_Package, utility.FMU):
     '''Solver package type using JModelica.'''
     def __init__(self, Optimization):
         '''Constructor of the JModelica solver package class.'''
         self.Optimization = Optimization;
     
-    def energymin(self, Optimization):
+    def _energymin(self, Optimization):
         '''Perform the energy minimization.'''
         self.Model = Optimization.Model;
         self.measurement_variable_list = {};        
@@ -124,7 +124,7 @@ class JModelica(Package, utility.FMU):
         self._solve();
         self._get_control_results(Optimization);           
         
-    def energycostmin(self, Optimization, price_data):
+    def _energycostmin(self, Optimization, price_data):
         '''Perform the energy cost minimization.'''
         self.Model = Optimization.Model;
         self.measurement_variable_list = {};         
@@ -138,7 +138,7 @@ class JModelica(Package, utility.FMU):
         self._solve();   
         self._get_control_results(Optimization);                                      
         
-    def parameterestimate(self, Optimization, measurement_variable_list):
+    def _parameterestimate(self, Optimization, measurement_variable_list):
         '''Perform the parameter estimation.'''
         self.Model = Optimization.Model;
         self.measurement_variable_list = measurement_variable_list;
