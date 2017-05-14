@@ -217,7 +217,7 @@ class Weather(Type, utility.FMU):
         '''Use process weather fmu to calculate other necessary weather data.'''
         # Set filepath for fmu
         weatherdir = utility.get_MPCPy_path() + '/resources/weather';
-        fmuname = 'RapidMPC_BoundaryConditions_WeatherProcessor.fmu';
+        fmuname = 'WeatherProcessor_JModelica_v2.fmu';
         self._create_fmu({'fmupath': weatherdir+'/'+fmuname});
         # Set parameters for fmu
         self.parameter_data = {};
