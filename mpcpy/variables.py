@@ -27,9 +27,9 @@ class _Variable(object):
     def display_data(self, **kwargs):
         '''Get the variable data in display units.'''
         if type(self.data) is list:
-            self._timeseries = [self.display_unit.convert_from_base(x) for x in self.data];
+            self._timeseries = [self.display_unit._convert_from_base(x) for x in self.data];
         else:
-            self._timeseries = self.display_unit.convert_from_base(self.data);        
+            self._timeseries = self.display_unit._convert_from_base(self.data);        
         if 'geography' in kwargs:
             self._load_time_zone(kwargs['geography']);
             self._timeseries = self._utc_to_local(self._timeseries);
@@ -136,15 +136,15 @@ class Static(_Variable):
     def set_data(self, data):
         '''Set the data for the variable.'''
         if type(data) is float:
-            self.data = self.display_unit.convert_to_base(float(data));
+            self.data = self.display_unit._convert_to_base(float(data));
         elif type(data) is int: 
-            self.data = self.display_unit.convert_to_base(float(data));
+            self.data = self.display_unit._convert_to_base(float(data));
         elif type(data) is list:
-            self.data = [self.display_unit.convert_to_base(float(x)) for x in data];
+            self.data = [self.display_unit._convert_to_base(float(x)) for x in data];
         elif isinstance(data, np.ndarray):
-            self.data = np.array([self.display_unit.convert_to_base(float(x)) for x in data]);
+            self.data = np.array([self.display_unit._convert_to_base(float(x)) for x in data]);
         else:
-            self.data = self.display_unit.convert_to_base(data);
+            self.data = self.display_unit._convert_to_base(data);
         
 class Timeseries(_Variable):
     '''Variable class for timeseries data.'''
@@ -168,7 +168,7 @@ class Timeseries(_Variable):
         else:
             self.tz_name = tz_name;
             self._timeseries = self._local_to_utc(self._timeseries);
-        self.data = self.display_unit.convert_to_base(self._timeseries.apply(float));
+        self.data = self.display_unit._convert_to_base(self._timeseries.apply(float));
     def cleaning_replace(self, (to_replace, replace_with)):
         '''Clean the data by replacement.'''
         timeseries = self._timeseries.replace(to_replace,replace_with);
