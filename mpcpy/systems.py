@@ -12,7 +12,7 @@ from abc import ABCMeta, abstractmethod
 from mpcpy import utility
 
 #%% System class
-class System(utility.mpcpyPandas, utility.Building):
+class _System(utility.mpcpyPandas, utility.Building):
     '''Abstract class for representing systems.'''  
     __metaclass__ = ABCMeta;
     @abstractmethod
@@ -36,7 +36,7 @@ class System(utility.mpcpyPandas, utility.Building):
         pass;
         
 #%% System implementations
-class Emulation(System):
+class _Emulation(_System):
     '''Emulation implementation of the abstract System class.'''
     __metaclass__ = ABCMeta;
     def collect_measurements(self, start_time, final_time):
@@ -46,7 +46,7 @@ class Emulation(System):
         for key in self.measurements.keys():
             self.measurements[key]['Measured'] = self.measurements[key]['Simulated']; 
 
-class Real(System):
+class _Real(_System):
     def __init__(self, source, source_location, zone_names):
         '''Constructor of a real system source.'''        
         self.name = 'Real';   
@@ -57,7 +57,7 @@ class Real(System):
         self._collect_data();
         
 #%% Source implementations
-class EmulationFromFMU(Emulation, utility.FMU):
+class EmulationFromFMU(_Emulation, utility.FMU):
     ''' A system source interface for an fmu source.'''
     def __init__(self, measurements, **kwargs):
         ''' Constructor of a system fmu simulation source.'''
@@ -72,7 +72,7 @@ class EmulationFromFMU(Emulation, utility.FMU):
         '''Simulate the fmu.'''
         self._simulate_fmu();
         
-class RealFromCSV(Real, utility.DAQ):
+class RealFromCSV(_Real, utility.DAQ):
     ''' A system source interface for data coming from a csv file.'''
     def __init__(self, csv_filepath, measurements, variable_map, **kwargs):
         ''' Constructor of a system fmu simulation source.'''
