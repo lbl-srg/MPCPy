@@ -25,7 +25,7 @@ class EmulationfromFMU(unittest.TestCase):
         self.final_time = '1/4/2015';
         # Setup building fmu emulation
         # Setup Building
-        self.building_source_file_path = self.MPCPyPath + '/resources/building/Examples_LBNL71T_Emulation_WithHeaters_ME1.fmu';   
+        self.building_source_file_path = self.MPCPyPath + '/resources/building/LBNL71T_Emulation_JModelica_v2.fmu';   
         self.zone_names = ['wes', 'hal', 'eas'];
         self.weather_path = self.MPCPyPath + '/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
         self.internal_path = self.MPCPyPath + '/resources/internal/sampleCSV.csv';

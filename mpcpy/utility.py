@@ -220,6 +220,7 @@ class FMU(mpcpyPandas):
                                        compiler_options = {'extra_lib_dirs':self.libraries}, 
                                        version = version);
         self.fmu = load_fmu(self.fmupath);
+        self.fmu_version = self.fmu.get_version();
         
     def dataframe_to_input_object(self, df):
         '''Create an input object for an fmu simulated in Jmodelica.'''
@@ -233,13 +234,12 @@ class FMU(mpcpyPandas):
                           
     def get_input_names(self):
         '''Get the names of the input variables of an fmu.'''
-        fmu_version = self.fmu.get_version();
-        if fmu_version == '1.0':
+        if self.fmu_version == '1.0':
             input_names = self.fmu.get_model_variables(causality = 0).keys();
-        elif fmu_version == '2.0':
+        elif self.fmu_version == '2.0':
             input_names = self.fmu.get_model_variables(causality = 2).keys();
         else:
-            raise TypeError ('fmu version {0} is not compatable.'.format(fmu_version));
+            raise TypeError ('fmu version {0} is not compatable.'.format(self.fmu_version));
 
         return input_names;
         
@@ -267,11 +267,17 @@ class FMU(mpcpyPandas):
                     variable_type = real.get('declaredType');
                     for type_instance in types:
                         if variable_type == type_instance.get('name'):
-                            sub_type = type_instance.find('RealType');
+                            if self.fmu_version == '1.0':
+                                sub_type = type_instance.find('RealType');
+                            elif self.fmu_version == '2.0':
+                                sub_type = type_instance.find('Real');
+                            else:
+                                raise TypeError('Cannot get variable units for fmu {0}.'.format(self.fmu_version));
                             if sub_type is not None:
                                 unit = sub_type.get('unit');
                 else:
                     unit = None;
+                
                 fmu_variable_units[variable.get('name')] = unit;
             
         return fmu_variable_units

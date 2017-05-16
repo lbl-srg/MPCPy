@@ -64,8 +64,9 @@ class Weather_epw(TestExodata):
                             rerror = test_data-ref_data;
                         else:
                             rerror = (test_data-ref_data)/data_range;
-                        rerror_gt = rerror>0.01;
-                        self.assertFalse(rerror_gt.any(), 'Relative error of {} found in variable {}.'.format(rerror, key));
+                        rerror_gt = rerror>0.015;
+                        self.assertFalse(rerror_gt.any(), 'Relative error of {0} found in variable {1}.'.format(rerror, key));
+                        
 
         except IOError:
             # Read data from initial reference source

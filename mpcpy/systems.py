@@ -32,6 +32,7 @@ class System(utility.mpcpyPandas, utility.Building):
         }    
         
         '''
+        
         pass;
         
 #%% System implementations
@@ -39,7 +40,7 @@ class Emulation(System):
     '''Emulation implementation of the abstract System class.'''
     __metaclass__ = ABCMeta;
     def collect_measurements(self, start_time, final_time):
-        '''Collect measurement data for the system via emulation.'''
+        '''Collect measurement data dictionary for the system via emulation.'''
         self._set_time_interval(start_time, final_time);
         self._simulate();
         for key in self.measurements.keys():
@@ -51,7 +52,7 @@ class Real(System):
         self.name = 'Real';   
         
     def collect_measurements(self, start_time, final_time):
-        '''Collect measurement data for the system via a real source.'''
+        '''Collect measurement data dictionary for the system via a real source.'''
         self._set_time_interval(start_time, final_time);
         self._collect_data();
         
@@ -83,11 +84,11 @@ class RealFromCSV(Real, utility.DAQ):
         self._parse_time_zone_kwargs(kwargs);
         
     def _collect_data(self):
-        '''Collect data from csv.'''
+        '''Collect data from csv into measurement dictionary.'''
         self._read_timeseries_from_csv();
 
     def _translate_variable_map(self):
-        '''Translate csv column to measurement variable.'''
+        '''Translate csv column to measurement dictionary.'''
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];
         self.measurements[varname]['Measured'] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \

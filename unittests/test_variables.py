@@ -25,6 +25,8 @@ class Static(unittest.TestCase):
         self.assertEqual(self.var.quantity_name, 'Temperature');
         self.assertIs(self.var.get_display_unit(), units.degC);
         self.assertEqual(self.var.get_display_unit_name(), 'degC');
+        self.assertEqual(self.var.get_base_unit_name(), 'K');
+        
     def test_data(self):
         '''Test difference between data (base unit) and display data (display unit).'''
         self.assertAlmostEqual(self.var.get_base_data(), 20+273.15, places = 3);

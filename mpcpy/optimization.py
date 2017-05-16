@@ -4,6 +4,7 @@ optimization.py
 by David Blum
 
 This module contains the classes and interfaces for mpc models.
+
 """
 
 from abc import ABCMeta, abstractmethod
@@ -21,19 +22,22 @@ from pyjmi.optimization.casadi_collocation import ExternalData
 #%% Optimization Class
 class Optimization(object):
     '''Class for representing an optimization problem.
-        Constraint data uses the following dictionary format:
+    
+    Constraint data uses the following dictionary format:
 
-        { "State Variable Name" : {
-              "GTE" : Timeseries variable,
-              "LTE" : Timeseries variable,
-              "E" : Timeseries variable,
-              "Initial" : Static variable,
-              "Final" : Static variable},
-              "Cyclic" : True}         
-        }     
+    { "State Variable Name" : {
+          "GTE" : Timeseries variable,
+          "LTE" : Timeseries variable,
+          "E" : Timeseries variable,
+          "Initial" : Static variable,
+          "Final" : Static variable},
+          "Cyclic" : True}         
+    }     
+    
+    '''
         
-        '''
-    def __init__(self, Model, problem_type, solver_type, objective_variable, **kwargs):    
+    def __init__(self, Model, problem_type, package_type, objective_variable, **kwargs):    
+        '''Constructor of the optimization problem class.'''
         self.Model = Model;
         if 'constraint_data' in kwargs:
             self.constraint_data = kwargs['constraint_data'];
@@ -41,27 +45,36 @@ class Optimization(object):
             self.constraint_data = {};
         self.objective_variable = objective_variable;
         self._problem_type = problem_type();
-        self._solver_type = solver_type(self);
+        self._package_type = package_type(self);
     def optimize(self, start_time, final_time, **kwargs):
+        '''Solve the optimization problem.'''
         self.Model._set_time_interval(start_time, final_time);
         self._problem_type.optimize(self, **kwargs);
     def set_problem_type(self, problem_type, **kwargs):
+        '''Set the problem type of the optimization.'''
         self._problem_type = problem_type();       
-    def set_solver_type(self, solver_type):
-        self._solver_type = solver_type(self);
+    def set_package_type(self, package_type):
+        '''Set the solver package type of the optimization.'''
+        self._package_type = package_type(self);
         
 #%% Problem Type Abstract Interface
 class Problem(object):
+    '''Interface for a problem type.'''
     __metaclass__ = ABCMeta;
+    
     def __init__(self):
+        '''Constructor of a problem type class.''' 
         pass;
+        
     @abstractmethod
     def optimize(self):
         pass;      
         
 #%% Solver Type Abstract Interface
 class Package(object):
+    '''Interface for a solver package type.'''
     __metaclass__ = ABCMeta;
+    
     @abstractmethod
     def energymin(self):
         pass;
@@ -74,24 +87,33 @@ class Package(object):
               
 #%% Problem Type Implementation
 class EnergyMin(Problem):
+    '''Energy minimization problem type.'''
     def optimize(self, Optimization, **kwargs):
-        Optimization._solver_type.energymin(Optimization);
+        '''Solve the energy minimization problem.'''
+        Optimization._package_type.energymin(Optimization);
         
 class EnergyCostMin(Problem):
+    '''Energy cost minimization problem type.'''
     def optimize(self, Optimization, **kwargs):
+        '''Solve the energy cost minimization problem.'''
         price_data = kwargs['price_data'];
-        Optimization._solver_type.energycostmin(Optimization, price_data);
+        Optimization._package_type.energycostmin(Optimization, price_data);
         
 class ParameterEstimate(Problem):
+    '''Parameter estimation problem type.'''
     def optimize(self, Optimization, **kwargs):
-        Optimization._solver_type.parameterestimate(Optimization, kwargs['measurement_variable_list']);
+        '''Solve the parameter estimation problem type.'''
+        Optimization._package_type.parameterestimate(Optimization, kwargs['measurement_variable_list']);
         
 #%% Solver Type Implementation
 class JModelica(Package, utility.FMU):
+    '''Solver package type using JModelica.'''
     def __init__(self, Optimization):
+        '''Constructor of the JModelica solver package class.'''
         self.Optimization = Optimization;
     
     def energymin(self, Optimization):
+        '''Perform the energy minimization.'''
         self.Model = Optimization.Model;
         self.measurement_variable_list = {};        
         self.extra_inputs = {};
@@ -103,6 +125,7 @@ class JModelica(Package, utility.FMU):
         self._get_control_results(Optimization);           
         
     def energycostmin(self, Optimization, price_data):
+        '''Perform the energy cost minimization.'''
         self.Model = Optimization.Model;
         self.measurement_variable_list = {};         
         self.extra_inputs = {};
@@ -116,6 +139,7 @@ class JModelica(Package, utility.FMU):
         self._get_control_results(Optimization);                                      
         
     def parameterestimate(self, Optimization, measurement_variable_list):
+        '''Perform the parameter estimation.'''
         self.Model = Optimization.Model;
         self.measurement_variable_list = measurement_variable_list;
         self.extra_inputs = {};          
@@ -127,6 +151,7 @@ class JModelica(Package, utility.FMU):
         self._get_parameter_results(Optimization);
         
     def _initalize_mop(self):
+        '''Start writing the mop file.'''
         # Open .mo
         mofile = open(self.Model.mopath,'r');
         # Initiate .mop
@@ -171,7 +196,7 @@ class JModelica(Package, utility.FMU):
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_initialize;\n');
         
     def _write_control_mop(self):
-        ## Add control optimization portion to package.mop 
+        '''Complete the mop file for a control optimization problem.'''
         self.mopfile.write('\n');
         self.mopfile.write('  optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (objective = (J(finalTime)), startTime=0, finalTime=' + str(self.Model.elapsed_seconds) + ')\n');
         # Instantiate optimization model
@@ -217,7 +242,7 @@ class JModelica(Package, utility.FMU):
         self.mopfile.close();      
         
     def _write_parameter_estimate_mop(self):
-        # Add parameter estimation optimization portion to package.mop
+        '''Complete the mop file for a parameter estimation problem.'''
         self.mopfile.write('\n');
         self.mopfile.write('optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (startTime=0, finalTime=' + str(self.Model.elapsed_seconds) + ')\n');
         #  Instantiate MPC model with free parameters
@@ -244,6 +269,7 @@ class JModelica(Package, utility.FMU):
         self.mopfile.close();
         
     def _simulate_initial(self):
+        '''Simulate the model for an initial guess of the optimization solution.'''
         # Compile the optimization initializaiton model                                             
         self.fmupath = compile_fmu(self.Model.modelpath + '_initialize', \
                                    self.moppath, \
@@ -275,6 +301,7 @@ class JModelica(Package, utility.FMU):
         self.res_init = self._res;
                                             
     def _solve(self):
+        '''Solve the optimization problem.'''
         # Create input_mpcpy_ts_list
         self._create_input_mpcpy_ts_list_opt();
         # Set inputs
@@ -296,7 +323,7 @@ class JModelica(Package, utility.FMU):
         print(self.res_opt.get_solver_statistics());
         
     def _create_external_data(self):   
-        # Create measurement trajectory object to be input in training
+        '''Define external data inputs to optimization problem.'''
         quad_pen = OrderedDict();  
         N_mea = 0;
         if self.measurement_variable_list:
@@ -326,6 +353,7 @@ class JModelica(Package, utility.FMU):
         self.external_data = ExternalData(Q=Q, quad_pen=quad_pen, eliminated=eliminated);
         
     def _get_control_results(self, Optimization):
+        '''Update the control data dictionary in the model with optimization results.'''
         fmu_variable_units = self.get_fmu_variable_units();                                     
         for key in self.Model.control_data.keys():
             data = self.res_opt['mpc_model.' + key];
@@ -351,6 +379,7 @@ class JModelica(Package, utility.FMU):
             Optimization.Model.measurements[key]['Simulated'] = variables.Timeseries(key, ts, unit);
             
     def _get_parameter_results(self, Optimization):
+        '''Update the parameter data dictionary in the model with optimization results.'''
         for key in Optimization.Model.parameter_data.keys():
             if Optimization.Model.parameter_data[key]['Free'].get_base_data():
                 self.fmu_variable_units = self.get_fmu_variable_units();
