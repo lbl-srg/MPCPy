@@ -24,7 +24,8 @@ class SimpleRC(unittest.TestCase):
         self.MPCPyPath = utility.get_MPCPy_path();
         # Set model paths
         mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
-        modelpath = 'Simple.RC';
+        modelpath1 = 'Simple.RC';
+        modelpath2 = 'Simple.SubPackage.RC';
         # Gather inputs
         control_csv_filepath = utility.get_MPCPy_path()+'/resources/model/SimpleRC_Input.csv';
         control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
@@ -34,11 +35,16 @@ class SimpleRC(unittest.TestCase):
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        self.model1 = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
-                                     moinfo = (mopath, modelpath, {}), \
+                                     moinfo = (mopath, modelpath1, {}), \
                                      control_data = self.controls.data);
+        self.model2 = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath2, {}), \
+                                     control_data = self.controls.data);                                     
         # Gather constraints       
         constraint_csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/SimpleRC_Constraints.csv';
         constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
@@ -48,25 +54,34 @@ class SimpleRC(unittest.TestCase):
         self.constraints.collect_data(self.start_time, self.final_time);
         self.constraints.data['T_db']['Initial'] = variables.Static('T_db_start', 295, units.K);
         # Instantiate optimization problem
-        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyMin, optimization.JModelica, 'q_flow', constraint_data = self.constraints.data);
+        self.opt_problem1 = optimization.Optimization(self.model1, optimization.EnergyMin, optimization.JModelica, 'q_flow', constraint_data = self.constraints.data);
+        self.opt_problem2 = optimization.Optimization(self.model2, optimization.EnergyMin, optimization.JModelica, 'q_flow', constraint_data = self.constraints.data);
         
     def test_optimize(self):
-        self.opt_problem.optimize(self.start_time, self.final_time);
+        self.opt_problem1.optimize(self.start_time, self.final_time);
+        self.model1 = self.opt_problem1.Model;
         plt.figure(1)
-        self.model.measurements['T_db']['Simulated'].display_data().plot();
-        quantity = self.model.measurements['T_db']['Simulated'].quantity_name;
-        unit_name = self.model.measurements['T_db']['Simulated'].display_unit.name;
+        self.model1.measurements['T_db']['Simulated'].display_data().plot();
+        quantity = self.model1.measurements['T_db']['Simulated'].quantity_name;
+        unit_name = self.model1.measurements['T_db']['Simulated'].display_unit.name;
         plt.ylabel(quantity + ' [' + unit_name + ']');
         plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_optimization_T_db' + '.png');
         plt.close();
         
         plt.figure(1)
-        self.model.control_data['q_flow'].display_data().plot();
-        quantity = self.model.control_data['q_flow'].quantity_name;
-        unit_name = self.model.control_data['q_flow'].display_unit.name;
+        self.model1.control_data['q_flow'].display_data().plot();
+        quantity = self.model1.control_data['q_flow'].quantity_name;
+        unit_name = self.model1.control_data['q_flow'].display_unit.name;
         plt.ylabel(quantity + ' [' + unit_name + ']');
         plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_optimization_q_flow' + '.png');
         plt.close();
+        
+        self.opt_problem2.optimize(self.start_time, self.final_time);
+        self.model2 = self.opt_problem2.Model;
+        data1 = self.model1.measurements['T_db']['Simulated'].display_data();
+        data2 = self.model2.measurements['T_db']['Simulated'].display_data();
+        for value1,value2 in zip(data1.get_values(), data2.get_values()):
+            self.assertEqual(value1, value2);
         
 #%% Temperature tests
 class Optimize_Jmo(unittest.TestCase):
