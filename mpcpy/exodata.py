@@ -231,20 +231,64 @@ from mpcpy import variables
      
 #%% Abstract source interface class
 class _Type(utility.mpcpyPandas):
-    '''Base class for exogenous data sources.'''
+    '''Base class for exogenous data objects.
+    
+    '''
+
     __metaclass__ = ABCMeta;
     
-    @abstractmethod
-    def collect_data(self):
-        pass;
     
-    @abstractmethod
-    def display_data(self):
-        pass;
+    def collect_data(self, start_time=None, final_time=None):
+        '''Collect data from specified source.
         
-    @abstractmethod
+        Parameters
+        ----------
+        start_time : string
+            Start time of data collection.
+        final_time : string
+            Final time of data collection.
+            
+        Yields
+        ------
+        
+        data : dictionary
+            Data attribute.
+        
+        '''
+        
+        self._collect_data(start_time, final_time);
+    
+    def display_data(self):
+        '''Get data in display units as pandas dataframe.
+        
+        Returns
+        -------
+        
+        df : ``pandas`` dataframe
+            Timeseries dataframe in display units.
+        
+        '''
+        
+        self._make_mpcpy_ts_list();
+        df = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
+        
+        return df;
+        
     def get_base_data(self):
-        pass;
+        '''Get data in base units as pandas dataframe.
+        
+        Returns
+        -------
+        
+        df : ``pandas`` dataframe
+            Timeseries dataframe in base units.
+            
+        '''
+        
+        self._make_mpcpy_ts_list();        
+        df = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
+        
+        return df;
                
 #%% Source implementations
 
@@ -253,19 +297,7 @@ class _Weather(_Type, utility.FMU):
     '''Mix-in class for weather exogenous data.
 
     '''        
-
-    def display_data(self):
-        '''Display data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();
-        df_weather = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
-        return df_weather;
-        
-    def get_base_data(self):
-        '''Get base data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();        
-        df_weather = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
-        return df_weather;
-        
+     
     def _make_mpcpy_ts_list(self):
         '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
@@ -434,18 +466,6 @@ class _Internal(_Type):
 
     '''
 
-    def display_data(self):
-        '''Display data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();
-        df_internal = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
-        return df_internal;
-        
-    def get_base_data(self):
-        '''Get base data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();        
-        df_internal = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
-        return df_internal;  
-        
     def _make_mpcpy_ts_list(self):
         '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
@@ -479,18 +499,6 @@ class _Control(_Type):
 
     '''
 
-    def display_data(self):
-        '''Display data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();
-        df_weather = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
-        return df_weather;
-        
-    def get_base_data(self):
-        '''Get base data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();        
-        df_weather = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
-        return df_weather;
-        
     def _make_mpcpy_ts_list(self):
         '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
@@ -513,18 +521,6 @@ class _OtherInput(_Type):
 
     '''
 
-    def display_data(self):
-        '''Display data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();
-        df_weather = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
-        return df_weather;
-        
-    def get_base_data(self):
-        '''Get base data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();        
-        df_weather = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
-        return df_weather;
-        
     def _make_mpcpy_ts_list(self):
         '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
@@ -548,7 +544,16 @@ class _Parameter(_Type):
     '''
         
     def display_data(self):
-        '''Display data as pandas dataframe.'''
+        '''Get data as pandas dataframe in display units.
+
+        Returns
+        -------
+
+        df : ``pandas`` dataframe
+            Dataframe in display units.
+            
+        '''
+
         d = {};
         for key in self.data.keys():
             d[key] = {};
@@ -556,19 +561,30 @@ class _Parameter(_Type):
                 d[key][subkey] = self.data[key][subkey].display_data();
                 if subkey == 'Value':
                     d[key]['Unit'] = self.data[key][subkey].get_display_unit_name();
-        df_coefficients = pd.DataFrame(data = d).transpose();
-        df_coefficients.index.name = 'Name';
-        return df_coefficients;
+        df = pd.DataFrame(data = d).transpose();
+        df.index.name = 'Name';
+        
+        return df
         
     def get_base_data(self):
-        '''Get base data as pandas dataframe.'''
+        '''Get data as pandas dataframe in base units.
+
+        Returns
+        -------
+
+        df : ``pandas`` dataframe
+            Dataframe in base units.
+            
+        '''
+
         d = {};
         for key in self.data.keys():
             d[key] = {};
             for subkey in self.data[key].keys():
                 d[key][subkey] = self.data[key][subkey].get_base_data();
-        df_coefficients = pd.DataFrame(data = d);
-        return df_coefficients;    
+        df = pd.DataFrame(data = d);
+        
+        return df;    
         
 ## Constraints       
 class _Constraint(_Type):
@@ -576,18 +592,6 @@ class _Constraint(_Type):
 
     '''
 
-    def display_data(self):
-        '''Display data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();
-        df_internal = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
-        return df_internal;
-        
-    def get_base_data(self):
-        '''Get base data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();        
-        df_internal = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
-        return df_internal;  
-        
     def _make_mpcpy_ts_list(self):
         '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
@@ -621,18 +625,6 @@ class _Price(_Type):
 
     '''
 
-    def display_data(self):
-        '''Display data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();
-        df_weather = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
-        return df_weather;
-        
-    def get_base_data(self):
-        '''Get base data as pandas dataframe.'''
-        self._make_mpcpy_ts_list();        
-        df_weather = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
-        return df_weather;
-        
     def _make_mpcpy_ts_list(self):
         '''Make a list of timeseries from a data dictionary.'''
         self._ts_list = [];
@@ -689,7 +681,7 @@ class WeatherFromEPW(_Weather):
                                   'weaSolTim', \
                                   'weaSolZen'];         
 
-    def collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from epw file into data dictionary.
 
         '''
@@ -886,7 +878,7 @@ class WeatherFromCSV(_Weather, utility.DAQ):
         assert(bool(self.lat) == True);
         assert(bool(self.lon) == True);
            
-    def collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from csv file into data dictionary.
         
         '''
@@ -937,7 +929,7 @@ class InternalFromCSV(_Internal, utility.DAQ):
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
                    
-    def collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from the csv file into data dictionary.
         
         '''
@@ -989,7 +981,7 @@ class InternalFromOccupancyModel(_Internal):
         # Common kwargs    
         self._parse_time_zone_kwargs(kwargs);
         
-    def collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from the occupancy model into data dictionary.
         
         '''
@@ -1123,7 +1115,7 @@ class ControlFromCSV(_Control, utility.DAQ):
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);             
                    
-    def collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from the csv file into data dictionary.
         
         '''
@@ -1171,7 +1163,7 @@ class OtherInputFromCSV(_OtherInput, utility.DAQ):
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);             
                    
-    def collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from the csv file into data dictionary.
         
         '''
@@ -1274,7 +1266,7 @@ class ConstraintFromCSV(_Constraint, utility.DAQ):
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
             
-    def collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from the csv file into data dictionary.
         
         '''
@@ -1329,7 +1321,7 @@ class ConstraintFromOccupancyModel(_Constraint):
         # Common kwargs
         self._parse_time_zone_kwargs(kwargs);
         
-    def collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from the occupancy model to create data dictionary.
         
         '''
@@ -1381,7 +1373,7 @@ class PriceFromCSV(_Price, utility.DAQ):
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
             
-    def collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from the csv file into data dictionary.
         
         '''
