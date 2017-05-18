@@ -2,15 +2,16 @@
 User Guide
 ==========
 
+
 .. toctree::
    :maxdepth: 3
 
    introduction
    gettingStarted
-   variables_units
+   units
+   variables
    exodata
    systems
    models
    optimization
    occupant
-

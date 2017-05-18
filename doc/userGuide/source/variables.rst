@@ -1,0 +1,5 @@
+=========
+Variables
+=========
+
+.. automodule:: mpcpy.variables
