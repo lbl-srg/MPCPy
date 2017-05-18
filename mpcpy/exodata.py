@@ -238,7 +238,7 @@ class _Type(utility.mpcpyPandas):
     __metaclass__ = ABCMeta;
     
     
-    def collect_data(self, start_time=None, final_time=None):
+    def collect_data(self, start_time, final_time):
         '''Collect data from specified source.
         
         Parameters
