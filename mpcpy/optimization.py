@@ -169,7 +169,8 @@ class JModelica(Package, utility.FMU):
         
         self.mopfile.write('\n');
         self.mopfile.write('  model ' + self.Model.modelpath.split('.')[-1] + '_initialize\n');
-        self.mopfile.write('    ' + self.Model.modelpath.split('.')[-1] + ' mpc_model(\n');
+        package = self.Model.modelpath.split('.')[1:];
+        self.mopfile.write('    ' + '.'.join(package) + ' mpc_model(\n');
         # Add parameters if they exist
         if self.Model.parameter_data:
             for key in self.Model.parameter_data.keys()[:-1]:
@@ -194,6 +195,8 @@ class JModelica(Package, utility.FMU):
         self.mopfile.write('    der(J) = '+self.objective+';\n');
         # End initalization model
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_initialize;\n');
+        # Save the model path of the initialization and optimziation models
+        self.mopmodelpath = self.Model.modelpath.split('.')[0] + '.' + self.Model.modelpath.split('.')[-1];
         
     def _write_control_mop(self):
         '''Complete the mop file for a control optimization problem.'''
@@ -271,7 +274,7 @@ class JModelica(Package, utility.FMU):
     def _simulate_initial(self):
         '''Simulate the model for an initial guess of the optimization solution.'''
         # Compile the optimization initializaiton model                                             
-        self.fmupath = compile_fmu(self.Model.modelpath + '_initialize', \
+        self.fmupath = compile_fmu(self.mopmodelpath + '_initialize', \
                                    self.moppath, \
                                    compiler_options = {'extra_lib_dirs':self.Model.libraries});
         # Set Exogenous
@@ -309,7 +312,7 @@ class JModelica(Package, utility.FMU):
         # Create ExternalData structure
         self._create_external_data();
         # Transfer optimization problem to casADi                         
-        self.opt_problem = transfer_optimization_problem(self.Model.modelpath + '_optimize', \
+        self.opt_problem = transfer_optimization_problem(self.mopmodelpath + '_optimize', \
                                                          self.moppath, \
                                                          compiler_options = {'extra_lib_dirs':self.Model.libraries});
         # Set optimization options
