@@ -48,7 +48,7 @@ class Modelica(_Model, utility.FMU, utility.Building):
         self.name = 'modelica';    
         self.measurements = measurements;
         self._create_fmu(kwargs);
-        self.input_names = self.get_input_names();                                       
+        self.input_names = self._get_input_names();                                       
         self._estimate_method = estimate_method(self);
         self._validate_method = validate_method(self);
         self._parse_building_kwargs(kwargs);

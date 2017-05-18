@@ -270,7 +270,7 @@ class _Type(utility.mpcpyPandas):
         '''
         
         self._make_mpcpy_ts_list();
-        df = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
+        df = self._mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
         
         return df;
         
@@ -286,7 +286,7 @@ class _Type(utility.mpcpyPandas):
         '''
         
         self._make_mpcpy_ts_list();        
-        df = self.mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
+        df = self._mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
         
         return df;
                
@@ -309,7 +309,7 @@ class _Weather(_Type, utility.FMU):
         '''Translate csv column to data variable.'''
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);
@@ -481,13 +481,13 @@ class _Internal(_Type):
         varname = load + '_' + zone;
         unit = self.variable_map[self._key][2];        
         try:
-            self.data[zone][load] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self.data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);
         except KeyError:
             self.data[zone] = {};
-            self.data[zone][load] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self.data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);        
@@ -510,7 +510,7 @@ class _Control(_Type):
         '''Translate csv column to data dictionary.'''
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);   
@@ -532,7 +532,7 @@ class _OtherInput(_Type):
         '''Translate csv column to data dictionary.'''
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);
@@ -607,13 +607,13 @@ class _Constraint(_Type):
         varname = state + '_' + key;
         unit = self.variable_map[self._key][2];        
         try:
-            self.data[state][key] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);
         except KeyError:
             self.data[state] = {};
-            self.data[state][key] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);        
@@ -636,7 +636,7 @@ class _Price(_Type):
         '''Translate csv column to data dictionary.'''
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);        
@@ -768,60 +768,60 @@ class WeatherFromEPW(_Weather):
             # Convert to mpcpy standard
             if key == 'Atmospheric station pressure':
                 varname = 'weaPAtm';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.Pa, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.Pa, start_time = self.start_time, final_time = self.final_time);
                 self._checkPAtm();
             elif key == 'Dew point temperature':
                 varname = 'weaTDewPoi';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.degC, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.degC, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Dry bulb temperature':
                 varname = 'weaTDryBul';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.degC, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.degC, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Relative humidity':
                 varname = 'weaRelHum';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.percent, start_time = self.start_time, final_time = self.final_time);                
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.percent, start_time = self.start_time, final_time = self.final_time);                
                 self._checkRelHum();
             elif key == 'Opaque sky cover':
                 varname = 'weaNOpa';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.unit10, start_time = self.start_time, final_time = self.final_time);                
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.unit10, start_time = self.start_time, final_time = self.final_time);                
                 self._checkNOpa();
             elif key == 'Ceiling':
                 varname = 'weaCelHei';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.m, start_time = self.start_time, final_time = self.final_time);                
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.m, start_time = self.start_time, final_time = self.final_time);                
                 self._checkCelHei();
             elif key == 'Total sky cover':
                 varname = 'weaNTot';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.unit10, start_time = self.start_time, final_time = self.final_time);                 
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.unit10, start_time = self.start_time, final_time = self.final_time);                 
                 self._checkNTot();
             elif key == 'Wind speed':
                 varname = 'weaWinSpe';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.m_s, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.m_s, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Wind direction':
                 varname = 'weaWinDir';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.deg, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.deg, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Horizontal infrared radiation':
                 varname = 'weaHHorIR';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Direct normal radiation':
                 varname = 'weaHDirNor';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time); 
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time); 
             elif key == 'Global horizontal radiation':
                 varname = 'weaHGloHor';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Diffuse horizontal radiation':
                 varname = 'weaHDifHor';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Averaged global horizontal illuminance':
                 varname = 'weaIAveHor';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Direct normal illuminance':
                 varname = 'weaIDirNor';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Diffuse horizontal illuminance':
                 varname = 'weaIDifHor';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Zenith luminance':
                 varname = 'weaZLum';
-                self.data[varname] = self.dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.cd_m2, start_time = self.start_time, final_time = self.final_time);          
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.cd_m2, start_time = self.start_time, final_time = self.final_time);          
         # Time shift the solar data back 30 minutes by linear interpolation (see Buildings.BoundaryConditions.WeatherData.ReaderTMY3 info)
         for key in self.data.keys():
             if key in ['weaHHorIR', 'weaHGloHor', 'weaHDirNor', 'weaHDifHor', \

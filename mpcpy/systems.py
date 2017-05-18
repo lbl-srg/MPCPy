@@ -64,7 +64,7 @@ class EmulationFromFMU(_Emulation, utility.FMU):
         self.name = 'emulation_from_fmu';
         self._create_fmu(kwargs);
         self.measurements = measurements
-        self.input_names = self.get_input_names();
+        self.input_names = self._get_input_names();
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
         
@@ -91,7 +91,7 @@ class RealFromCSV(_Real, utility.DAQ):
         '''Translate csv column to measurement dictionary.'''
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];
-        self.measurements[varname]['Measured'] = self.dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
-                                                                                     start_time=self.start_time, final_time=self.final_time, \
-                                                                                     cleaning_type = self._cleaning_type, \
-                                                                                     cleaning_args = self._cleaning_args);             
+        self.measurements[varname]['Measured'] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+                                                                                      start_time=self.start_time, final_time=self.final_time, \
+                                                                                      cleaning_type = self._cleaning_type, \
+                                                                                      cleaning_args = self._cleaning_args);             
