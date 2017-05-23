@@ -1,6 +1,5 @@
 from __future__ import division
 import numpy as np
-import pdb
 
 def param_inference(x,h,empty_time):
     # Input: x - data (np array)
@@ -30,5 +29,4 @@ def param_inference(x,h,empty_time):
     else:
         mu = D/queue_length
 
-   # pdb.set_trace()
     return lam, mu
