@@ -26,7 +26,7 @@ def param_inference(x,h,empty_time):
         if h > empty_time:
             mu = 100
         else:
-            mu = 0
+            mu = 1e-5
     else:
         mu = D/queue_length
 
