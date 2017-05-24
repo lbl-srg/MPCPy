@@ -276,7 +276,7 @@ class Queueing(unittest.TestCase):
         self.occupancy.set_simulate_options(simulate_options);
         self.occupancy.validate(self.start_time, self.final_time, self.MPCPyPath+'/unittests/resources/occupancy_model_validate');
         
-    def test_generate_load(self):
+    def test_get_load(self):
         '''Test generation of occupancy load data using occupancy prediction.'''
         plt.close('all');
         # Time
@@ -289,14 +289,14 @@ class Queueing(unittest.TestCase):
         simulate_options = self.occupancy.get_simulate_options();
         simulate_options['iter_num'] = 5;            
         self.occupancy.simulate(self.start_time, self.final_time);
-        load = self.occupancy.generate_load(100);
+        load = self.occupancy.get_load(100);
         load.plot();
         plt.ylabel('Internal Load [W]');
         plt.xlabel('Time');
         plt.savefig(self.MPCPyPath+'/unittests/resources/occupancy_model_load.png');
         plt.close();
         
-    def test_generate_constraint(self):
+    def test_get_constraint(self):
         '''Test generation of occupancy constraint data using occupancy prediction.'''
         plt.close('all');
         # Time
@@ -309,7 +309,7 @@ class Queueing(unittest.TestCase):
         simulate_options = self.occupancy.get_simulate_options();
         simulate_options['iter_num'] = 5;               
         self.occupancy.simulate(self.start_time, self.final_time);
-        constraint = self.occupancy.generate_constraint(20, 25);
+        constraint = self.occupancy.get_constraint(20, 25);
         constraint.plot();
         plt.ylim([15,30]);
         plt.ylabel('Temperature [degC]');
