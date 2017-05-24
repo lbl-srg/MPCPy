@@ -3,7 +3,6 @@ from simulate_queue import simulate_queue
 from parameter_inference import param_inference
 import numpy as np
 import matplotlib.pyplot as plt
-import pdb
 import scipy.io
 from adaptive_breakpoint_placement import adaptive_breakpoint_placement
 from interp1 import interp1
@@ -101,7 +100,6 @@ for day in range(1,7):
             continue
 
         if np.any(syssize <0):
-            pdb.set_trace()
             raise ValueError('negative syssize')
 
         if jmptimes == None:

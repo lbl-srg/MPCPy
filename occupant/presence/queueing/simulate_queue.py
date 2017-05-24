@@ -1,6 +1,5 @@
 from __future__ import division
 import numpy as np
-import pdb
 from unique_last import unique_last
 import matplotlib.pyplot as plt
 import warnings
@@ -48,7 +47,6 @@ def simulate_queue(maxtime,lam,mu,nstart,empty_time):
 
     # the actual non-homogenous arrival rate at the arrival events
     arrtimes_floor = np.floor(arrtimes).astype(int)
-   # pdb.set_trace()
     lam_vec = lam[arrtimes_floor]
 
 
@@ -63,7 +61,6 @@ def simulate_queue(maxtime,lam,mu,nstart,empty_time):
         #     try:
         E = arrtimes[np.where(np.logical_and(r - lam_vec < 0, arrtimes_floor < empty_time))]
             # except Warning as e:
-            #     pdb.set_trace()
             #     print('error found:',e)
 
 
@@ -130,10 +127,7 @@ def simulate_service(arrtime, mu):
 def simulate_service_with_trunc(arrtime,mu,trunc_length):
     mu_used = mu[arrtime:arrtime+trunc_length]
     mu_cum = np.cumsum(mu_used)
-    try:
-        cdf = (1-np.exp(-mu_cum))/(1-np.exp(-mu_cum[-1]))
-    except:
-        pdb.set_trace()
+    cdf = (1-np.exp(-mu_cum))/(1-np.exp(-mu_cum[-1]))
     r = np.random.uniform(0,1,1)
     temp = np.where(cdf > r)
 
@@ -142,4 +136,3 @@ def simulate_service_with_trunc(arrtime,mu,trunc_length):
         return answer
     except:
         print('temp = ', temp)
-        pdb.set_trace()
