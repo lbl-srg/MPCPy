@@ -2,7 +2,6 @@
 from __future__ import division
 import numpy as np
 import random as rd
-import pdb
 from simulate_queue import simulate_queue
 from interp1 import interp1
 from parameter_inference import param_inference
@@ -66,13 +65,12 @@ def adaptive_breakpoint_placement(data, res, margin, n_max):
 
             for i in range(valSize):
                 x = data[i,:]
-                #pdb.set_trace()
                 if x[left:ind_vec[j]].size == 0:
-                    pdb.set_trace()
+                    raise ValueError('x[left:ind_vec[j]].size == 0')
                 else:
                     lambda_1,mu_1 = param_inference(x[left:ind_vec[j]], round((left+ind_vec[j])/2), empty_time)
                 if x[ind_vec[j]:right].size == 0:
-                    pdb.set_trace()
+                    raise ValueError('x[ind_vec[j]:right].size == 0')
                 else:
                     lambda_2, mu_2 = param_inference(x[ind_vec[j]:right], round((ind_vec[j] + 1 + right) / 2),
                                                      empty_time)
@@ -170,7 +168,6 @@ def adaptive_breakpoint_placement(data, res, margin, n_max):
         if min_ind_vec[0].size == 0:
             if left < empty_time & right > empty_time:
                 seg_point.append(empty_time)
-               # pdb.set_trace()
             continue
 
         min_ind = min_ind_vec[rd.randint(0,len(min_ind_vec)-1)]
@@ -179,10 +176,8 @@ def adaptive_breakpoint_placement(data, res, margin, n_max):
 
         if ind_vec[min_ind][0] > empty_time:
             seg_point.append(empty_time)
-            #pdb.set_trace()
             continue
         else:
-           # pdb.set_trace()
             seg_point.append(ind_vec[min_ind][0])
 
 
@@ -196,7 +191,6 @@ def adaptive_breakpoint_placement(data, res, margin, n_max):
             stack_error.append(err_2[min_ind][0])
 
 
-       # pdb.set_trace()
         n += 1
         print n
 
