@@ -1,3 +1,5 @@
 ============
 Optimization
 ============
+
+.. automodule:: mpcpy.optimization
