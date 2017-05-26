@@ -63,11 +63,11 @@ from mpcpy import units
 from mpcpy import variables
 from mpcpy import utility
 from mpcpy import optimization
-from occupant.presence.queueing.adaptive_breakpoint_placement import adaptive_breakpoint_placement
-from occupant.presence.queueing.simulate_queue import simulate_queue
-from occupant.presence.queueing.unique_last import unique_last
-from occupant.presence.queueing.interp1 import interp1
-from occupant.presence.queueing.parameter_inference_given_segments import parameter_inference_given_segment
+from occupant.occupancy.queueing.adaptive_breakpoint_placement import adaptive_breakpoint_placement
+from occupant.occupancy.queueing.simulate_queue import simulate_queue
+from occupant.occupancy.queueing.unique_last import unique_last
+from occupant.occupancy.queueing.interp1 import interp1
+from occupant.occupancy.queueing.parameter_inference_given_segments import parameter_inference_given_segment
 from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
@@ -761,13 +761,15 @@ class QueueModel(_OccupancyMethod):
     spaces of buildings: a queueing approach." Journal of Building Performance 
     Simulation, 10(4), 406-421.
     
+    See ``occupant.occupancy.queueing``` for more information.
+    
     Attributes
     ----------
     estimate_options : dictionary
         Specifies options for model estimation with the following keys:
-        -res : ... 
-        -margin : ... 
-        -n_max : ...
+        -res : defines the resolution of grid search for the optimal breakpoint placement 
+        -margin : specifies the minimum distance between two adjacent breakpoints
+        -n_max : defines the upper limit of the number of breakpoints returned by the algorithm
     simulate_options : dictionary
         Specifies options for model simulation.  
         -iter_num : defines the number of iterations for monte-carlo simulation.
