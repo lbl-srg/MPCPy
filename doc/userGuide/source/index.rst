@@ -8,7 +8,6 @@ User Guide
 
    introduction
    gettingStarted
-   units
    variables
    exodata
    systems

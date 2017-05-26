@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-units.py
-by David Blum
+``units`` classes manage the conversion of units for MPCPy variables.  See 
+documentation on ``variables`` for more information.
 
-This module contains the classes and interfaces for the units of mpcpy.
 """
 
 from abc import ABCMeta, abstractmethod
@@ -24,7 +23,7 @@ class _DisplayUnit(object):
     @abstractmethod
     def _convert_from_base(self):
         pass;
-    def __init__(self,variable):
+    def __init__(self, variable):
         self._define_quantity(variable);
         self._define_display_unit();       
 
