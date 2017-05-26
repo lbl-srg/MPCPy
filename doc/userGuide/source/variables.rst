@@ -1,5 +1,5 @@
-=========
-Variables
-=========
+===================
+Variables and Units
+===================
 
 .. automodule:: mpcpy.variables
