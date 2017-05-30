@@ -6,6 +6,9 @@ Occupancy models consider when occupants arrive or depart a space
 Models
 ======
 
+Queueing
+--------
+
 .. automodule:: occupant.occupancy.queueing
 
 """
