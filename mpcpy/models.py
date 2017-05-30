@@ -761,7 +761,7 @@ class QueueModel(_OccupancyMethod):
     spaces of buildings: a queueing approach." Journal of Building Performance 
     Simulation, 10(4), 406-421.
     
-    See ``occupant.occupancy.queueing``` for more information.
+    See ``occupant.occupancy.queueing`` for more information.
     
     Attributes
     ----------
