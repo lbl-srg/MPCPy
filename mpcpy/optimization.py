@@ -20,8 +20,6 @@ Problem Types
 
 .. autoclass:: mpcpy.optimization.EnergyCostMin
 
-.. autoclass:: mpcpy.optimization.ParameterEstimate
-
 Package Types
 =============
 
@@ -221,9 +219,11 @@ class EnergyCostMin(_Problem):
         price_data = kwargs['price_data'];
         Optimization._package_type._energycostmin(Optimization, price_data);
         
-class ParameterEstimate(_Problem):
+class _ParameterEstimate(_Problem):
     '''Minimize the error between simulated and measured data by adjusting 
-    time-invariant parameters of the model.
+    time-invariant parameters of the model.  
+    
+    To be called from mpcpy.models.JModelica only.
     
     '''
 

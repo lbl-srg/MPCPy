@@ -716,7 +716,7 @@ class JModelica(_Estimate):
 
         '''
 
-        self.opt_problem = optimization.Optimization(Model, optimization.ParameterEstimate, optimization.JModelica, {});
+        self.opt_problem = optimization.Optimization(Model, optimization._ParameterEstimate, optimization.JModelica, {});
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
         
 #%% Validate Method Interfaces
