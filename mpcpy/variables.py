@@ -111,6 +111,7 @@ Classes
     :members: set_data, display_data, get_base_data, get_display_unit,
               get_base_unit, set_display_unit, get_display_unit_name, 
               get_base_unit_name
+
 .. autoclass:: mpcpy.variables.Timeseries
     :members: set_data, display_data, get_base_data, get_display_unit, 
               get_base_unit, set_display_unit, get_display_unit_name, 
