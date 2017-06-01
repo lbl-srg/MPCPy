@@ -405,7 +405,9 @@ class Occupancy(_Model):
         ------
         measurements : dictionary
             Updates the ``'Simulated'`` key for each measurement in the 
-            measurements attribute.
+            measurements attribute.  If available by the occupancy method, 
+            also updates the ``'SimulatedError'`` key for each measurement in
+            the measurements attribute.
 
         '''
         
