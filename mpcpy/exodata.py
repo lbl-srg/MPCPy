@@ -200,10 +200,10 @@ measurement data. Parameter data object variables are set when simulating
 models, and are estimated using model learning techniques if flagged to do so.
 Exogenous parameter data has the following organization:
 
-{"Parameter Name" : {"Parameter Variable Name" : mpcpy.Variables.Static}}
+{"Parameter Name" : {"Parameter Key Name" : mpcpy.Variables.Static}}
 
 The parameter name must match that which is in the model.  The parameter 
-variable names should be chosen from the following list:
+key names should be chosen from the following list:
 
 - Free - boolean flag for inclusion in model learning algorithms
 - Value - value of the parameter, which is also used as an initial guess for model learning algorithms
@@ -1178,7 +1178,7 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
     '''Collects parameter data from a csv file. 
     
     The csv file rows must be named as the parameter names and the columns 
-    must be named as the parameter variable names.
+    must be named as the parameter key names.
 
     Parameters
     ----------
@@ -1188,7 +1188,7 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
     Attributes
     ----------
     data : dictionary
-        {"Parameter Name" : {"Parameter Variable Name" : mpcpy.Variables.Static}}.
+        {"Parameter Name" : {"Parameter Key Name" : mpcpy.Variables.Static}}.
     
     '''
 
