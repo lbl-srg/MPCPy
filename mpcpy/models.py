@@ -73,7 +73,7 @@ from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
 
 #%% Model Class
-class _Model(utility.mpcpyPandas):
+class _Model(utility._mpcpyPandas):
     '''Base class for representing a model for MPC.
     
     '''
@@ -105,7 +105,7 @@ class _Model(utility.mpcpyPandas):
         pass;
 
 #%% Model Implementations
-class Modelica(_Model, utility.FMU, utility.Building):
+class Modelica(_Model, utility._FMU, utility._Building):
     '''Class for models of physical systems represented by Modelica or an FMU.
 
     Parameters
@@ -532,7 +532,7 @@ class Occupancy(_Model):
         
         
 #%% Estimate Method Interface
-class _Estimate(utility.mpcpyPandas):
+class _Estimate(utility._mpcpyPandas):
     '''Interface for a model identifcation method.
     
     '''
@@ -544,7 +544,7 @@ class _Estimate(utility.mpcpyPandas):
         pass;
         
 #%% ValidateMethod Interface
-class _Validate(utility.mpcpyPandas):
+class _Validate(utility._mpcpyPandas):
     '''Interface for a model validation method.
     
     '''
@@ -579,7 +579,7 @@ class _Validate(utility.mpcpyPandas):
             plt.savefig(validate_filename + '_' + key + '.png');
 
 #%% OccupancyModelMethod Interface
-class _OccupancyMethod(utility.mpcpyPandas):
+class _OccupancyMethod(utility._mpcpyPandas):
     '''Interface for an occupancy model.
     
     '''

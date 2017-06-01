@@ -60,7 +60,7 @@ from abc import ABCMeta, abstractmethod
 from mpcpy import utility
 
 #%% System class
-class _System(utility.mpcpyPandas, utility.Building):
+class _System(utility._mpcpyPandas, utility._Building):
     '''Base class for representing systems.
     
     ''' 
@@ -131,7 +131,7 @@ class _Real(_System):
         self._collect_data();
         
 #%% Source implementations
-class EmulationFromFMU(_Emulation, utility.FMU):
+class EmulationFromFMU(_Emulation, utility._FMU):
     '''System emulation by FMU simulation.
     
     Parameters
@@ -193,7 +193,7 @@ class EmulationFromFMU(_Emulation, utility.FMU):
 
         self._simulate_fmu();
         
-class RealFromCSV(_Real, utility.DAQ):
+class RealFromCSV(_Real, utility._DAQ):
     '''System measured data located in csv.
     
     Parameters

@@ -235,7 +235,7 @@ class _ParameterEstimate(_Problem):
         Optimization._package_type._parameterestimate(Optimization, kwargs['measurement_variable_list']);
         
 #%% Solver Type Implementation
-class JModelica(_Package, utility.FMU):
+class JModelica(_Package, utility._FMU):
     '''Use JModelica to solve the optimization problem.
     
     This package is compatible with ``models.Modelica`` objects.
@@ -481,7 +481,7 @@ class JModelica(_Package, utility.FMU):
         self.opt_opts['external_data'] = self.external_data;
         self.opt_opts['init_traj'] = self.res_init;
         self.opt_opts['nominal_traj'] = self.res_init;
-        self.opt_opts['n_e'] = self.sim_opts['ncp'];
+        self.opt_opts['n_e'] = self._sim_opts['ncp'];
         # Optimize
         self.res_opt = self.opt_problem.optimize(options=self.opt_opts);
         print(self.res_opt.get_solver_statistics());
@@ -509,10 +509,10 @@ class JModelica(_Package, utility.FMU):
         eliminated = {};
         i = 1;
         N_input = 0;
-        if self.input_object != {}:
-            for key in self.input_object[0]:
-                input_traj = np.vstack((np.transpose(self.input_object[1][:,0]), \
-                                       np.transpose(self.input_object[1][:,i])));
+        if self._input_object != {}:
+            for key in self._input_object[0]:
+                input_traj = np.vstack((np.transpose(self._input_object[1][:,0]), \
+                                       np.transpose(self._input_object[1][:,i])));
                 eliminated[key] = input_traj; 
                 N_input = N_input + 1;
                 i = i + 1;           

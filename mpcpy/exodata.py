@@ -230,7 +230,7 @@ from mpcpy import units
 from mpcpy import variables
      
 #%% Abstract source interface class
-class _Type(utility.mpcpyPandas):
+class _Type(utility._mpcpyPandas):
     '''Base class for exogenous data objects.
     
     '''
@@ -293,7 +293,7 @@ class _Type(utility.mpcpyPandas):
 #%% Source implementations
 
 ## Weather       
-class _Weather(_Type, utility.FMU):
+class _Weather(_Type, utility._FMU):
     '''Mix-in class for weather exogenous data.
 
     '''        
@@ -833,7 +833,7 @@ class WeatherFromEPW(_Weather):
                 ts = ts.ix[1:].append(ts_old.tail(n=1));
                 self.data[key].set_data(ts);
                      
-class WeatherFromCSV(_Weather, utility.DAQ):
+class WeatherFromCSV(_Weather, utility._DAQ):
     '''Collects weather data from a csv file.
 
     Parameters
@@ -892,7 +892,7 @@ class WeatherFromCSV(_Weather, utility.DAQ):
             self._process_weather_data();   
                                              
 #%% Internal source implementations
-class InternalFromCSV(_Internal, utility.DAQ):
+class InternalFromCSV(_Internal, utility._DAQ):
     '''Collects internal data from a csv file.
 
     Parameters
@@ -992,7 +992,7 @@ class InternalFromOccupancyModel(_Internal):
         for zone, loads, occupancy_model in zip(self.zone_list, self.load_list, self.occupancy_model_list):
             self.data[zone] = {};
             for varname, load in zip(['intCon', 'intRad', 'intLat'], loads):
-                ts = occupancy_model.generate_load(load);
+                ts = occupancy_model.get_load(load);
                 self.data[zone][varname] = variables.Timeseries(varname+'_'+zone, ts[self.start_time:self.final_time], self.unit);
 
 class InternalFromTable(_Internal):
@@ -1078,7 +1078,7 @@ class InternalFromTable(_Internal):
         return internal
         
 #%% Control source implementations        
-class ControlFromCSV(_Control, utility.DAQ):
+class ControlFromCSV(_Control, utility._DAQ):
     '''Collects control data from a csv file.
 
     Parameters
@@ -1126,7 +1126,7 @@ class ControlFromCSV(_Control, utility.DAQ):
         self._read_timeseries_from_csv();
         
 #%% Other input source implementations        
-class OtherInputFromCSV(_OtherInput, utility.DAQ):
+class OtherInputFromCSV(_OtherInput, utility._DAQ):
     '''Collects other input data from a CSV file.
 
     Parameters
@@ -1174,7 +1174,7 @@ class OtherInputFromCSV(_OtherInput, utility.DAQ):
         self._read_timeseries_from_csv();        
         
 #%% Parameter source implementations 
-class ParameterFromCSV(_Parameter, utility.DAQ):
+class ParameterFromCSV(_Parameter, utility._DAQ):
     '''Collects parameter data from a csv file. 
     
     The csv file rows must be named as the parameter names and the columns 
@@ -1229,7 +1229,7 @@ class ParameterFromCSV(_Parameter, utility.DAQ):
                 self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
             
 #%% Constraint source implementations
-class ConstraintFromCSV(_Constraint, utility.DAQ):
+class ConstraintFromCSV(_Constraint, utility._DAQ):
     '''Collects constraint data from a csv file.
 
     Parameters
@@ -1332,11 +1332,11 @@ class ConstraintFromOccupancyModel(_Constraint):
         for state_variable, values, constraint_type, unit in zip(self.state_variable_list, self.values_list, self.constraint_type_list, self.unit_list):
             if state_variable not in self.data:
                 self.data[state_variable] = {};
-            ts = self.occupancy_model.generate_constraint(values[0], values[1]);
+            ts = self.occupancy_model.get_constraint(values[0], values[1]);
             self.data[state_variable][constraint_type] = variables.Timeseries(state_variable+'_'+constraint_type, ts[self.start_time:self.final_time], unit);
 
 #%% Price source implementations
-class PriceFromCSV(_Price, utility.DAQ):
+class PriceFromCSV(_Price, utility._DAQ):
     '''Collects price data from a csv file.
 
     Parameters

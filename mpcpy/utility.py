@@ -34,7 +34,7 @@ from pymodelica import compile_fmu
 
 
 #%%
-class mpcpyPandas(object):
+class _mpcpyPandas(object):
     '''Mixin class for methods related to pandas integration.
     
     '''
@@ -229,7 +229,7 @@ class mpcpyPandas(object):
             self.tz_name = 'UTC';        
 
 #%%
-class FMU(mpcpyPandas):
+class _FMU(_mpcpyPandas):
     '''Mixin class for methods related to utilizing fmus.
     
     '''
@@ -515,7 +515,7 @@ class FMU(mpcpyPandas):
         return unit_class
         
 #%%
-class Building(object):
+class _Building(object):
     '''Mixin class for methods related to building models.
     
     '''
@@ -578,7 +578,7 @@ class Building(object):
             self.parameter_data = {};
         
 #%%
-class DAQ(object):
+class _DAQ(object):
     '''Mixin class for methods related to collecting data.
     
     '''
