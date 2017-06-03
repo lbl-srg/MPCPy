@@ -653,7 +653,7 @@ class _DAQ(object):
             time_headers = self.time_header;
         else:
             time_headers = ['Time', 'time', 'Timestamp', 'timestamp']; 
-        self._df_csv = pd.read_csv(self.location);        
+        self._df_csv = pd.read_csv(self.file_path);        
         for key in self._df_csv.columns.values:
             if key in time_headers:
                 time = pd.to_datetime(self._df_csv[key], format = self.time_format);
