@@ -198,8 +198,8 @@ class RealFromCSV(_Real, utility._DAQ):
     
     Parameters
     ----------
-    csv_filepath : string
-        CSV file path.
+    csv_file_path : string
+        Path of csv file.
     measurements : dictionary
         {"Measurement Name" : {"Sample" : mpcpy.Variables.Static}}.
     variable_map : dictionary
@@ -227,16 +227,18 @@ class RealFromCSV(_Real, utility._DAQ):
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
+    file_path : string
+        Path of csv file.
         
     '''
 
-    def __init__(self, csv_filepath, measurements, variable_map, **kwargs):
+    def __init__(self, csv_file_path, measurements, variable_map, **kwargs):
         '''Constructor of a system fmu simulation source.
         
         '''
 
         self.name = 'real_from_csv';
-        self.location = csv_filepath;
+        self.file_path = csv_file_path;
         self.measurements = measurements;
         self.variable_map = variable_map;
         self._parse_daq_kwargs(kwargs);

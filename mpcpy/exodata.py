@@ -423,7 +423,7 @@ class _Weather(_Type, utility._FMU):
         
     def _process_weather_data(self):
         '''Use process weather fmu to calculate other necessary weather data.'''
-        # Set filepath for fmu
+        # Set file_path for fmu
         weatherdir = utility.get_MPCPy_path() + '/resources/weather';
         fmuname = 'WeatherProcessor_JModelica_v2.fmu';
         self._create_fmu({'fmupath': weatherdir+'/'+fmuname});
@@ -647,7 +647,7 @@ class WeatherFromEPW(_Weather):
     
     Parameters
     ----------
-    epw_filepath :  string
+    epw_file_path : string
         Path of epw file.
 
     Attributes
@@ -660,16 +660,18 @@ class WeatherFromEPW(_Weather):
         Longitude in degrees.
     tz_name : string
         Timezone name.
+    file_path : string
+        Path of epw file.
        
     '''
 
-    def __init__(self, epw_filepath):
+    def __init__(self, epw_file_path):
         '''Constructor of epw weather exodata object.
 
         '''
 
         self.name = 'weather_from_epw';
-        self.location = epw_filepath;
+        self.file_path = epw_file_path;
         self._read_lat_lon_timZon_from_epw();
         self.tz = tzwhere.tzwhere();
         self.tz_name = self.tz.tzNameAt(self.lat.display_data(), self.lon.display_data());        
@@ -700,7 +702,7 @@ class WeatherFromEPW(_Weather):
 
         '''
 
-        df_epw = pd.read_csv(self.location, nrows = 1, header = None, usecols = [6,7,8], names = ['Latitude', 'Longitude', 'TimeZone']);
+        df_epw = pd.read_csv(self.file_path, nrows = 1, header = None, usecols = [6,7,8], names = ['Latitude', 'Longitude', 'TimeZone']);
         self.lat = variables.Static('lat', df_epw.loc[0,'Latitude'], units.deg);
         self.lon = variables.Static('lon', df_epw.loc[0,'Longitude'], units.deg); 
         self.time_zone = variables.Static('timZon', df_epw.loc[0,'TimeZone'], units.hour);
@@ -728,7 +730,7 @@ class WeatherFromEPW(_Weather):
                   'Albedo', 'Liquid precipitation depth', \
                   'Liquid precipitation quantity'];
         # Read in data
-        df_epw = pd.read_csv(self.location, skiprows = 8, header = None, names=header);
+        df_epw = pd.read_csv(self.file_path, skiprows = 8, header = None, names=header);
         # Convert time columns to timestamp and set as index                           
         df_epw['Hour'] = df_epw['Hour'] - 1;
         
@@ -838,7 +840,7 @@ class WeatherFromCSV(_Weather, utility._DAQ):
 
     Parameters
     ----------
-    csv_filepath : string
+    csv_file_path : string
         Path of csv file.
     variable_map : dictionary
         {"Column Header Name" : ("Weather Variable Name", mpcpy.Units.unit)}.
@@ -852,17 +854,19 @@ class WeatherFromCSV(_Weather, utility._DAQ):
     lon : numeric
         Longitude in degrees.
     tz_name : string
-        Timezone name.        
+        Timezone name.  
+    file_path : string
+        Path of csv file.        
 
     '''
     
-    def __init__(self, csv_filepath, variable_map, **kwargs):
+    def __init__(self, csv_file_path, variable_map, **kwargs):
         '''Constructor of csv weather exodata object.
         
         '''
         
         self.name = 'weather_from_csv';
-        self.location = csv_filepath;  
+        self.file_path = csv_file_path;  
         self.data = {};   
         # Dictionary of format {'csvHeader' : ('weaVarName', mpcpyUnit)}
         self.variable_map = variable_map;          
@@ -897,7 +901,7 @@ class InternalFromCSV(_Internal, utility._DAQ):
 
     Parameters
     ----------
-    csv_filepath : string
+    csv_file_path : string
         Path of csv file.
     variable_map : dictionary
         {"Column Header Name" : ("Zone Name", "Internal Variable Name", mpcpy.Units.unit)}.
@@ -911,17 +915,19 @@ class InternalFromCSV(_Internal, utility._DAQ):
     lon : numeric
         Longitude in degrees.  For timezone.
     tz_name : string
-        Timezone name.        
+        Timezone name.  
+    file_path : string
+        Path of csv file.
 
     '''
     
-    def __init__(self, csv_filepath, variable_map, **kwargs):
+    def __init__(self, csv_file_path, variable_map, **kwargs):
         '''Constructor of csv internal exodata object.
         
         '''
         
         self.name = 'internal_from_csv';
-        self.location = csv_filepath;
+        self.file_path = csv_file_path;
         self.data = {};   
         # Dictionary of format {'csvHeader' : ('zone', 'RadConLatOcc', mpcpyUnit)}
         self.variable_map = variable_map;
@@ -1000,16 +1006,16 @@ class InternalFromTable(_Internal):
     
     '''       
 
-    def __init__(self, table_filepath):
+    def __init__(self, table_file_path):
         '''Constructor of a table file internal data source.'''   
         self.name = 'internal_from_table';
-        self.location = table_filepath;
+        self.file_path = table_file_path;
         self.internalkeys = ['intCon', 'intRad', 'intLat'];
         self.data = {};
 
     def get_internal_data(self, final_time, sample_time):
         '''Read internal data from table file into internal index.'''        
-        table_filepath = self.location;
+        table_file_path = self.file_path;
         zones = self.zone_names;
         internalkeys = self.internalkeys;
         internal = {};
@@ -1023,7 +1029,7 @@ class InternalFromTable(_Internal):
             # For each zone
             for zone in zones:
                 # Read the table
-                with open(table_filepath, 'r') as table:
+                with open(table_file_path, 'r') as table:
                     mark = [];
                     load = [];
                     startline = 0;
@@ -1083,7 +1089,7 @@ class ControlFromCSV(_Control, utility._DAQ):
 
     Parameters
     ----------
-    csv_filepath : string
+    csv_file_path : string
         Path of csv file.
     variable_map : dictionary
         {"Column Header Name" : ("Control Variable Name", mpcpy.Units.unit)}.
@@ -1097,17 +1103,19 @@ class ControlFromCSV(_Control, utility._DAQ):
     lon : numeric
         Longitude in degrees.  For timezone.
     tz_name : string
-        Timezone name.        
+        Timezone name. 
+    file_path : string
+        Path of csv file.
 
     '''
 
-    def __init__(self, csv_filepath, variable_map, **kwargs):
+    def __init__(self, csv_file_path, variable_map, **kwargs):
         '''Constructor of csv control exodata object.
         
         '''
 
         self.name = 'control_from_csv';
-        self.location = csv_filepath;
+        self.file_path = csv_file_path;
         self.data = {};   
         # Dictionary of format {'csvHeader' : ('conVarName', mpcpyUnit)}
         self.variable_map = variable_map;
@@ -1131,7 +1139,7 @@ class OtherInputFromCSV(_OtherInput, utility._DAQ):
 
     Parameters
     ----------
-    csv_filepath : string
+    csv_file_path : string
         Path of csv file.
     variable_map : dictionary
         {"Column Header Name" : ("Other Input Variable Name", mpcpy.Units.unit)}.
@@ -1146,16 +1154,18 @@ class OtherInputFromCSV(_OtherInput, utility._DAQ):
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
+    file_path : string
+        Path of csv file.
     
     '''
 
-    def __init__(self, csv_filepath, variable_map, **kwargs):
+    def __init__(self, csv_file_path, variable_map, **kwargs):
         '''Constructor of csv other input exodata object.
         
         '''
 
         self.name = 'otherinput_from_csv';
-        self.location = csv_filepath;
+        self.file_path = csv_file_path;
         self.data = {};   
         # Dictionary of format {'csvHeader' : ('otherinputVarName', mpcpyUnit)}
         self.variable_map = variable_map;
@@ -1182,23 +1192,25 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
 
     Parameters
     ----------
-    csv_filepath : string
+    csv_file_path : string
         Path of csv file.
 
     Attributes
     ----------
     data : dictionary
         {"Parameter Name" : {"Parameter Key Name" : mpcpy.Variables.Static}}.
+    file_path : string
+        Path of csv file.
     
     '''
 
-    def __init__(self, csv_filepath):
+    def __init__(self, csv_file_path):
         '''Constructor of csv parameter source.
         
         '''
 
         self.name = 'parameter_from_csv';
-        self.location = csv_filepath;
+        self.file_path = csv_file_path;
         self.data = {};
         
     def collect_data(self):
@@ -1213,7 +1225,7 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
         '''
         
         # Read coefficients file
-        df = pd.read_csv(self.location, index_col='Name', dtype={'Unit':str});
+        df = pd.read_csv(self.file_path, index_col='Name', dtype={'Unit':str});
         # Create coefficient dictionary
         for key in df.index.values:
             self.data[key] = {};
@@ -1234,7 +1246,7 @@ class ConstraintFromCSV(_Constraint, utility._DAQ):
 
     Parameters
     ----------
-    csv_filepath : string
+    csv_file_path : string
         Path of csv file.
     variable_map : dictionary
         {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
@@ -1249,16 +1261,18 @@ class ConstraintFromCSV(_Constraint, utility._DAQ):
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
+    file_path : string
+        Path of csv file.
 
     '''
 
-    def __init__(self, csv_filepath, variable_map, **kwargs):
+    def __init__(self, csv_file_path, variable_map, **kwargs):
         '''Constructor of csv constraint exodata object.
         
         '''
 
         self.name = 'constraint_from_csv';
-        self.location = csv_filepath;
+        self.file_path = csv_file_path;
         self.data = {};   
         # Dictionary of format {'csvHeader' : (stateVarName, 'key', mpcpyUnit)}
         self.variable_map = variable_map;
@@ -1341,7 +1355,7 @@ class PriceFromCSV(_Price, utility._DAQ):
 
     Parameters
     ----------
-    csv_filepath : string
+    csv_file_path : string
         Path of csv file.
     variable_map : dictionary
         {"Column Header Name" : ("Price Variable Name", mpcpy.Units.unit)}.
@@ -1356,16 +1370,18 @@ class PriceFromCSV(_Price, utility._DAQ):
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
+    file_path : string
+        Path of csv file.
     
     '''
 
-    def __init__(self, csv_filepath, variable_map, **kwargs):
+    def __init__(self, csv_file_path, variable_map, **kwargs):
         '''Constructor of csv priceexodata object.
         
         '''
 
         self.name = 'constraint_from_csv';
-        self.location = csv_filepath;
+        self.file_path = csv_file_path;
         self.data = {};   
         # Dictionary of format {'csvHeader' : (priceVarName, 'key', mpcpyUnit)}
         self.variable_map = variable_map;
@@ -1382,5 +1398,3 @@ class PriceFromCSV(_Price, utility._DAQ):
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
         self._read_timeseries_from_csv();                
-        
-        
