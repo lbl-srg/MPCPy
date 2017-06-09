@@ -32,13 +32,13 @@ class WeatherFromEPW(TestCaseMPCPy):
         self.assertAlmostEqual(self.weather.lon.display_data(), -87.92, places=4);
         self.assertEqual(self.weather.tz_name, 'America/Chicago');
         
-    def test_collect_data_full(self):
+    def test_collect_data(self):
         start_time = '1/1/2015';
         final_time = '1/1/2016';
         self.weather.collect_data(start_time, final_time);
         # Check reference
         df_test = self.weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_full.csv');
+        self.check_df_timeseries(df_test, 'collect_data.csv');
         
     def test_collect_data_partial(self):
         start_time = '10/2/2015 06:00:00';
@@ -46,7 +46,9 @@ class WeatherFromEPW(TestCaseMPCPy):
         self.weather.collect_data(start_time, final_time);
         # Check references
         df_test = self.weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_partial.csv');
+        self.check_df_timeseries(df_test, 'collect_data_partial_display.csv');
+        df_test = self.weather.get_base_data();
+        self.check_df_timeseries(df_test, 'collect_data_partial_base.csv');
 
 class WeatherFromCSV(TestCaseMPCPy):
     '''Test the collection of weather data from a CSV file.
