@@ -683,7 +683,79 @@ class _DAQ(object):
                     self._cleaning_args = None;   
                 self._translate_variable_map();    
     
+class _Measurements(object):
+    '''Mixin class to handle operations on measurement dictionaries.
+    
+    Concrete class requires _mpcpyPandas methods.
+    
+    '''
+    
+    def display_measurements(self, measurement_key):
+        '''Get measurements data in display units as pandas dataframe.
         
+        Parameters
+        ----------
+        measurement_key : string
+            The measurement dictionary key for which to get the data for all 
+            of the variables.
+        
+        Returns
+        -------
+        df : ``pandas`` dataframe
+            Timeseries dataframe in display units containing data for all 
+            measurement variables.
+        
+        '''
+
+        mpcpy_ts_list = self._make_mpcpy_ts_list(measurement_key);
+        df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = True);
+        
+        return df;
+
+    def get_base_measurements(self, measurement_key):
+        '''Get measurements data in base units as pandas dataframe.
+        
+        Parameters
+        ----------
+        measurement_key : string
+            The measurement dictionary key for which to get the data for all 
+            of the variables.
+        
+        Returns
+        -------
+        df : ``pandas`` dataframe
+            Timeseries dataframe in base units containing data for all 
+            measurement variables.
+        
+        '''
+
+        mpcpy_ts_list = self._make_mpcpy_ts_list(measurement_key);
+        df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = False);
+        
+        return df;
+        
+    def _make_mpcpy_ts_list(self, measurement_key):
+        '''Create mpcpy ts list from measurement dictionary.
+    
+        Parameters
+        ----------
+        measurement_key : string
+            The measurement dictionary key for which to get the data for all 
+            of the variables.
+
+        Returns
+        -------
+        mpcpy_ts_list : list
+            List of mpcpy timeseries variables.
+            
+        '''
+        
+        mpcpy_ts_list = [];
+        for key in self.measurements.keys():
+            mpcpy_ts_list.append(self.measurements[key][measurement_key])
+        
+        return mpcpy_ts_list
+       
 #%% Get the MPCPy path
 def get_MPCPy_path():
     '''Get the MPCPy home path.

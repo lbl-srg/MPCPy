@@ -49,6 +49,8 @@ class SimpleRC(unittest.TestCase):
         plt.ylabel(quantity + ' [' + unit_name + ']');
         plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_simulation' + '.png');
         plt.close();
+        print(self.model.display_measurements('Simulated'));
+        print(self.model.get_base_measurements('Simulated'));
 
 #%%    
 class Estimate_Jmo(unittest.TestCase):

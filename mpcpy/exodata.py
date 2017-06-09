@@ -250,7 +250,6 @@ class _Type(utility._mpcpyPandas):
             
         Yields
         ------
-        
         data : dictionary
             Data attribute.
         
@@ -263,14 +262,13 @@ class _Type(utility._mpcpyPandas):
         
         Returns
         -------
-        
         df : ``pandas`` dataframe
             Timeseries dataframe in display units.
         
         '''
         
-        self._make_mpcpy_ts_list();
-        df = self._mpcpy_ts_list_to_dataframe(self._ts_list, display_data = True);
+        mpcpy_ts_list = self._make_mpcpy_ts_list();
+        df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = True);
         
         return df;
         
@@ -279,14 +277,13 @@ class _Type(utility._mpcpyPandas):
         
         Returns
         -------
-        
         df : ``pandas`` dataframe
             Timeseries dataframe in base units.
             
         '''
         
-        self._make_mpcpy_ts_list();        
-        df = self._mpcpy_ts_list_to_dataframe(self._ts_list, display_data = False);
+        mpcpy_ts_list = self._make_mpcpy_ts_list();        
+        df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = False);
         
         return df;
                
@@ -299,11 +296,21 @@ class _Weather(_Type, utility._FMU):
     '''        
      
     def _make_mpcpy_ts_list(self):
-        '''Make a list of timeseries from a data dictionary.'''
-        self._ts_list = [];
+        '''Make a list of timeseries from a data dictionary.
+        
+        Returns
+        -------
+        mpcpy_ts_list : list
+            List of mpcpy timeseries variables.
+            
+        '''
+        
+        mpcpy_ts_list = [];
         for key in self.data.keys():
             if self.data[key].variability == 'Timeseries':
-                self._ts_list.append(self.data[key]);        
+                mpcpy_ts_list.append(self.data[key]); 
+                
+        return mpcpy_ts_list;
            
     def _translate_variable_map(self):
         '''Translate csv column to data variable.'''
@@ -467,12 +474,22 @@ class _Internal(_Type):
     '''
 
     def _make_mpcpy_ts_list(self):
-        '''Make a list of timeseries from a data dictionary.'''
-        self._ts_list = [];
+        '''Make a list of timeseries from a data dictionary.
+        
+        Returns
+        -------
+        mpcpy_ts_list : list
+            List of mpcpy timeseries variables.
+            
+        '''
+        
+        mpcpy_ts_list = [];
         for zone in self.data.keys():
             for key in self.data[zone].keys():
                 if self.data[zone][key].variability == 'Timeseries':
-                    self._ts_list.append(self.data[zone][key]);
+                    mpcpy_ts_list.append(self.data[zone][key]);
+        
+        return mpcpy_ts_list
         
     def _translate_variable_map(self):
         '''Translate csv column to data disctionary.'''
@@ -500,11 +517,21 @@ class _Control(_Type):
     '''
 
     def _make_mpcpy_ts_list(self):
-        '''Make a list of timeseries from a data dictionary.'''
-        self._ts_list = [];
+        '''Make a list of timeseries from a data dictionary.
+        
+        Returns
+        -------
+        mpcpy_ts_list : list
+            List of mpcpy timeseries variables.
+            
+        '''
+        
+        mpcpy_ts_list = [];
         for key in self.data.keys():
             if self.data[key].variability == 'Timeseries':
-                self._ts_list.append(self.data[key]);        
+                mpcpy_ts_list.append(self.data[key]); 
+                
+        return mpcpy_ts_list
            
     def _translate_variable_map(self):
         '''Translate csv column to data dictionary.'''
@@ -522,11 +549,21 @@ class _OtherInput(_Type):
     '''
 
     def _make_mpcpy_ts_list(self):
-        '''Make a list of timeseries from a data dictionary.'''
-        self._ts_list = [];
+        '''Make a list of timeseries from a data dictionary.
+        
+        Returns
+        -------
+        mpcpy_ts_list : list
+            List of mpcpy timeseries variables.
+            
+        '''
+        
+        mpcpy_ts_list = [];
         for key in self.data.keys():
             if self.data[key].variability == 'Timeseries':
-                self._ts_list.append(self.data[key]);        
+                mpcpy_ts_list.append(self.data[key]);
+                
+        return mpcpy_ts_list
            
     def _translate_variable_map(self):
         '''Translate csv column to data dictionary.'''
@@ -594,11 +631,13 @@ class _Constraint(_Type):
 
     def _make_mpcpy_ts_list(self):
         '''Make a list of timeseries from a data dictionary.'''
-        self._ts_list = [];
+        mpcpy_ts_list = [];
         for state in self.data.keys():
             for key in self.data[state].keys():
                 if self.data[state][key].variability == 'Timeseries':
-                    self._ts_list.append(self.data[state][key]);
+                    mpcpy_ts_list.append(self.data[state][key]);
+                    
+        return mpcpy_ts_list
         
     def _translate_variable_map(self):
         '''Translate csv column to data dictionary.'''
@@ -626,11 +665,21 @@ class _Price(_Type):
     '''
 
     def _make_mpcpy_ts_list(self):
-        '''Make a list of timeseries from a data dictionary.'''
-        self._ts_list = [];
+        '''Make a list of timeseries from a data dictionary.
+        
+        Returns
+        -------
+        mpcpy_ts_list : list
+            List of mpcpy timeseries variables.
+            
+        '''
+        
+        mpcpy_ts_list = [];
         for key in self.data.keys():
             if self.data[key].variability == 'Timeseries':
-                self._ts_list.append(self.data[key]);        
+                mpcpy_ts_list.append(self.data[key]);
+                
+        return mpcpy_ts_list
            
     def _translate_variable_map(self):
         '''Translate csv column to data dictionary.'''

@@ -106,7 +106,9 @@ class EmulationfromFMU(unittest.TestCase):
         plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
         plt.rcParams.update({'font.size': 16});
         plt.savefig(self.MPCPyPath+'/unittests/resources/' + name + '.png');
-        plt.close();        
+        plt.close();
+        print(self.building.display_measurements('Measured'));
+        print(self.building.get_base_measurements('Measured'));
         
 class RealfromCSV(unittest.TestCase):
     #%% CSV
@@ -135,6 +137,8 @@ class RealfromCSV(unittest.TestCase):
         plt.ylabel('Number of People');
         plt.savefig(self.MPCPyPath+'/unittests/resources/occupancy_collected.png');
         self.assertEqual(self.measurements['occupancy']['Sample'].display_data(), 300);
+        print(self.building.display_measurements('Measured'));
+        print(self.building.get_base_measurements('Measured'));
         
 #%% Main        
 if __name__ == '__main__':
