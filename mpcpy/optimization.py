@@ -18,6 +18,7 @@ from mpcpy import units
 from pymodelica import compile_fmu
 from pyjmi import transfer_optimization_problem;
 from pyjmi.optimization.casadi_collocation import ExternalData
+import os
 
 #%% Optimization Class
 class Optimization(object):

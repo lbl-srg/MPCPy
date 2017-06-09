@@ -10,6 +10,7 @@ This module contains the classes and interfaces for the variables of mpcpy.
 from abc import ABCMeta, abstractmethod
 from tzwhere import tzwhere
 import numpy as np
+import os
 
 #%% Variable abstract class
 class Variable(object):

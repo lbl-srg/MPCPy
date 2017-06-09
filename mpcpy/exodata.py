@@ -17,6 +17,7 @@ from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
 from mpcpy import units
 from mpcpy import variables
+import os
      
 #%% Abstract source interface class
 class Type(utility.mpcpyPandas):
@@ -216,9 +217,9 @@ class Weather(Type, utility.FMU):
     def _process_weather_data(self):
         '''Use process weather fmu to calculate other necessary weather data.'''
         # Set filepath for fmu
-        weatherdir = utility.get_MPCPy_path() + '/resources/weather';
+        weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
         fmuname = 'WeatherProcessor_JModelica_v2.fmu';
-        self._create_fmu({'fmupath': weatherdir+'/'+fmuname});
+        self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
         # Set parameters for fmu
         self.parameter_data = {};
         self.parameter_data['lat'] = {};

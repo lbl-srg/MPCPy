@@ -24,10 +24,10 @@ class SimpleRC(unittest.TestCase):
         self.final_time = '1/2/2017';
         self.MPCPyPath = utility.get_MPCPy_path();
         # Set model paths
-        mopath = self.MPCPyPath+'/resources/model/Simple.mo';
+        mopath = self.MPCPyPath+os.sep + 'resources' + os.sep + 'model' + os.sep + 'Simple.mo';
         modelpath = 'Simple.RC';
         # Gather inputs
-        input_csv_filepath = self.MPCPyPath+'/resources/model/SimpleRC_Input.csv';
+        input_csv_filepath = self.MPCPyPath+os.sep + 'resources' + os.sep + 'model' + os.sep + 'SimpleRC_Input.csv';
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.other_input = exodata.OtherInputFromCSV(input_csv_filepath, variable_map);
         self.other_input.collect_data(self.start_time, self.final_time);
@@ -47,7 +47,7 @@ class SimpleRC(unittest.TestCase):
         quantity = self.model.measurements['T_db']['Simulated'].quantity_name;
         unit_name = self.model.measurements['T_db']['Simulated'].display_unit.name;
         plt.ylabel(quantity + ' [' + unit_name + ']');
-        plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_simulation' + '.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_simplerc_simulation' + '.png');
         plt.close();
 
 #%%    
@@ -56,10 +56,10 @@ class Estimate_Jmo(unittest.TestCase):
     def setUp(self):
         self.MPCPyPath = utility.get_MPCPy_path();
         ## Setup building fmu emulation
-        self.building_source_file_path = self.MPCPyPath + '/resources/building/LBNL71T_Emulation_JModelica_v2.fmu';
+        self.building_source_file_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'building' + os.sep + 'LBNL71T_Emulation_JModelica_v2.fmu';
         self.zone_names = ['wes', 'hal', 'eas'];
-        self.weather_path = self.MPCPyPath + '/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
-        self.internal_path = self.MPCPyPath + '/resources/internal/sampleCSV.csv';
+        self.weather_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'weather' + os.sep + 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
+        self.internal_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'internal' + os.sep + 'sampleCSV.csv';
         self.internal_variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
                                       'intCon_wes' : ('wes', 'intCon', units.W_m2), \
                                       'intLat_wes' : ('wes', 'intLat', units.W_m2), \
@@ -69,7 +69,7 @@ class Estimate_Jmo(unittest.TestCase):
                                       'intRad_eas' : ('eas', 'intRad', units.W_m2), \
                                       'intCon_eas' : ('eas', 'intCon', units.W_m2), \
                                       'intLat_eas' : ('eas', 'intLat', units.W_m2)};        
-        self.control_path = self.MPCPyPath + '/resources/building/ControlCSV_0.csv';
+        self.control_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'building' + os.sep + 'ControlCSV_0.csv';
         self.control_variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                                      'conHeat_hal' : ('conHeat_hal', units.unit1), \
                                      'conHeat_eas' : ('conHeat_eas', units.unit1)};        
@@ -84,7 +84,7 @@ class Estimate_Jmo(unittest.TestCase):
         self.measurements['Ptot'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
                                              
         ## Setup model
-        self.mopath = self.MPCPyPath + '/resources/model/LBNL71T_MPC.mo';
+        self.mopath = self.MPCPyPath + os.sep + 'resources' + os.sep + 'model' + os.sep + 'LBNL71T_MPC.mo';
         self.modelpath = 'LBNL71T_MPC.MPC';
         self.libraries = os.environ.get('MODELICAPATH');
         self.estimate_method = models.JModelica; 
@@ -96,7 +96,7 @@ class Estimate_Jmo(unittest.TestCase):
         self.internal = exodata.InternalFromCSV(self.internal_path, self.internal_variable_map, tz_name = self.weather.tz_name);
         self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);   
         # Parameters        
-        self.parameters = exodata.ParameterFromCSV(self.MPCPyPath + '/resources/model/LBNL71T_Parameters.csv');
+        self.parameters = exodata.ParameterFromCSV(self.MPCPyPath + os.sep + 'resources' + os.sep + 'model' + os.sep + 'LBNL71T_Parameters.csv');
         self.parameters.collect_data();
         self.parameters.data['lat'] = {};
         self.parameters.data['lat']['Value'] = self.weather.lat;    
@@ -150,7 +150,7 @@ class Estimate_Jmo(unittest.TestCase):
             plt.title(key);
             plt.ylabel(quantity + ' [' + unit_name + ']');
             i = i + 1;
-            plt.savefig(self.MPCPyPath+'/unittests/resources/model_simulation_' + key + '.png');
+            plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_simulation_' + key + '.png');
             plt.close();
         
     def test_estimate(self):
@@ -199,16 +199,16 @@ class Estimate_Jmo(unittest.TestCase):
         # Estimate model based on emulated data
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         self.parameters.data = self.model.parameter_data;
-        self.parameters.display_data().to_csv(self.MPCPyPath+'/unittests/resources/model_parameters_est.txt')        
+        self.parameters.display_data().to_csv(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_parameters_est.txt')        
         # Validate on validation data
         self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
         self.model.measurements = self.building.measurements;
-        self.model.validate(self.start_time_validation, self.final_time_validation, self.MPCPyPath+'/unittests/resources/model_validation');
+        self.model.validate(self.start_time_validation, self.final_time_validation, self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_validation');
         # Save coefficients
         self.parameters.data = self.model.parameter_data;
-        self.parameters.display_data().to_csv(self.MPCPyPath+'/unittests/resources/model_parameters.txt')
+        self.parameters.display_data().to_csv(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_parameters.txt')
         # Save RMSE
-        with open(self.MPCPyPath+'/unittests/resources/model_RMSE.txt', 'w') as f:
+        with open(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_RMSE.txt', 'w') as f:
             for key in self.model.RMSE.keys():
                 f.write(str(key) + ',' + str(self.model.RMSE[key].display_data()) + ',' + self.model.RMSE[key].display_unit.name);
                 f.write('\n');
@@ -219,7 +219,7 @@ class Queueing(unittest.TestCase):
         # Set path variable(s)
         self.MPCPyPath = utility.get_MPCPy_path();
         # Setup building measurement collection from csv
-        self.csv_filepath = self.MPCPyPath+'/resources/building/OccData.csv';   
+        self.csv_filepath = self.MPCPyPath+os.sep + 'resources' + os.sep + 'building' + os.sep + 'OccData.csv';   
         # Measurements
         self.measurements = {};
         self.measurements['occupancy'] = {'Sample' : variables.Static('occupancy_sample', 300, units.s)};
@@ -242,7 +242,7 @@ class Queueing(unittest.TestCase):
         self.occupancy = models.Occupancy(models.QueueModel, self.building.measurements);
         # Estimate occupancy model parameters
         self.occupancy.estimate(self.start_time, self.final_time);
-        with open(self.MPCPyPath+'/unittests/resources/occupancy_model_estimated.txt', 'w') as f:
+        with open(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_estimated.txt', 'w') as f:
             pickle.dump(self.occupancy, f);
             
     def test_simulate(self):
@@ -252,7 +252,7 @@ class Queueing(unittest.TestCase):
         self.start_time = '3/1/2013';
         self.final_time = '3/7/2013 23:59';
         # Load occupancy model
-        with open(self.MPCPyPath+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+        with open(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_estimated.txt', 'r') as f:
             self.occupancy = pickle.load(f);
         # Simulate occupancy model
         self.occupancy.simulate(self.start_time, self.final_time);
@@ -264,7 +264,7 @@ class Queueing(unittest.TestCase):
         self.start_time = '3/1/2013';
         self.final_time = '3/7/2013 23:59';           
         # Load occupancy model
-        with open(self.MPCPyPath+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+        with open(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_estimated.txt', 'r') as f:
             self.occupancy = pickle.load(f);
         # Collect validation measurements
         self.building.collect_measurements(self.start_time, self.final_time);             
@@ -274,7 +274,7 @@ class Queueing(unittest.TestCase):
         simulate_options = self.occupancy.get_simulate_options();
         simulate_options['iter_num'] = 5;
         self.occupancy.set_simulate_options(simulate_options);
-        self.occupancy.validate(self.start_time, self.final_time, self.MPCPyPath+'/unittests/resources/occupancy_model_validate');
+        self.occupancy.validate(self.start_time, self.final_time, self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_validate');
         
     def test_generate_load(self):
         '''Test generation of occupancy load data using occupancy prediction.'''
@@ -283,7 +283,7 @@ class Queueing(unittest.TestCase):
         self.start_time = '3/1/2013';
         self.final_time = '3/7/2013 23:59';        
         # Load occupancy model
-        with open(self.MPCPyPath+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+        with open(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_estimated.txt', 'r') as f:
             self.occupancy = pickle.load(f);        
         # Simulate occupancy model
         simulate_options = self.occupancy.get_simulate_options();
@@ -293,7 +293,7 @@ class Queueing(unittest.TestCase):
         load.plot();
         plt.ylabel('Internal Load [W]');
         plt.xlabel('Time');
-        plt.savefig(self.MPCPyPath+'/unittests/resources/occupancy_model_load.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_load.png');
         plt.close();
         
     def test_generate_constraint(self):
@@ -303,7 +303,7 @@ class Queueing(unittest.TestCase):
         self.start_time = '3/1/2013';
         self.final_time = '3/7/2013 23:59';        
         # Load occupancy model
-        with open(self.MPCPyPath+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+        with open(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_estimated.txt', 'r') as f:
             self.occupancy = pickle.load(f);        
         # Simulate occupancy model
         simulate_options = self.occupancy.get_simulate_options();
@@ -314,7 +314,7 @@ class Queueing(unittest.TestCase):
         plt.ylim([15,30]);
         plt.ylabel('Temperature [degC]');
         plt.xlabel('Time');
-        plt.savefig(self.MPCPyPath+'/unittests/resources/occupancy_model_constraint.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_constraint.png');
         plt.close();
         
     def test_error_points_per_day(self):
@@ -324,7 +324,7 @@ class Queueing(unittest.TestCase):
         self.start_time = '3/1/2013';
         self.final_time = '3/7/2013 23:59';        
         # Load occupancy model
-        with open(self.MPCPyPath+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+        with open(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_estimated.txt', 'r') as f:
             self.occupancy = pickle.load(f);
         # Change occupant measurements to not be whole number in points per day
         self.occupancy.measurements['occupancy']['Sample'] = variables.Static('occupancy_sample', 299, units.s);

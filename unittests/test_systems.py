@@ -13,6 +13,7 @@ from mpcpy import variables
 from mpcpy import units
 from mpcpy import utility
 from matplotlib import pyplot as plt
+import os
 
 # Simulation Tests
 class EmulationfromFMU(unittest.TestCase):
@@ -25,10 +26,10 @@ class EmulationfromFMU(unittest.TestCase):
         self.final_time = '1/4/2015';
         # Setup building fmu emulation
         # Setup Building
-        self.building_source_file_path = self.MPCPyPath + '/resources/building/LBNL71T_Emulation_JModelica_v2.fmu';   
+        self.building_source_file_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'building' + os.sep + 'LBNL71T_Emulation_JModelica_v2.fmu';   
         self.zone_names = ['wes', 'hal', 'eas'];
-        self.weather_path = self.MPCPyPath + '/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
-        self.internal_path = self.MPCPyPath + '/resources/internal/sampleCSV.csv';
+        self.weather_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'weather' + os.sep + 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
+        self.internal_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'internal' + os.sep + 'sampleCSV.csv';
         self.internal_variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
                                       'intCon_wes' : ('wes', 'intCon', units.W_m2), \
                                       'intLat_wes' : ('wes', 'intLat', units.W_m2), \
@@ -38,7 +39,7 @@ class EmulationfromFMU(unittest.TestCase):
                                       'intRad_eas' : ('eas', 'intRad', units.W_m2), \
                                       'intCon_eas' : ('eas', 'intCon', units.W_m2), \
                                       'intLat_eas' : ('eas', 'intLat', units.W_m2)};        
-        self.control_path = self.MPCPyPath + '/resources/building/ControlCSV_0.csv';
+        self.control_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'building' + os.sep + 'ControlCSV_0.csv';
         self.control_variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                                      'conHeat_hal' : ('conHeat_hal', units.unit1), \
                                      'conHeat_eas' : ('conHeat_eas', units.unit1)};        
@@ -105,7 +106,7 @@ class EmulationfromFMU(unittest.TestCase):
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=4, prop={'size':12});        
         plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
         plt.rcParams.update({'font.size': 16});
-        plt.savefig(self.MPCPyPath+'/unittests/resources/' + name + '.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + name + '.png');
         plt.close();        
         
 class RealfromCSV(unittest.TestCase):
@@ -117,7 +118,7 @@ class RealfromCSV(unittest.TestCase):
         self.start_time = '2/1/2013';
         self.final_time = '2/20/2013 23:55';
         # Setup building measurement collection from csv
-        self.csv_filepath = self.MPCPyPath+'/resources/building/OccData.csv';   
+        self.csv_filepath = self.MPCPyPath+os.sep + 'resources' + os.sep + 'building' + os.sep + 'OccData.csv';   
         # Measurements
         self.measurements = {};
         self.measurements['occupancy'] = {'Sample' : variables.Static('occupancy_sample', 300, units.s)};
@@ -133,7 +134,7 @@ class RealfromCSV(unittest.TestCase):
         self.building.collect_measurements(self.start_time, self.final_time);
         self.measurements['occupancy']['Measured'].display_data().plot();
         plt.ylabel('Number of People');
-        plt.savefig(self.MPCPyPath+'/unittests/resources/occupancy_collected.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_collected.png');
         self.assertEqual(self.measurements['occupancy']['Sample'].display_data(), 300);
         
 #%% Main        

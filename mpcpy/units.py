@@ -8,6 +8,7 @@ This module contains the classes and interfaces for the units of mpcpy.
 
 from abc import ABCMeta, abstractmethod
 import numpy as np
+import os
 
 #%% Display unit abstract interface
 class DisplayUnit(object):

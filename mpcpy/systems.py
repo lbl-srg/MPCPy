@@ -10,6 +10,7 @@ measurements from and setting control signals to system sources.
 
 from abc import ABCMeta, abstractmethod
 from mpcpy import utility
+import os
 
 #%% System class
 class System(utility.mpcpyPandas, utility.Building):

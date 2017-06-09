@@ -37,7 +37,7 @@ class mpcpyPandas(object):
             df = pd.DataFrame(d).interpolate(method='linear');
         except ValueError:
             for mpcpy_ts_name in d.keys():
-                d[mpcpy_ts_name].to_frame().to_csv(get_MPCPy_path() + '/' + mpcpy_ts_name);
+                d[mpcpy_ts_name].to_frame().to_csv(get_MPCPy_path() + os.sep + mpcpy_ts_name);
         return df
     
     def dataframe_to_mpcpy_ts_variable(self, df, key, varname, unit, **kwargs):
@@ -246,7 +246,7 @@ class FMU(mpcpyPandas):
     def get_fmu_variable_units(self):
         '''Get fmu model variable units.'''
         tmpdir = core.unzip_unit(self.fmupath);
-        element_tree = xmlparser._parse_XML(tmpdir+'/modelDescription.xml');
+        element_tree = xmlparser._parse_XML(tmpdir+os.sep + 'modelDescription.xml');
         root = element_tree.getroot();
         model_variables = root.find('ModelVariables');
         type_definitions = root.find('TypeDefinitions');
@@ -418,7 +418,7 @@ def get_MPCPy_path():
 
     '''
     
-    rel_path = '/mpcpy/utility.py'
+    rel_path = os.sep + 'mpcpy' + os.sep + 'utility.py'
     MPCPy_path = os.path.abspath(__file__)[:-len(rel_path)];
     return MPCPy_path
     

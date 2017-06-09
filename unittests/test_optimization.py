@@ -23,11 +23,11 @@ class SimpleRC(unittest.TestCase):
         self.final_time = '1/2/2017';
         self.MPCPyPath = utility.get_MPCPy_path();
         # Set model paths
-        mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
+        mopath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'model' + os.sep + 'Simple.mo';
         modelpath1 = 'Simple.RC';
         modelpath2 = 'Simple.SubPackage.RC';
         # Gather inputs
-        control_csv_filepath = utility.get_MPCPy_path()+'/resources/model/SimpleRC_Input.csv';
+        control_csv_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'model' + os.sep + 'SimpleRC_Input.csv';
         control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
         self.controls.collect_data(self.start_time, self.final_time);
@@ -46,7 +46,7 @@ class SimpleRC(unittest.TestCase):
                                      moinfo = (mopath, modelpath2, {}), \
                                      control_data = self.controls.data);                                     
         # Gather constraints       
-        constraint_csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/SimpleRC_Constraints.csv';
+        constraint_csv_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'optimization' + os.sep + 'SimpleRC_Constraints.csv';
         constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
                                    'T_db_min' : ('T_db', 'GTE', units.K), \
                                    'T_db_max' : ('T_db', 'LTE', units.K)};
@@ -65,7 +65,7 @@ class SimpleRC(unittest.TestCase):
         quantity = self.model1.measurements['T_db']['Simulated'].quantity_name;
         unit_name = self.model1.measurements['T_db']['Simulated'].display_unit.name;
         plt.ylabel(quantity + ' [' + unit_name + ']');
-        plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_optimization_T_db' + '.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_simplerc_optimization_T_db' + '.png');
         plt.close();
         
         plt.figure(1)
@@ -73,7 +73,7 @@ class SimpleRC(unittest.TestCase):
         quantity = self.model1.control_data['q_flow'].quantity_name;
         unit_name = self.model1.control_data['q_flow'].display_unit.name;
         plt.ylabel(quantity + ' [' + unit_name + ']');
-        plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_optimization_q_flow' + '.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_simplerc_optimization_q_flow' + '.png');
         plt.close();
         
         self.opt_problem2.optimize(self.start_time, self.final_time);
@@ -89,7 +89,7 @@ class Optimize_Jmo(unittest.TestCase):
     def setUp(self):
         self.MPCPyPath = utility.get_MPCPy_path();
         ## Setup model
-        self.mopath = self.MPCPyPath + '/resources/model/LBNL71T_MPC.mo';
+        self.mopath = self.MPCPyPath + os.sep + 'resources' + os.sep + 'model' + os.sep + 'LBNL71T_MPC.mo';
         self.modelpath = 'LBNL71T_MPC.MPC';
         self.libraries = os.environ.get('MODELICAPATH');
         self.estimate_method = models.JModelica; 
@@ -119,11 +119,11 @@ class Optimize_Jmo(unittest.TestCase):
         self.start_time_optimization = '1/2/2015';
         self.final_time_optimization = '1/3/2015';       
         # Weather
-        self.weather_path = self.MPCPyPath + '/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
+        self.weather_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'weather' + os.sep + 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
         self.weather = exodata.WeatherFromEPW(self.weather_path);
         self.weather.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Internal
-        self.internal_path = self.MPCPyPath + '/resources/internal/sampleCSV.csv';
+        self.internal_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'internal' + os.sep + 'sampleCSV.csv';
         self.internal_variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
                                       'intCon_wes' : ('wes', 'intCon', units.W_m2), \
                                       'intLat_wes' : ('wes', 'intLat', units.W_m2), \
@@ -136,18 +136,18 @@ class Optimize_Jmo(unittest.TestCase):
         self.internal = exodata.InternalFromCSV(self.internal_path, self.internal_variable_map, tz_name = self.weather.tz_name);
         self.internal.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Control (as initialization)
-        self.control_path = self.MPCPyPath + '/resources/optimization/ControlCSV.csv';
+        self.control_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'optimization' + os.sep + 'ControlCSV.csv';
         self.control_variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                                      'conHeat_hal' : ('conHeat_hal', units.unit1), \
                                      'conHeat_eas' : ('conHeat_eas', units.unit1)};        
         self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);
         self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Parameters
-        self.parameters_path = self.MPCPyPath + '/unittests/resources/model_parameters.txt';
+        self.parameters_path = self.MPCPyPath + os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_parameters.txt';
         self.parameters = exodata.ParameterFromCSV(self.parameters_path);
         self.parameters.collect_data();
         # Constraints
-        self.constraints_path = self.MPCPyPath + '/resources/optimization/sampleConstraintCSV_Constant.csv';   
+        self.constraints_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'optimization' + os.sep + 'sampleConstraintCSV_Constant.csv';   
         self.constraints_variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
                                          'wesTdb_max' : ('wesTdb', 'LTE', units.degC), \
                                          'easTdb_min' : ('easTdb', 'GTE', units.degC), \
@@ -172,7 +172,7 @@ class Optimize_Jmo(unittest.TestCase):
         self.constraints.data['easTdb']['Cyclic'] = variables.Static('easTdb_cyclic', 1, units.boolean_integer);
         self.constraints.data['halTdb']['Cyclic'] = variables.Static('halTdb_cyclic', 1, units.boolean_integer);
         # Prices
-        self.prices_path = self.MPCPyPath + '/resources/optimization/PriceCSV.csv';
+        self.prices_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'optimization' + os.sep + 'PriceCSV.csv';
         self.price_variable_map = {'pi_e' : ('pi_e', units.unit1)};        
         self.prices = exodata.PriceFromCSV(self.prices_path, self.price_variable_map, tz_name = self.weather.tz_name);
         self.prices.collect_data(self.start_time_exodata, self.final_time_exodata);        
@@ -209,7 +209,7 @@ class Optimize_Jmo(unittest.TestCase):
         plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=4, prop={'size':12});
         plt.rcParams.update({'font.size': 16});        
-        plt.savefig(self.MPCPyPath+'/unittests/resources/energymin_temperature.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'energymin_temperature.png');
         plt.close();
         plt.figure(2)
         for measurement in ['wesPhvac', 'easPhvac', 'halPhvac', 'Ptot']:
@@ -220,7 +220,7 @@ class Optimize_Jmo(unittest.TestCase):
         plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=4, prop={'size':12});
         plt.rcParams.update({'font.size': 16});        
-        plt.savefig(self.MPCPyPath+'/unittests/resources/energymin_heaterpower.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'energymin_heaterpower.png');
         plt.close();
 
     def test_energycostmin(self):
@@ -241,7 +241,7 @@ class Optimize_Jmo(unittest.TestCase):
         plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=4, prop={'size':12});
         plt.rcParams.update({'font.size': 16});        
-        plt.savefig(self.MPCPyPath+'/unittests/resources/energycostmin_temperature.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'energycostmin_temperature.png');
         plt.close();
         plt.figure(2)
         for measurement in ['wesPhvac', 'easPhvac', 'halPhvac', 'Ptot']:
@@ -252,7 +252,7 @@ class Optimize_Jmo(unittest.TestCase):
         plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
         plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=4, prop={'size':12});
         plt.rcParams.update({'font.size': 16});
-        plt.savefig(self.MPCPyPath+'/unittests/resources/energycostmin_heaterpower.png');
+        plt.savefig(self.MPCPyPath+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'energycostmin_heaterpower.png');
         plt.close();                                   
     
         
