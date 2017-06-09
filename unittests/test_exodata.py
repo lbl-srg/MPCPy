@@ -26,15 +26,11 @@ class TestExodata(unittest.TestCase):
     
     __metaclass__ = ABCMeta;
     
-    def print_data(self, obj):
-        df = obj.display_data();
-        print(df)
-        df = obj.get_base_data();
-        print(df)
-        
     def get_ref_path(self):
         ref_path = utility.get_MPCPy_path() + 'unittests/references/' + __name__.split('.')[-1] + '/' + self.__class__.__name__;
+        
         return ref_path;
+        
     def check_df_timeseries(self, df_test, ref_file_name):
         # Define reference file
         ref_file_path = self.get_ref_path() + '/' + ref_file_name;
