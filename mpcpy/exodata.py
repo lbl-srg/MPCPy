@@ -744,6 +744,7 @@ class WeatherFromEPW(_Weather):
         df_epw = df_epw_last_row.append(df_epw.iloc[:-1], ignore_index=False);
         new_index = df_epw.index[0:1].append(df_epw.index[1:] + pd.DateOffset(hours=1));
         df_epw.set_index(new_index, inplace=True);
+        df_epw.index.name = 'Time';
         # Treat daylight savings time
         try:
             df_epw = df_epw.tz_localize(self.tz_name);

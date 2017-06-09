@@ -70,7 +70,8 @@ class _mpcpyPandas(object):
         except ValueError:
             for mpcpy_ts_name in d.keys():
                 d[mpcpy_ts_name].to_frame().to_csv(get_MPCPy_path() + '/' + mpcpy_ts_name);
-                
+        df.index.name = 'Time'; 
+        
         return df
     
     def _dataframe_to_mpcpy_ts_variable(self, df, key, varname, unit, **kwargs):
