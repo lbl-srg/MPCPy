@@ -39,7 +39,7 @@ Classes
 =======
 
 .. autoclass:: mpcpy.systems.EmulationFromFMU
-    :members: collect_measurements
+    :members: collect_measurements, display_measurements, get_base_measurements
 
 
 ==== 
@@ -52,7 +52,7 @@ Classes
 =======
 
 .. autoclass:: mpcpy.systems.RealFromCSV
-    :members: collect_measurements
+    :members: collect_measurements, display_measurements, get_base_measurements
 
 """
 
@@ -60,7 +60,7 @@ from abc import ABCMeta, abstractmethod
 from mpcpy import utility
 
 #%% System class
-class _System(utility._mpcpyPandas, utility._Building):
+class _System(utility._mpcpyPandas, utility._Building, utility._Measurements):
     '''Base class for representing systems.
     
     ''' 
@@ -73,7 +73,7 @@ class _System(utility._mpcpyPandas, utility._Building):
         
         '''
         
-        pass;
+        pass;         
         
 #%% System implementations
 class _Emulation(_System):

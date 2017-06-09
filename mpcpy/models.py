@@ -16,7 +16,8 @@ Classes
 
 .. autoclass:: mpcpy.models.Modelica
     :members: estimate, validate, simulate, set_estimation_method, 
-              set_validation_method
+              set_validation_method, display_measurements, 
+              get_base_measurements
 
 Estimate Methods
 ================
@@ -42,7 +43,8 @@ Classes
 .. autoclass:: mpcpy.models.Occupancy
     :members: estimate, validate, simulate, get_load, get_constraint, 
               get_estimate_options, set_occupancy_method, get_simulate_options,
-              set_estimate_options, set_simulate_options
+              set_estimate_options, set_simulate_options, display_measurements, 
+              get_base_measurements
 
 Occupancy Methods
 =================
@@ -73,7 +75,7 @@ from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
 
 #%% Model Class
-class _Model(utility._mpcpyPandas):
+class _Model(utility._mpcpyPandas, utility._Measurements):
     '''Base class for representing a model for MPC.
     
     '''
