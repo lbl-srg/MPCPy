@@ -11,7 +11,7 @@ import pandas as pd
 from pandas.util.testing import assert_frame_equal
 import os
 
-class test_mpcpy(unittest.TestCase):
+class TestCaseMPCPy(unittest.TestCase):
     '''General test methods for testing in mpcpy.
     
     '''

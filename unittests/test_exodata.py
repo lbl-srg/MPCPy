@@ -10,14 +10,13 @@ from mpcpy import exodata
 from mpcpy import utility
 from mpcpy import units
 from mpcpy import variables
-from test_mpcpy import test_mpcpy
+from testing import TestCaseMPCPy
 import unittest
 import numpy as np
 import pickle
 import copy
-
 #%% Weather Tests
-class WeatherFromEPW(test_mpcpy):
+class WeatherFromEPW(TestCaseMPCPy):
     '''Test the collection of weather data from an EPW.
     
     '''
@@ -49,7 +48,7 @@ class WeatherFromEPW(test_mpcpy):
         df_test = self.weather.display_data();
         self.check_df_timeseries(df_test, 'collect_data_partial.csv');
 
-class WeatherFromCSV(test_mpcpy):
+class WeatherFromCSV(TestCaseMPCPy):
     '''Test the collection of weather data from a CSV file.
     
     '''
@@ -145,7 +144,7 @@ class WeatherFromCSV(test_mpcpy):
         self.check_df_timeseries(df_test, 'collect_data_clean_data.csv');
 
 #%% Internal Tests
-class InternalFromCSV(test_mpcpy):
+class InternalFromCSV(TestCaseMPCPy):
     '''Test the collection of internal data from a CSV file.
     
     '''
@@ -174,7 +173,7 @@ class InternalFromCSV(test_mpcpy):
         df_test = self.internal.display_data();
         self.check_df_timeseries(df_test, 'collect_data.csv');
 
-class InternalFromOccupancyModel(test_mpcpy):
+class InternalFromOccupancyModel(TestCaseMPCPy):
     '''Test the collection of internal data from an occupancy model.
     
     '''
@@ -210,7 +209,7 @@ class InternalFromOccupancyModel(test_mpcpy):
         self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Control Tests
-class ControlFromCSV(test_mpcpy):
+class ControlFromCSV(TestCaseMPCPy):
     '''Test the collection of control data from a CSV file.
     
     '''
@@ -234,7 +233,7 @@ class ControlFromCSV(test_mpcpy):
         self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Other Input Tests
-class OtherInputFromCSV(test_mpcpy):
+class OtherInputFromCSV(TestCaseMPCPy):
     '''Test the collection of other input data from a CSV file.
     
     '''
@@ -256,7 +255,7 @@ class OtherInputFromCSV(test_mpcpy):
         self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Parameter Tests
-class ParameterFromCSV(test_mpcpy):
+class ParameterFromCSV(TestCaseMPCPy):
     '''Test the collection of parameter data from a CSV file.
     
     '''
@@ -274,7 +273,7 @@ class ParameterFromCSV(test_mpcpy):
         self.check_df_parameter(df_test, 'collect_data.csv');
 
 #%% Constraint Tests
-class ConstraintFromCSV(test_mpcpy):
+class ConstraintFromCSV(TestCaseMPCPy):
     '''Test the collection of constraint data from a CSV file.
     
     '''
@@ -306,7 +305,7 @@ class ConstraintFromCSV(test_mpcpy):
         df_test = self.constraints.display_data();
         self.check_df_timeseries(df_test, 'collect_data.csv');        
 
-class ConstraintFromOccupancyModel(test_mpcpy):
+class ConstraintFromOccupancyModel(TestCaseMPCPy):
     '''Test the collection of constraint data from an occupancy model.
     
     '''
@@ -341,7 +340,7 @@ class ConstraintFromOccupancyModel(test_mpcpy):
         self.check_df_timeseries(df_test, 'collect_data.csv');         
 
 #%% Prices Tests
-class PriceFromCSV(test_mpcpy):
+class PriceFromCSV(TestCaseMPCPy):
     '''Test the collection of control data from a CSV file.
     
     '''
@@ -363,7 +362,7 @@ class PriceFromCSV(test_mpcpy):
         self.check_df_timeseries(df_test, 'collect_data.csv');        
 
 #%% Source Tests
-class Source(test_mpcpy):
+class Source(TestCaseMPCPy):
     '''Test the general methods of a Source object.'''
     def setUp(self):
         self.epw_filepath = utility.get_MPCPy_path()+'/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
