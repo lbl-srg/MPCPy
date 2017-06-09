@@ -5,60 +5,19 @@ by David Blum
 
 This module contains the classes for testing the exodata of mpcpy.
 """
-from abc import ABCMeta
-import unittest
+
 from mpcpy import exodata
 from mpcpy import utility
 from mpcpy import units
 from mpcpy import variables
-import pandas as pd
+from test_mpcpy import test_mpcpy
+import unittest
 import numpy as np
-from pandas.util.testing import assert_frame_equal
 import pickle
 import copy
-import os
-
-#%% General Test Methods
-class TestExodata(unittest.TestCase):
-    '''General test methods for testing exodata objects.
-    
-    '''
-    
-    __metaclass__ = ABCMeta;
-    
-    def get_ref_path(self):
-        ref_path = utility.get_MPCPy_path() + 'unittests/references/' + __name__.split('.')[-1] + '/' + self.__class__.__name__;
-        
-        return ref_path;
-        
-    def check_df_timeseries(self, df_test, ref_file_name):
-        # Define reference file
-        ref_file_path = self.get_ref_path() + '/' + ref_file_name;
-        try:
-            df_ref = pd.read_csv(ref_file_path, index_col='Time');
-            df_ref.index = pd.to_datetime(df_ref.index);
-            df_ref = df_ref.tz_localize('UTC')
-            assert_frame_equal(df_test, df_ref);
-        except IOError:
-            ref_file_dir = self.get_ref_path();
-            if not os.path.exists(ref_file_dir):
-                os.makedirs(ref_file_dir);
-            df_test.to_csv(ref_file_path);
-            
-    def check_df_parameter(self, df_test, ref_file_name):
-        # Define reference file
-        ref_file_path = self.get_ref_path() + '/' + ref_file_name;
-        try:
-            df_ref = pd.read_csv(ref_file_path, index_col='Name');
-            assert_frame_equal(df_test, df_ref, check_dtype=False);
-        except IOError:
-            ref_file_dir = self.get_ref_path();
-            if not os.path.exists(ref_file_dir):
-                os.makedirs(ref_file_dir);
-            df_test.to_csv(ref_file_path);            
 
 #%% Weather Tests
-class WeatherFromEPW(TestExodata):
+class WeatherFromEPW(test_mpcpy):
     '''Test the collection of weather data from an EPW.
     
     '''
@@ -90,7 +49,7 @@ class WeatherFromEPW(TestExodata):
         df_test = self.weather.display_data();
         self.check_df_timeseries(df_test, 'collect_data_partial.csv');
 
-class WeatherFromCSV(TestExodata):
+class WeatherFromCSV(test_mpcpy):
     '''Test the collection of weather data from a CSV file.
     
     '''
@@ -186,7 +145,7 @@ class WeatherFromCSV(TestExodata):
         self.check_df_timeseries(df_test, 'collect_data_clean_data.csv');
 
 #%% Internal Tests
-class InternalFromCSV(TestExodata):
+class InternalFromCSV(test_mpcpy):
     '''Test the collection of internal data from a CSV file.
     
     '''
@@ -215,7 +174,7 @@ class InternalFromCSV(TestExodata):
         df_test = self.internal.display_data();
         self.check_df_timeseries(df_test, 'collect_data.csv');
 
-class InternalFromOccupancyModel(TestExodata):
+class InternalFromOccupancyModel(test_mpcpy):
     '''Test the collection of internal data from an occupancy model.
     
     '''
@@ -251,7 +210,7 @@ class InternalFromOccupancyModel(TestExodata):
         self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Control Tests
-class ControlFromCSV(TestExodata):
+class ControlFromCSV(test_mpcpy):
     '''Test the collection of control data from a CSV file.
     
     '''
@@ -275,7 +234,7 @@ class ControlFromCSV(TestExodata):
         self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Other Input Tests
-class OtherInputFromCSV(TestExodata):
+class OtherInputFromCSV(test_mpcpy):
     '''Test the collection of other input data from a CSV file.
     
     '''
@@ -297,7 +256,7 @@ class OtherInputFromCSV(TestExodata):
         self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Parameter Tests
-class ParameterFromCSV(TestExodata):
+class ParameterFromCSV(test_mpcpy):
     '''Test the collection of parameter data from a CSV file.
     
     '''
@@ -315,7 +274,7 @@ class ParameterFromCSV(TestExodata):
         self.check_df_parameter(df_test, 'collect_data.csv');
 
 #%% Constraint Tests
-class ConstraintFromCSV(TestExodata):
+class ConstraintFromCSV(test_mpcpy):
     '''Test the collection of constraint data from a CSV file.
     
     '''
@@ -347,7 +306,7 @@ class ConstraintFromCSV(TestExodata):
         df_test = self.constraints.display_data();
         self.check_df_timeseries(df_test, 'collect_data.csv');        
 
-class ConstraintFromOccupancyModel(TestExodata):
+class ConstraintFromOccupancyModel(test_mpcpy):
     '''Test the collection of constraint data from an occupancy model.
     
     '''
@@ -382,7 +341,7 @@ class ConstraintFromOccupancyModel(TestExodata):
         self.check_df_timeseries(df_test, 'collect_data.csv');         
 
 #%% Prices Tests
-class PriceFromCSV(TestExodata):
+class PriceFromCSV(test_mpcpy):
     '''Test the collection of control data from a CSV file.
     
     '''
@@ -404,7 +363,7 @@ class PriceFromCSV(TestExodata):
         self.check_df_timeseries(df_test, 'collect_data.csv');        
 
 #%% Source Tests
-class Source(unittest.TestCase):
+class Source(test_mpcpy):
     '''Test the general methods of a Source object.'''
     def setUp(self):
         self.epw_filepath = utility.get_MPCPy_path()+'/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
