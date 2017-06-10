@@ -389,7 +389,7 @@ class Occupancy(_Model):
         # Simulate the model using currently estimated parameters
         self.simulate(start_time, final_time);
         # Perform the validation against measured data
-        self._occupancy_method._validate(self);
+        self._occupancy_method._validate(self, plot);
         
     def simulate(self, start_time, final_time, **kwargs):
         '''Simulate the model with current parameter estimates.
@@ -836,7 +836,7 @@ class QueueModel(_OccupancyMethod):
             Model.parameters_data['mu'][day]['Free'] = variables.Static('mu_'+str(day)+'_free', True, units.boolean);
             Model.parameters_data['mu'][day]['Value'] = variables.Static('mu_'+str(day)+'_value', self.mu, units.unit1);
         
-    def _validate(self, Model):
+    def _validate(self, Model, plot):
         '''Compare occupancy predictions to measurements.
 
         '''
@@ -848,12 +848,21 @@ class QueueModel(_OccupancyMethod):
         prediction_pstd = prediction+std;
         prediction_mstd = prediction-std;
         prediction_mstd = (prediction_mstd>=0)*prediction_mstd;
-        # Plot data to compare
-        measurements.plot(label = 'measured', color = 'k', alpha = 0.5);
-        prediction.plot(label='prediction', color = 'r', alpha = 0.5);
-        plt.fill_between(prediction.index, prediction_pstd, prediction_mstd, color = 'r', alpha = 0.5);     
-        plt.legend();
-        plt.savefig(Model.validate_filename+'.png')        
+        
+        Model.RMSE = {};
+        for key in Model.measurements.keys():
+            data = Model.measurements[key]['Measured'].get_base_data()[Model.start_time:Model.final_time];
+            data_est = Model.measurements[key]['Simulated'].get_base_data()[Model.start_time:Model.final_time];
+            RMSE = np.sqrt(sum((data_est-data)**2)/len(data));
+            unit_class = Model.measurements[key]['Measured'].get_base_unit();
+            Model.RMSE[key] = variables.Static('RMSE_'+key, RMSE, unit_class);
+        if plot == 1:
+            # Plot data to compare
+            measurements.plot(label = 'measured', color = 'k', alpha = 0.5);
+            prediction.plot(label='prediction', color = 'r', alpha = 0.5);
+            plt.fill_between(prediction.index, prediction_pstd, prediction_mstd, color = 'r', alpha = 0.5);     
+            plt.legend();
+            plt.savefig(Model.validate_filename+'.png')        
         
     def _simulate(self, Model):
         '''Use Monte Carlo simulation to predict an occupancy timeseries.

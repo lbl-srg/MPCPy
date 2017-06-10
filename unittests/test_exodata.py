@@ -185,7 +185,7 @@ class InternalFromOccupancyModel(TestCaseMPCPy):
         start_time_occupancy = '4/1/2013';
         final_time_occupancy = '4/7/2013 23:55:00';
         # Load occupancy models
-        with open(utility.get_MPCPy_path()+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+        with open(utility.get_MPCPy_path()+'/unittests/references/test_models/OccupancyFromQueueing/occupancy_model_estimated.txt', 'r') as f:
             occupancy_model = pickle.load(f);
         # Define zones and loads
         zone_list = ['wes', 'hal', 'eas'];
@@ -317,7 +317,7 @@ class ConstraintFromOccupancyModel(TestCaseMPCPy):
         start_time_occupancy = '3/1/2012';
         final_time_occupancy = '3/7/2012 23:55:00';
         # Load occupancy models
-        with open(utility.get_MPCPy_path()+'/unittests/resources/occupancy_model_estimated.txt', 'r') as f:
+        with open(utility.get_MPCPy_path()+'/unittests/references/test_models/OccupancyFromQueueing/occupancy_model_estimated.txt', 'r') as f:
             occupancy_model = pickle.load(f);
         # Define state variables and values
         state_variable_list = ['wesTdb', 'wesTdb', 'easTdb', 'easTdb', 'halTdb', 'halTdb'];
