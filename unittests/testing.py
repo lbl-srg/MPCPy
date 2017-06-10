@@ -38,12 +38,12 @@ class TestCaseMPCPy(unittest.TestCase):
                 os.makedirs(ref_file_dir);
             df_test.to_csv(ref_file_path);
             
-    def check_df_parameter(self, df_test, ref_file_name):
+    def check_df_general(self, df_test, ref_file_name):
         # Define reference file
         ref_file_path = self.get_ref_path() + '/' + ref_file_name;
         # Check if reference file exists
         try:
-            df_ref = pd.read_csv(ref_file_path, index_col='Name');
+            df_ref = pd.read_csv(ref_file_path, index_col=0);
             pd.util.testing.assert_frame_equal(df_test, df_ref, check_dtype=False);
         # If reference file does not exist, create one
         except IOError:

@@ -272,7 +272,7 @@ class ParameterFromCSV(TestCaseMPCPy):
         self.parameters.collect_data();
         # Check reference
         df_test = self.parameters.display_data();
-        self.check_df_parameter(df_test, 'collect_data.csv');
+        self.check_df_general(df_test, 'collect_data.csv');
 
 #%% Constraint Tests
 class ConstraintFromCSV(TestCaseMPCPy):
