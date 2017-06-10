@@ -14,18 +14,19 @@ from mpcpy import exodata
 from mpcpy import utility
 from mpcpy import variables
 from mpcpy import units
+from testing import TestCaseMPCPy
 
 #%%
-class SimpleRC(unittest.TestCase):
-    '''Test simple model optimization functions.'''
+class SimpleRC(TestCaseMPCPy):
+    '''Test simple model optimization functions.
+    
+    '''
+    
     def setUp(self):
         self.start_time = '1/1/2017';
         self.final_time = '1/2/2017';
-        self.MPCPyPath = utility.get_MPCPy_path();
-        # Set model paths
-        mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
-        modelpath1 = 'Simple.RC';
-        modelpath2 = 'Simple.SubPackage.RC';
+        # Set .mo path
+        self.mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
         # Gather inputs
         control_csv_filepath = utility.get_MPCPy_path()+'/resources/model/SimpleRC_Input.csv';
         control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
@@ -34,17 +35,7 @@ class SimpleRC(unittest.TestCase):
         # Set measurements
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
-        # Instantiate model
-        self.model1 = models.Modelica(models.JModelica, \
-                                     models.RMSE, \
-                                     self.measurements, \
-                                     moinfo = (mopath, modelpath1, {}), \
-                                     control_data = self.controls.data);
-        self.model2 = models.Modelica(models.JModelica, \
-                                     models.RMSE, \
-                                     self.measurements, \
-                                     moinfo = (mopath, modelpath2, {}), \
-                                     control_data = self.controls.data);                                     
+        self.measurements['q_flow'] = {'Sample' : variables.Static('q_flow_sample', 1800, units.s)};
         # Gather constraints       
         constraint_csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/SimpleRC_Constraints.csv';
         constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
@@ -53,39 +44,57 @@ class SimpleRC(unittest.TestCase):
         self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
         self.constraints.collect_data(self.start_time, self.final_time);
         self.constraints.data['T_db']['Initial'] = variables.Static('T_db_start', 295, units.K);
-        # Instantiate optimization problem
-        self.opt_problem1 = optimization.Optimization(self.model1, optimization.EnergyMin, optimization.JModelica, 'q_flow', constraint_data = self.constraints.data);
-        self.opt_problem2 = optimization.Optimization(self.model2, optimization.EnergyMin, optimization.JModelica, 'q_flow', constraint_data = self.constraints.data);
-        
+
     def test_optimize(self):
-        self.opt_problem1.optimize(self.start_time, self.final_time);
-        self.model1 = self.opt_problem1.Model;
-        plt.figure(1)
-        self.model1.measurements['T_db']['Simulated'].display_data().plot();
-        quantity = self.model1.measurements['T_db']['Simulated'].quantity_name;
-        unit_name = self.model1.measurements['T_db']['Simulated'].display_unit.name;
-        plt.ylabel(quantity + ' [' + unit_name + ']');
-        plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_optimization_T_db' + '.png');
-        plt.close();
+        modelpath = 'Simple.RC';        
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Solve optimization problem                     
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Update model
+        model = opt_problem.Model;
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'optimize.csv');
         
-        plt.figure(1)
-        self.model1.control_data['q_flow'].display_data().plot();
-        quantity = self.model1.control_data['q_flow'].quantity_name;
-        unit_name = self.model1.control_data['q_flow'].display_unit.name;
-        plt.ylabel(quantity + ' [' + unit_name + ']');
-        plt.savefig(self.MPCPyPath+'/unittests/resources/model_simplerc_optimization_q_flow' + '.png');
-        plt.close();
-        
-        self.opt_problem2.optimize(self.start_time, self.final_time);
-        self.model2 = self.opt_problem2.Model;
-        data1 = self.model1.measurements['T_db']['Simulated'].display_data();
-        data2 = self.model2.measurements['T_db']['Simulated'].display_data();
-        for value1,value2 in zip(data1.get_values(), data2.get_values()):
-            self.assertEqual(value1, value2);
+    def test_optimize_subpackage(self):
+        modelpath = 'Simple.SubPackage.RC';     
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Solve optimization problem                     
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Update model
+        model = opt_problem.Model;
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'optimize_subpackage.csv');
         
 #%% Temperature tests
-class Optimize_Jmo(unittest.TestCase):
-    '''Tests for the optimization of a model using JModelica.'''
+class OptimizeFromJModelica(TestCaseMPCPy):
+    '''Tests for the optimization of a model using JModelica.
+    
+    '''
+
     def setUp(self):
         self.MPCPyPath = utility.get_MPCPy_path();
         ## Setup model
@@ -103,13 +112,7 @@ class Optimize_Jmo(unittest.TestCase):
         self.measurements['wesPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         self.measurements['halPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};     
         self.measurements['easPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
-        self.measurements['Ptot'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)}; 
-        self.measurements['intCon_eas'] = {'Sample' : variables.Static('intCon_eas_sample', 1800, units.s)}; 
-        self.measurements['intRad_eas'] = {'Sample' : variables.Static('intRad_eas_sample', 1800, units.s)};
-        self.measurements['intCon_wes'] = {'Sample' : variables.Static('intCon_wes_sample', 1800, units.s)}; 
-        self.measurements['intRad_wes'] = {'Sample' : variables.Static('intRad_wes_sample', 1800, units.s)}; 
-        self.measurements['intCon_hal'] = {'Sample' : variables.Static('intCon_hal_sample', 1800, units.s)}; 
-        self.measurements['intRad_hal'] = {'Sample' : variables.Static('intRad_hal_sample', 1800, units.s)};         
+        self.measurements['Ptot'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};        
         
         ## Exodata
         # Exogenous collection time
@@ -198,30 +201,11 @@ class Optimize_Jmo(unittest.TestCase):
         self.opt_problem = optimization.Optimization(self.model, optimization.EnergyMin, optimization.JModelica, 'Ptot', constraint_data = self.constraints.data)
         # Optimize
         self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization);
+        # Update model
         self.model = self.opt_problem.Model;
-        # Plot
-        plt.figure(1)
-        for measurement in ['wesTdb', 'easTdb', 'halTdb']:
-            variable = self.model.measurements[measurement]['Simulated'];
-            variable.set_display_unit(units.degC);
-            var_data = variable.display_data(tz_name = 'America/Chicago');
-            var_data.plot(label = measurement, rot = 90, linewidth = 2.0);
-        plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=4, prop={'size':12});
-        plt.rcParams.update({'font.size': 16});        
-        plt.savefig(self.MPCPyPath+'/unittests/resources/energymin_temperature.png');
-        plt.close();
-        plt.figure(2)
-        for measurement in ['wesPhvac', 'easPhvac', 'halPhvac', 'Ptot']:
-            variable = self.model.measurements[measurement]['Simulated'];
-            variable.set_display_unit(units.W);
-            var_data = variable.display_data(tz_name = 'America/Chicago');
-            var_data.plot(label = measurement, rot = 90, linewidth = 2.0);
-        plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=4, prop={'size':12});
-        plt.rcParams.update({'font.size': 16});        
-        plt.savefig(self.MPCPyPath+'/unittests/resources/energymin_heaterpower.png');
-        plt.close();
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'energymin.csv');
 
     def test_energycostmin(self):
         '''Test energy cost minimization of a model.'''
@@ -230,30 +214,11 @@ class Optimize_Jmo(unittest.TestCase):
         self.opt_problem = optimization.Optimization(self.model, optimization.EnergyCostMin, optimization.JModelica, 'Ptot', constraint_data = self.constraints.data)
         # Optimize
         self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization, price_data = self.prices.data);
+        # Update model
         self.model = self.opt_problem.Model;
-        # Plot
-        plt.figure(1)
-        for measurement in ['wesTdb', 'easTdb', 'halTdb']:
-            variable = self.model.measurements[measurement]['Simulated'];
-            variable.set_display_unit(units.degC);
-            var_data = variable.display_data(tz_name = 'America/Chicago');
-            var_data.plot(label = measurement, rot = 90, linewidth = 2.0);
-        plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=4, prop={'size':12});
-        plt.rcParams.update({'font.size': 16});        
-        plt.savefig(self.MPCPyPath+'/unittests/resources/energycostmin_temperature.png');
-        plt.close();
-        plt.figure(2)
-        for measurement in ['wesPhvac', 'easPhvac', 'halPhvac', 'Ptot']:
-            variable = self.model.measurements[measurement]['Simulated'];
-            variable.set_display_unit(units.W);
-            var_data = variable.display_data(tz_name = 'America/Chicago');
-            var_data.plot(label = measurement, rot = 90, linewidth = 2.0);
-        plt.ylabel(variable.quantity_name + ' [' + variable.display_unit.name + ']');
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncol=4, prop={'size':12});
-        plt.rcParams.update({'font.size': 16});
-        plt.savefig(self.MPCPyPath+'/unittests/resources/energycostmin_heaterpower.png');
-        plt.close();                                   
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'energycostmin.csv');                                  
     
         
 if __name__ == '__main__':
