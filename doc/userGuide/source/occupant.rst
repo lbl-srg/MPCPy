@@ -1,2 +1,5 @@
+========
 Occupant
 ========
+
+.. automodule:: occupant

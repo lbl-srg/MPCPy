@@ -1,2 +1,5 @@
+=======
 Utility
 =======
+
+.. automodule:: mpcpy.utility
