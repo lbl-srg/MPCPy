@@ -225,19 +225,10 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
         '''
 
-        # Change free parameters to fixed so they get simulated
-        free_parameters = [];
-        for key in self.parameter_data.keys():
-            if self.parameter_data[key]['Free'].get_base_data():
-                free_parameters.append(key);
-                self.parameter_data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
         # Simulate model
         self.simulate(start_time, final_time);
         # Perform validation        
         self._validate_method._validate(self, validate_filename, plot = plot);
-        # Change free parameters back to free
-        for key in free_parameters:
-            self.parameter_data[key]['Free'] = variables.Static(key+'_free', True, units.boolean);
             
     def simulate(self, start_time, final_time):
         '''Simulate the model with current parameter estimates.

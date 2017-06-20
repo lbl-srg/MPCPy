@@ -255,10 +255,9 @@ class _FMU(_mpcpyPandas):
         # Load simulation fmu  
         simulate_model = load_fmu(self.fmupath);
         # Set parameters in fmu if they exist
-        if self.parameter_data:
+        if hasattr(self, 'parameter_data'):
             for key in self.parameter_data.keys():
-                if not self.parameter_data[key]['Free'].get_base_data():
-                    simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
+                simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
         # Get minimum measurement sample rate for simulation
         min_sample = 3600;
         for key in self.measurements.keys():

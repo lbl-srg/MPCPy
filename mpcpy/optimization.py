@@ -476,8 +476,6 @@ class JModelica(_Package, utility._FMU):
             # Otherwise inputs set by write control mop
         # Set input_names
         self.input_names = self._init_input_names;
-        # Set parameters, set in hard code during mop writing
-        self.parameter_data = {};  
         # Set measurements
         self.measurements = {};
         for key in self.Model.measurements.keys():
@@ -509,6 +507,10 @@ class JModelica(_Package, utility._FMU):
         self.opt_opts['init_traj'] = self.res_init;
         self.opt_opts['nominal_traj'] = self.res_init;
         self.opt_opts['n_e'] = self._sim_opts['ncp'];
+        # Set parameters if they exist
+        if hasattr(self, 'parameter_data'):
+            for key in self.parameter_data.keys():
+                self.opt_problem.set(key, self.parameter_data[key]['Value'].get_base_data());
         # Set start and final time
         self.opt_problem.set('start_time', 0);
         self.opt_problem.set('final_time', self.Model.elapsed_seconds);
