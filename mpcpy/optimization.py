@@ -132,7 +132,7 @@ class Optimization(object):
             
         '''
 
-        self._package_type = package_type();
+        self._package_type = package_type(self);
         
 #%% Problem Type Abstract Interface
 class _Problem(object):
@@ -154,7 +154,16 @@ class _Problem(object):
         '''Solve the problem.
         
         ''' 
-        pass;      
+        
+        pass;    
+        
+    @abstractmethod
+    def _setup_jmodelica(self):
+        '''Setup problem with JModelica.
+        
+        ''' 
+        
+        pass;
         
 #%% Solver Type Abstract Interface
 class _Package(object):
@@ -205,6 +214,18 @@ class EnergyMin(_Problem):
         
         Optimization._package_type._energymin(Optimization);
         
+    def _setup_jmodelica(self, JModelica, Optimization):
+        '''Setup the optimization problem for JModelica.
+        
+        '''
+        
+        JModelica.Model = Optimization.Model;
+        JModelica.objective = 'mpc_model.' + Optimization.objective_variable;
+        JModelica.extra_inputs = {};
+        JModelica._initalize_mop();
+        JModelica._write_control_mop(Optimization);
+        JModelica._compile_transfer_problem();
+        
 class EnergyCostMin(_Problem):
     '''Minimize the integral of the objective variable multiplied by a 
     time-varying weighting factor over the time horizon.
@@ -218,6 +239,19 @@ class EnergyCostMin(_Problem):
 
         price_data = kwargs['price_data'];
         Optimization._package_type._energycostmin(Optimization, price_data);
+        
+    def _setup_jmodelica(self, JModelica, Optimization):
+        '''Setup the optimization problem for JModelica.
+        
+        '''
+        
+        JModelica.Model = Optimization.Model;
+        JModelica.objective = 'mpc_model.' + Optimization.objective_variable + '*pi_e';
+        JModelica.extra_inputs = {};
+        JModelica.extra_inputs['pi_e'] = [];
+        JModelica._initalize_mop();
+        JModelica._write_control_mop(Optimization);
+        JModelica._compile_transfer_problem();
         
 class _ParameterEstimate(_Problem):
     '''Minimize the error between simulated and measured data by adjusting 
@@ -234,6 +268,18 @@ class _ParameterEstimate(_Problem):
         
         Optimization._package_type._parameterestimate(Optimization, kwargs['measurement_variable_list']);
         
+    def _setup_jmodelica(self, JModelica, Optimization):
+        '''Setup the optimization problem for JModelica.
+        
+        '''
+        
+        JModelica.Model = Optimization.Model;
+        JModelica.objective = '0';
+        JModelica.extra_inputs = {};
+        JModelica._initalize_mop();
+        JModelica._write_parameter_estimate_mop();
+        JModelica._compile_transfer_problem();
+        
 #%% Solver Type Implementation
 class JModelica(_Package, utility._FMU):
     '''Use JModelica to solve the optimization problem.
@@ -242,24 +288,18 @@ class JModelica(_Package, utility._FMU):
     
     '''
     
-    def __init__(self):
+    def __init__(self, Optimization):
         '''Constructor of the JModelica solver package class.
         
         '''
         
-        pass;
+        Optimization._problem_type._setup_jmodelica(self, Optimization);
     
     def _energymin(self, Optimization):
         '''Perform the energy minimization.
         
         '''
-
-        self.Model = Optimization.Model;
-        self.measurement_variable_list = {};        
-        self.extra_inputs = {};
-        self.objective = 'mpc_model.' + Optimization.objective_variable;
-        self._initalize_mop();
-        self._write_control_mop(Optimization);
+        
         self._simulate_initial(Optimization);
         self._solve();
         self._get_control_results(Optimization);           
@@ -268,15 +308,8 @@ class JModelica(_Package, utility._FMU):
         '''Perform the energy cost minimization.
         
         '''
-
-        self.Model = Optimization.Model;
-        self.measurement_variable_list = {};         
-        self.extra_inputs = {};
-        self.extra_inputs['pi_e'] = price_data['pi_e'];       
-        self.objective = 'mpc_model.' + Optimization.objective_variable + '*pi_e';
-        self.measurements = {};
-        self._initalize_mop();
-        self._write_control_mop(Optimization);
+        
+        self.other_inputs['pi_e'] = price_data['pi_e'];
         self._simulate_initial(Optimization);
         self._solve();   
         self._get_control_results(Optimization);                                      
@@ -286,12 +319,7 @@ class JModelica(_Package, utility._FMU):
         
         '''
 
-        self.Model = Optimization.Model;
-        self.measurement_variable_list = measurement_variable_list;
-        self.extra_inputs = {};          
-        self.objective = '0';   
-        self._initalize_mop();
-        self._write_parameter_estimate_mop();
+        self.measurement_variable_list = measurement_variable_list;        
         self._simulate_initial(Optimization);
         self._solve();
         self._get_parameter_results(Optimization);
@@ -353,9 +381,12 @@ class JModelica(_Package, utility._FMU):
         '''
 
         self.mopfile.write('\n');
-        self.mopfile.write('  optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (objective = (J(finalTime)), startTime=0, finalTime=' + str(self.Model.elapsed_seconds) + ')\n');
+        self.mopfile.write('  optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (objective = (J(finalTime)), startTime=start_time, finalTime=final_time)\n');
         # Instantiate optimization model
         self.mopfile.write('    extends ' + self.Model.modelpath.split('.')[-1] + '_initialize;\n');
+        # Add start time and final time parameter
+        self.mopfile.write('    parameter Real start_time = 0;\n');
+        self.mopfile.write('    parameter Real final_time = 86400;\n');
         # Remove control variables from input_names for optimization    
         self.opt_input_names = [];
         for key in self._init_input_names:
@@ -402,7 +433,10 @@ class JModelica(_Package, utility._FMU):
         '''
 
         self.mopfile.write('\n');
-        self.mopfile.write('optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (startTime=0, finalTime=' + str(self.Model.elapsed_seconds) + ')\n');
+        self.mopfile.write('optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (startTime=start_time, finalTime=final_time)\n');
+        # Add start time and final time parameter
+        self.mopfile.write('    parameter Real start_time = 0;\n');
+        self.mopfile.write('    parameter Real final_time = 86400;\n');
         #  Instantiate MPC model with free parameters
         i = 1;
         free_parameters = [];
@@ -431,10 +465,6 @@ class JModelica(_Package, utility._FMU):
         
         '''
 
-        # Compile the optimization initializaiton model                                             
-        self.fmupath = compile_fmu(self.mopmodelpath + '_initialize', \
-                                   self.moppath, \
-                                   compiler_options = {'extra_lib_dirs':self.Model.libraries});
         # Set Exogenous
         self.weather_data = self.Model.weather_data;
         self.internal_data = self.Model.internal_data;
@@ -465,23 +495,23 @@ class JModelica(_Package, utility._FMU):
         '''Solve the optimization problem.
         
         '''
-
+        # Set start and final time
+        self.Model.elapsed_seconds
         # Create input_mpcpy_ts_list
         self._create_input_mpcpy_ts_list_opt();
         # Set inputs
         self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list_opt);          
         # Create ExternalData structure
         self._create_external_data();
-        # Transfer optimization problem to casADi                         
-        self.opt_problem = transfer_optimization_problem(self.mopmodelpath + '_optimize', \
-                                                         self.moppath, \
-                                                         compiler_options = {'extra_lib_dirs':self.Model.libraries});
         # Set optimization options
         self.opt_opts = self.opt_problem.optimize_options()
         self.opt_opts['external_data'] = self.external_data;
         self.opt_opts['init_traj'] = self.res_init;
         self.opt_opts['nominal_traj'] = self.res_init;
         self.opt_opts['n_e'] = self._sim_opts['ncp'];
+        # Set start and final time
+        self.opt_problem.set('start_time', 0);
+        self.opt_problem.set('final_time', self.Model.elapsed_seconds);
         # Optimize
         self.res_opt = self.opt_problem.optimize(options=self.opt_opts);
         print(self.res_opt.get_solver_statistics());
@@ -493,7 +523,7 @@ class JModelica(_Package, utility._FMU):
 
         quad_pen = OrderedDict();  
         N_mea = 0;
-        if self.measurement_variable_list:
+        if hasattr(self, 'measurement_variable_list'):
             for key in self.measurement_variable_list:
                 df = self.Model.measurements[key]['Measured'].get_base_data()[self.Model.start_time:self.Model.final_time].to_frame();
                 df_simtime = self._add_simtime_column(df);
@@ -561,3 +591,19 @@ class JModelica(_Package, utility._FMU):
                 Optimization.Model.parameter_data[key]['Value'].set_display_unit(unit_class);
                 Optimization.Model.parameter_data[key]['Value'].set_data(data);        
         
+    def _compile_transfer_problem(self):
+        '''Compile the initialization model and transfer the optimziation problem.
+        
+        '''
+        
+        # Compile the optimization initializaiton model                                             
+        self.fmupath = compile_fmu(self.mopmodelpath + '_initialize', \
+                                   self.moppath, \
+                                   compiler_options = {'extra_lib_dirs':self.Model.libraries});
+        kwargs = {};
+        kwargs['fmupath'] = self.fmupath;
+        self._create_fmu(kwargs);
+        # Transfer optimization problem to casADi                         
+        self.opt_problem = transfer_optimization_problem(self.mopmodelpath + '_optimize', \
+                                                         self.moppath, \
+                                                         compiler_options = {'extra_lib_dirs':self.Model.libraries});
