@@ -83,8 +83,8 @@ class Optimization(object):
         else:
             self.constraint_data = {};
         self.objective_variable = objective_variable;
-        self.set_problem_type(problem_type);
-        self.set_package_type(package_type);
+        self._problem_type = problem_type();
+        self._package_type = package_type(self);
         
     def optimize(self, start_time, final_time, **kwargs):
         '''Solve the optimization problem over the specified time horizon.
@@ -108,8 +108,10 @@ class Optimization(object):
         self.Model._set_time_interval(start_time, final_time);
         self._problem_type._optimize(self, **kwargs);
 
-    def set_problem_type(self, problem_type, **kwargs):
+    def set_problem_type(self, problem_type):
         '''Set the problem type of the optimization.
+        
+        Note that optimization options will be reset.
         
         Parameters
         ----------
@@ -119,7 +121,9 @@ class Optimization(object):
         
         '''
 
-        self._problem_type = problem_type();       
+        self._problem_type = problem_type();
+        package_type = type(self._package_type);
+        self._package_type = package_type(self);
 
     def set_package_type(self, package_type):
         '''Set the solver package type of the optimization.
