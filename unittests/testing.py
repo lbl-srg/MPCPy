@@ -68,7 +68,7 @@ class TestCaseMPCPy(unittest.TestCase):
             with open(test_file_path, 'r') as file_test:
                 json_test = json.load(file_test);
             os.remove(test_file_path)
-            self.assertDictEqual(json_test, json_ref);
+            self.assertEqual(json_test, json_ref);
         # If reference file does not exist, create one
         except IOError:
             ref_file_dir = self.get_ref_path();
