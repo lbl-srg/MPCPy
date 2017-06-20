@@ -140,7 +140,8 @@ class Optimization(object):
         Returns
         -------
         opt_options : dictionary
-            The options for the optimization solver package.
+            The options for the optimization solver package.  See specific 
+            documentation on solver package for more information.
         
         '''
         
@@ -152,7 +153,8 @@ class Optimization(object):
         Parameters
         ----------
         opt_options : dictionary
-            The options for the optimization solver package.
+            The options for the optimization solver package.  See specific 
+            documentation on solver package for more information.
         
         '''
         
@@ -164,7 +166,8 @@ class Optimization(object):
         Returns
         -------
         opt_statistics : dictionary
-            The options for the optimization solver package.
+            The options for the optimization solver package.  See specific 
+            documentation on solver package for more information.
         
         '''
         opt_statistics = self._package_type._get_optimization_statistics();
@@ -250,7 +253,15 @@ class _Package(object):
         
         '''
         
-        pass;          
+        pass;
+        
+    @abstractmethod
+    def _get_optimization_statistics(self):
+        '''Get the optimization result statistics from the solver package.
+        
+        '''
+        
+        pass;    
               
 #%% Problem Type Implementation
 class EnergyMin(_Problem):
@@ -336,7 +347,9 @@ class _ParameterEstimate(_Problem):
 class JModelica(_Package, utility._FMU):
     '''Use JModelica to solve the optimization problem.
     
-    This package is compatible with ``models.Modelica`` objects.
+    This package is compatible with ``models.Modelica`` objects.  Please
+    consult the JModelica user guide for more information regarding 
+    optimization options and solver statistics.
     
     '''
     
