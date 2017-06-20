@@ -15,7 +15,6 @@ from mpcpy import utility
 from mpcpy import variables
 from mpcpy import units
 from testing import TestCaseMPCPy
-import pandas as pd
 
 #%%
 class SimpleRC(TestCaseMPCPy):
@@ -180,8 +179,32 @@ class SimpleRC(TestCaseMPCPy):
         opt_options['nominal_traj'] = 2;
         self.assertRaises(KeyError, opt_problem.set_optimization_options(opt_options));
         
+    def test_get_statistics(self):
+        '''Test the getting of optimization result statistics.
         
+        '''
         
+        modelpath = 'Simple.RC';
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Solve optimization problem                     
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Get statistics
+        opt_statistics = opt_problem.get_optimization_statistics();
+        # Check references (except execution time)
+        json_test = opt_statistics[:-1];
+        self.check_json(json_test, 'statistics.txt');
+
 #%% Temperature tests
 class OptimizeFromJModelica(TestCaseMPCPy):
     '''Tests for the optimization of a model using JModelica.
