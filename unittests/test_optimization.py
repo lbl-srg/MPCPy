@@ -17,7 +17,7 @@ from mpcpy import units
 from testing import TestCaseMPCPy
 
 #%%
-class SimpleRC(TestCaseMPCPy):
+class OptimizeSimpleFromJModelica(TestCaseMPCPy):
     '''Test simple model optimization functions.
     
     '''
@@ -258,7 +258,7 @@ class SimpleRC(TestCaseMPCPy):
         self.check_json(json_test, 'statistics.txt');
 
 #%% Temperature tests
-class OptimizeFromJModelica(TestCaseMPCPy):
+class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
     '''Tests for the optimization of a model using JModelica.
     
     '''
