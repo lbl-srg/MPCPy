@@ -158,6 +158,18 @@ class Optimization(object):
         
         return self._package_type._set_optimization_options(opt_options);
         
+    def get_optimization_statistics(self):
+        '''Get the optimization result statistics from the solver package.
+        
+        Returns
+        -------
+        opt_statistics : dictionary
+            The options for the optimization solver package.
+        
+        '''
+        opt_statistics = self._package_type._get_optimization_statistics();
+        return opt_statistics;
+        
 #%% Problem Type Abstract Interface
 class _Problem(object):
     '''Interface for a problem type.
@@ -671,3 +683,10 @@ class JModelica(_Package, utility._FMU):
                         raise KeyError('Key {} is set automatically upon solve.'.format(key));
         # Set options
         self.opt_options = opt_options;
+        
+    def _get_optimization_statistics(self):
+        '''Get the JModelica optimization result statistics.
+        
+        '''
+        
+        return self.res_opt.get_solver_statistics();
