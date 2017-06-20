@@ -18,7 +18,7 @@ class TestCaseMPCPy(unittest.TestCase):
     __metaclass__ = ABCMeta;
     
     def get_ref_path(self):
-        ref_path = utility.get_MPCPy_path() + 'unittests/references/' + self.__module__.split('.')[-1] + '/' + self.__class__.__name__;
+        ref_path = utility.get_MPCPy_path() + '/unittests/references/' + self.__module__.split('.')[-1] + '/' + self.__class__.__name__;
         
         return ref_path;
         
