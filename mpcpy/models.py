@@ -903,7 +903,7 @@ class QueueModel(_OccupancyMethod):
                 if np.any(syssize <0):
                     pdb.set_trace()
                     raise ValueError('negative syssize')
-                if jmptimes == None:
+                if jmptimes is None:
                     jmptimes_mc[iter_idx] = 0
                     syssize_mc[:, iter_idx] = 0
                 else:
