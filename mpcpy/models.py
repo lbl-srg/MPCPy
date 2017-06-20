@@ -1,9 +1,56 @@
 # -*- coding: utf-8 -*-
 """
-Model.py
-by David Blum
+``models`` classes are models that are used for performance prediction in MPC.
+This includes models for physical systems (e.g. thermal envelopes, HVAC 
+equipment, facade elements) and occupants at the component level or at an 
+aggregated level (e.g. zone, building, campus).
 
-This module contains the classes and interfaces for reduced order models (Model).
+========
+Modelica
+========
+
+``Modelica`` model objects utilize models represented in Modelica or by an FMU.
+
+Classes
+=======
+
+.. autoclass:: mpcpy.models.Modelica
+    :members: estimate, validate, simulate, set_estimation_method, 
+              set_validation_method, display_measurements, 
+              get_base_measurements
+
+Estimate Methods
+================
+
+.. autoclass:: mpcpy.models.JModelica
+
+.. autoclass:: mpcpy.models.UKF
+
+Validate Methods
+================
+
+.. autoclass:: mpcpy.models.RMSE
+
+=========
+Occupancy
+=========
+
+``Occupancy`` model objects represent the prediction of occupancy.
+
+Classes
+=======
+
+.. autoclass:: mpcpy.models.Occupancy
+    :members: estimate, validate, simulate, get_load, get_constraint, 
+              get_estimate_options, set_occupancy_method, get_simulate_options,
+              set_estimate_options, set_simulate_options, display_measurements, 
+              get_base_measurements
+
+Occupancy Methods
+=================
+
+.. autoclass:: mpcpy.models.QueueModel
+
 """
 
 from abc import ABCMeta, abstractmethod
@@ -18,101 +65,315 @@ from mpcpy import units
 from mpcpy import variables
 from mpcpy import utility
 from mpcpy import optimization
-from occupant.presence.queueing.adaptive_breakpoint_placement import adaptive_breakpoint_placement
-from occupant.presence.queueing.simulate_queue import simulate_queue
-from occupant.presence.queueing.unique_last import unique_last
-from occupant.presence.queueing.interp1 import interp1
-from occupant.presence.queueing.parameter_inference_given_segments import parameter_inference_given_segment
+from occupant.occupancy.queueing.adaptive_breakpoint_placement import adaptive_breakpoint_placement
+from occupant.occupancy.queueing.simulate_queue import simulate_queue
+from occupant.occupancy.queueing.unique_last import unique_last
+from occupant.occupancy.queueing.interp1 import interp1
+from occupant.occupancy.queueing.parameter_inference_given_segments import parameter_inference_given_segment
 from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
 import os
 
 #%% Model Class
-class Model(utility.mpcpyPandas):
-    '''Abstract class for representing a model for MPC.'''
+class _Model(utility._mpcpyPandas, utility._Measurements):
+    '''Base class for representing a model for MPC.
+    
+    '''
+
     __metaclass__ = ABCMeta;
+
     @abstractmethod
     def estimate(self):
+        '''Estimate parameters of the model.
+
+        '''
+
         pass;
+
     @abstractmethod        
     def validate(self):
+        '''Validate parameter estimation of the model.
+
+        '''
+
         pass;
+
     @abstractmethod        
     def simulate(self):
+        '''Simulate the model.
+
+        '''
+
         pass;
-        
+
 #%% Model Implementations
-class Modelica(Model, utility.FMU, utility.Building):
-    '''An fmu implementation of an mpcpy Model.'''
+class Modelica(_Model, utility._FMU, utility._Building):
+    '''Class for models of physical systems represented by Modelica or an FMU.
+
+    Parameters
+    ----------
+    estimate_method : estimation method class from mpcpy.models
+        Method for performing the parameter estimation.
+    validate_method : validation method class from mpcpy.models
+        Method for performing the parameter validation.
+    measurements : dictionary
+        Measurement variables for the model.  Same as the measurements 
+        attribute from a ``systems`` class.  See documentation for ``systems`` 
+        for more information.
+    moinfo : tuple or list
+        Modelica information for the model.  See documentation for 
+        ``systems.EmulationFromFMU`` for more information.
+
+    Attributes
+    ----------
+    measurements : dictionary
+        ``systems`` measurement object attribute.
+    zone_names : [strings]
+        List of zone names.
+    weather_data : dictionary
+        ``exodata`` weather object data attribute.
+    internal_data : dictionary
+        ``exodata`` internal object data attribute.
+    control_data : dictionary
+        ``exodata`` control object data attribute.    
+    other_inputs : dictionary
+        ``exodata`` other inputs object data attribute.    
+    parameter_data : dictionary
+        ``exodata`` parameter object data attribute.    
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
+    tz_name : string
+        Timezone name.
+    fmu : pyfmi fmu object
+        FMU respresenting the emulated system.
+    fmupath : string
+        Path to the FMU file.
+
+    '''
+    
     def __init__(self, estimate_method, validate_method, measurements, **kwargs):
+        '''Constructor of a modelica or FMU model object.
+        
+        '''
+        
         self.name = 'modelica';    
         self.measurements = measurements;
         self._create_fmu(kwargs);
-        self.input_names = self.get_input_names();                                       
-        self._estimate_method = estimate_method(self);
-        self._validate_method = validate_method(self);
+        self.input_names = self._get_input_names();                                       
+        self.set_estimate_method(estimate_method);
+        self.set_validate_method(validate_method);
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
         
     def estimate(self, start_time, final_time, measurement_variable_list):
-        '''Use the measurement data to estimate the free parameters of the model.'''
+        '''Estimate the parameters of the model using measurement data.
+        
+        The estimation of the parameters is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute of the 
+        model object.
+        
+        Parameters
+        ----------
+        start_time : string
+            Start time of estimation period.
+        final_time : string
+            Final time of estimation period.
+        measurement_variable_list : list
+            List of strings defining for which variables defined in the 
+            measurements dictionary attirubute the estimation will 
+            try to minimize the error.
+
+        Yields
+        ------
+        parameter_data : dictionary
+            Updates the ``'Value'`` key for each estimated parameter in the 
+            parameter_data attribute.
+
+        '''
+        
         self._set_time_interval(start_time, final_time);        
         self.measurement_variable_list = measurement_variable_list;
         self._estimate_method._estimate(self);
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
-        '''Compare a simulation with estimated parameters with measurement data.'''
-        # Change free parameters to fixed so they get simulated
-        free_parameters = [];
-        for key in self.parameter_data.keys():
-            if self.parameter_data[key]['Free'].get_base_data():
-                free_parameters.append(key);
-                self.parameter_data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
+        '''Validate the estimated parameters of the model.
+
+        The validation of the parameters is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute of the 
+        model object.
+
+        Parameters
+        ----------
+        start_time : string
+            Start time of validation period.
+        final_time : string
+            Final time of validation period.
+        validate_filepath : string
+            File path without an extension for which to save validation 
+            results.  Extensions will be added depending on the file type 
+            (e.g. .png for figures, .txt for data).
+        plot : [0,1], optional
+            Plot flag for some validation or estimation methods.
+            Default = 1.
+
+        Yields
+        ------
+        Various results depending on the validation method.  Please check the
+        documentation for the validation method chosen.
+
+        '''
+
         # Simulate model
         self.simulate(start_time, final_time);
         # Perform validation        
         self._validate_method._validate(self, validate_filename, plot = plot);
-        # Change free parameters back to free
-        for key in free_parameters:
-            self.parameter_data[key]['Free'] = variables.Static(key+'_free', True, units.boolean);
             
     def simulate(self, start_time, final_time):
-        '''Simulate the model with current parameter estimates.'''
+        '''Simulate the model with current parameter estimates.
+
+        Parameters
+        ----------
+        start_time : string
+            Start time of simulation period.
+        final_time : string
+            Final time of simulation period.
+
+        Yields
+        ------
+        measurements : dictionary
+            Updates the ``'Simulated'`` key for each measurement in the 
+            measurements attribute.
+
+        '''
+        
         self._set_time_interval(start_time, final_time);
         self._simulate_fmu();
         
     def set_estimate_method(self, estimate_method):
-        '''Set the estimation method.'''
+        '''Set the estimation method for the model.
+
+        Parameters
+        ----------
+        estimate_method : estimation method class from mpcpy.models
+            Method for performing the parameter estimation.
+
+        '''
+
         self._estimate_method = estimate_method(self);  
         
     def set_validate_method(self, validate_method):
-        '''Set the validation method.'''
+        '''Set the validation method for the model.
+
+        Parameters
+        ----------
+        validate_method : validation method class from mpcpy.models
+            Method for performing the parameter validation.
+
+        '''
+
         self._validate_method = validate_method(self);
         
-class Occupancy(Model):
-    '''An occupant presence implementation of an mpcpy Model.'''
-    def __init__(self, occupant_presence_method, measurements, **kwargs):
-        '''Constructor of an occupant presence model.'''
+class Occupancy(_Model):
+    '''Class for models of occupancy.
+
+    Parameters
+    ----------
+    occupancy_method : occupancy method class from mpcpy.models
+    measurements : dictionary
+        Measurement variables for the model.  Same as the measurements 
+        attribute from a ``systems`` class.  See documentation for ``systems`` 
+        for more information.  this measurement dictionary should only have
+        one variable key, which represents occupancy count.
+
+    Attributes
+    ----------
+    measurements : dictionary
+        ``systems`` measurement object attribute.
+    parameter_data : dictionary
+        ``exodata`` parameter object data attribute.
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
+    tz_name : string
+        Timezone name.
+
+    '''
+
+    def __init__(self, occupancy_method, measurements, **kwargs):
+        '''Constructor of an occupancy model object.
+
+        '''
+
         # Initialize variables and model method
         self.name = 'occupancy';
         self.measurements = measurements;
-        self._occupant_presence_method = occupant_presence_method();
+        self.set_occupancy_method(occupancy_method);
         self.parameters_data = {};
         self._parse_time_zone_kwargs(kwargs);
         
     def estimate(self, start_time, final_time, **kwargs):
-        '''Use the measurement data to estimate the free parameters of the model.'''
+        '''Estimate the parameters of the model using measurement data.
+        
+        The estimation of the parameters is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute of the 
+        model object.
+
+        Parameters
+        ----------
+        start_time : string
+            Start time of estimation period.
+        final_time : string
+            Final time of estimation period.
+        estimate_options : dictionary, optional
+            Use the ``get_estimate_options`` method to obtain and edit.
+
+        Yields
+        ------
+        parameter_data : dictionary
+            Updates the ``'Value'`` key for each estimated parameter in the 
+            parameter_data attribute.
+
+        '''
+
         # Set the training time interval
         self._set_time_interval(start_time, final_time);
         # Set the estimation options
         if 'estimate_options' in kwargs:
             self.set_estimate_options(kwargs['estimate_options']);
         # Perform estimation
-        self._occupant_presence_method._estimate(self);
+        self._occupancy_method._estimate(self);
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
-        '''Compare a simulation with estimated parameters with measurement data.'''
+        '''Validate the estimated parameters of the model with measurement data.
+
+        The validation of the parameters is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute of the 
+        model object.
+        
+        Parameters
+        ----------
+        start_time : string
+            Start time of validation period.
+        final_time : string
+            Final time of validation period.
+        validate_filepath : string
+            File path without an extension for which to save validation 
+            results.  Extensions will be added depending on the file type 
+            (e.g. .png for figures, .txt for data).
+        plot : [0,1], optional
+            Plot flag for some validation or estimation methods.
+
+        Yields
+        ------
+        Various results depending on the validation method.  Please check the
+        documentation for the occupancy model chosen.
+
+        '''
+
         # Set the name of all validation output files
         self.validate_filename = validate_filename;
         # Set the validation time interval
@@ -120,74 +381,181 @@ class Occupancy(Model):
         # Simulate the model using currently estimated parameters
         self.simulate(start_time, final_time);
         # Perform the validation against measured data
-        self._occupant_presence_method._validate(self);
+        self._occupancy_method._validate(self, plot);
         
     def simulate(self, start_time, final_time, **kwargs):
-        '''Simulate the model using currently estimated parameters.'''
+        '''Simulate the model with current parameter estimates.
+
+        Parameters
+        ----------
+        start_time : string
+            Start time of simulation period.
+        final_time : string
+            Final time of simulation period.
+        simulate_options : dictionary, optional
+            Use the ``get_simulate_options`` method to obtain and edit.
+
+        Yields
+        ------
+        measurements : dictionary
+            Updates the ``'Simulated'`` key for each measurement in the 
+            measurements attribute.  If available by the occupancy method, 
+            also updates the ``'SimulatedError'`` key for each measurement in
+            the measurements attribute.
+
+        '''
+        
         # Set the simulation time interval
         self._set_time_interval(start_time, final_time);
         # Set the simulation options
         if 'simulate_options' in kwargs:
             self.set_simulate_options(kwargs['simulate_options']);
         # Perform the simulation
-        self._occupant_presence_method._simulate(self);
+        self._occupancy_method._simulate(self);
         
-    def generate_load(self, load_per_person):
-        '''Use predicted occupancy to generate load timeseries.'''
+    def get_load(self, load_per_person):
+        '''Get a load timeseries based on the predicted occupancy.
+
+        Parameters
+        ----------
+        load_per_person : mpcpy.variables.Static
+            Scaling factor of occupancy prediction to produce load timeseries.
+        
+        Returns
+        -------
+        load : mpcpy.variables.Timeseries
+            Load timeseries.
+
+        '''
+
         # Get occupancy prediction
-        ts = self.measurements[self._occupant_presence_method.occ_key]['Simulated'].get_base_data();
+        ts = self.measurements[self._occupancy_method.occ_key]['Simulated'].get_base_data();
         # Multiply by load factor
         ts_load = load_per_person*ts;
         # Return timeseries
         return ts_load;
         
-    def generate_constraint(self, occupied_value, unoccupied_value):
-        '''Use predicted occupancy to generate constraint timeseries.'''
+    def get_constraint(self, occupied_value, unoccupied_value):
+        '''Get a constraint timeseries based on the predicted occupancy.
+
+        Parameters
+        ----------
+        occupied_value : mpcpy.variables.Static
+            Value of constraint during occupied times.
+        unoccupied_value : mpcpy.variables.Static
+            Value of constraint during unoccupied times.
+        
+        Returns
+        -------
+        constraint : mpcpy.variables.Timeseries
+            Constraint timeseries.
+
+        '''
+
         # Get occupancy prediction
-        ts = self.measurements[self._occupant_presence_method.occ_key]['Simulated'].get_base_data();
+        ts = self.measurements[self._occupancy_method.occ_key]['Simulated'].get_base_data();
         # Determine when occupied
         ts_occ = ts>=0.5;
         # Apply occupied and unoccupied values
-        ts_occ_value = ts_occ.apply(lambda x: occupied_value if x == 1 else unoccupied_value); 
+        ts_occ_value = ts_occ.apply(lambda x: occupied_value if x == 1 else unoccupied_value);
         # Return timeseries
         return ts_occ_value;
+
+    def set_occupancy_method(self, occupancy_method):
+        '''Set the occupancy method for the model.
+
+        Parameters
+        ----------
+        occupancy_method : occupancy method class from mpcpy.models
+
+        '''
+
+        self._occupancy_method = occupancy_method();
         
     def set_simulate_options(self, simulate_options):
-        '''Set the simulation options for the model.'''
-        for key in self._occupant_presence_method.simulate_options.keys():
-            self._occupant_presence_method.simulate_options[key] = simulate_options[key];
+        '''Set the simulation options for the model.
+
+        Parameters
+        ----------
+        simulate_options : dictionary
+            Options for simulation of occupancy model.  Please see
+            documentation for specific occupancy model for more information.
+
+        '''
+
+        for key in self._occupancy_method.simulate_options.keys():
+            self._occupancy_method.simulate_options[key] = simulate_options[key];
 
     def set_estimate_options(self, estimate_options):
-        '''Set the estimation options for the model.'''
-        for key in self._occupant_presence_method.estimate_options.keys():
-            self._occupant_presence_method.estimate_options[key] = estimate_options[key];
+        '''Set the estimation options for the model.
+
+        Parameters
+        ----------
+        estimate_options : dictionary
+            Options for estimation of occupancy model parameters.  Please see
+            documentation for specific occupancy model for more information.
+
+        '''
+
+        for key in self._occupancy_method.estimate_options.keys():
+            self._occupancy_method.estimate_options[key] = estimate_options[key];
 
     def get_simulate_options(self):
-        '''Get the simulation options for the model.'''
-        return self._occupant_presence_method.simulate_options;
+        '''Get the simulation options for the model.
+
+        Returns
+        -------
+        simulate_options : dictionary
+            Options for simulation of occupancy model.  Please see
+            documentation for specific occupancy model for more information.
+
+        '''
+
+        return self._occupancy_method.simulate_options;
             
     def get_estimate_options(self):
-        '''Get the estimation options for the model.'''
-        return self._occupant_presence_method.estimate_options;
+        '''Set the estimation options for the model.
+
+        Returns
+        -------
+        estimate_options : dictionary
+            Options for estimation of occupancy model parameters.  Please see
+            documentation for specific occupancy model for more information.
+
+        '''
+
+        return self._occupancy_method.estimate_options;
         
         
-#%% IdentifyMethod Interface
-class Estimate(utility.mpcpyPandas):
-    ''' Interface for a model identifcation method.'''
+#%% Estimate Method Interface
+class _Estimate(utility._mpcpyPandas):
+    '''Interface for a model identifcation method.
+    
+    '''
+    
     __metaclass__ = ABCMeta;   
+    
     @abstractmethod
     def _estimate():
         pass;
         
 #%% ValidateMethod Interface
-class Validate(utility.mpcpyPandas):
-    ''' Interface for a model validation method.'''
+class _Validate(utility._mpcpyPandas):
+    '''Interface for a model validation method.
+    
+    '''
+    
     __metaclass__ = ABCMeta;
+    
     @abstractmethod
     def _validate():
         pass;
-    def plot_simple(self,Model,validate_filename):
-        '''Plot the estimated estimated and measured data.'''
+        
+    def _plot_simple(self,Model,validate_filename):
+        '''Plot the estimated estimated and measured data.
+        
+        '''
+        
         self.plot = {};
         for key in Model.measurements.keys():
             plt.close('all');
@@ -207,9 +575,13 @@ class Validate(utility.mpcpyPandas):
             plt.savefig(validate_filename + '_' + key + '.png');
 
 #%% OccupancyModelMethod Interface
-class OccupancyMethod(utility.mpcpyPandas):
-    '''Interface for an occupancy model.'''
+class _OccupancyMethod(utility._mpcpyPandas):
+    '''Interface for an occupancy model.
+    
+    '''
+    
     __metaclass__ = ABCMeta;
+    
     @abstractmethod
     def _estimate():
         pass;
@@ -220,19 +592,32 @@ class OccupancyMethod(utility.mpcpyPandas):
     def _simulate():
         pass            
              
-#%% IdentifyMethod Interface Implementations
-class UKF(Estimate):
-    '''A Model interface for the UKF identification method.'''
+#%% Estimate Method Interface Implementations
+class UKF(_Estimate):
+    '''Estimation method using the Unscented Kalman Filter.
+    
+    This estimation method uses the UKF implementation from EstimationPy_.
+    
+    .. _EstimationPy: https://github.com/lbl-srg/EstimationPy
+
+    '''
+
     def __init__(self, Model):
-        '''Constructor of the ukf estimation method class.'''
+        '''Constructor of UKF estimation method.
+        
+        '''
+
         self.name = 'UKF';
         # Instantiate UKF model
         self.model = ukf_model.Model(Model.fmupath);          
     def _estimate(self, Model):
-        '''Perform the parameter or state estimation.'''
+        '''Perform UKF estimation.
+
+        '''
+
         estimationpy_logging.configure_logger(log_level = logging.DEBUG, log_level_console = logging.INFO, log_level_file = logging.DEBUG)
         # Write the inputs, measurements, and parameters to csv
-        self.writeukfcsv(Model);
+        self._writeukfcsv(Model);
         # Select inputs
         for name in Model.input_names:
             inputvar = self.model.get_input_by_name(name);
@@ -273,8 +658,11 @@ class UKF(Estimate):
         t1 = pd.to_datetime(Model.final_time, unit = "s", utc = True);
         time, x, sqrtP, y, Sy, y_full = ukf_FMU.filter(start = t0, stop = t1);
         
-    def writeukfcsv(self, Model):
-        '''Write the csv file needed to run the ukf algoriithm.'''
+    def _writeukfcsv(self, Model):
+        '''Write the UKF csv file.
+
+        '''
+
         ## Write the inputs, measurements, and coefficients to csv
         Model.csv_path = 'ukf.csv';        
         self.other_inputs = {};
@@ -302,26 +690,55 @@ class UKF(Estimate):
             for i in range(len(input_object[1][:,0])):
                 ukfwriter.writerow(input_object[1][i]);        
 
-class JModelica(Estimate):
-    '''Estimation method using JModelica optimization.'''
+class JModelica(_Estimate):
+    '''Estimation method using JModelica optimization.
+    
+    This estimation method sets up a parameter estimation problem to be solved
+    using JModelica_.
+    
+    .. _JModelica: http://jmodelica.org/
+
+    '''
+
     def __init__(self, Model):
-        '''Constructor of the JModelica estimation method.'''
+        '''Constructor of JModelica estimation method.
+
+        '''
+
         self.name = 'Jmo';        
         
     def _estimate(self, Model):
-        '''Perform the estimation.'''
-        self.opt_problem = optimization.Optimization(Model, optimization.ParameterEstimate, optimization.JModelica, {});
+        '''Perform JModelica estimation.
+
+        '''
+
+        self.opt_problem = optimization.Optimization(Model, optimization._ParameterEstimate, optimization.JModelica, {});
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
         
 #%% Validate Method Interfaces
-class RMSE(Validate):
-    '''Validation method that computes the RMSE between estimated and measured data.'''
+class RMSE(_Validate):
+    '''Validation method that computes the RMSE between estimated and measured data.
+    
+    Yields
+    ------
+    RMSE : dictionary
+        Attribute of the model object that contains the RMSE for each 
+        measurement variable used to perform the validation.
+    
+    '''
+
     def __init__(self, Model):
-        '''Constructor of the RMSE validation method class.'''
+        '''Constructor of the RMSE validation method class
+        
+        '''
+
         pass;
 
     def _validate(self, Model, validate_filename, plot = 1):
-        '''Perform the validation.'''
+        '''Perform the validation.
+        
+        '''
+
         Model.RMSE = {};
         for key in Model.measurements.keys():
             data = Model.measurements[key]['Measured'].get_base_data()[Model.start_time:Model.final_time];
@@ -330,20 +747,36 @@ class RMSE(Validate):
             unit_class = Model.measurements[key]['Measured'].get_base_unit();
             Model.RMSE[key] = variables.Static('RMSE_'+key, RMSE, unit_class);
         if plot == 1:
-            self.plot_simple(Model, validate_filename);
+            self._plot_simple(Model, validate_filename);
             
 #%% OccupanctPresence Model Types
-class QueueModel(OccupancyMethod):
-    '''Occupant presence prediction based on a queueing approach.
-    
-    Based on Jia, R. and C. Spanos (2016). "Occupancy modelling in shared 
+class QueueModel(_OccupancyMethod):
+    '''Occupancy presence prediction based on a queueing approach.
+
+    Based on Jia, R. and C. Spanos (2017). "Occupancy modelling in shared 
     spaces of buildings: a queueing approach." Journal of Building Performance 
-    Simulation. DOI: 10.1080/19401493.2016.1267802.
+    Simulation, 10(4), 406-421.
     
+    See ``occupant.occupancy.queueing`` for more information.
+    
+    Attributes
+    ----------
+    estimate_options : dictionary
+        Specifies options for model estimation with the following keys:
+        -res : defines the resolution of grid search for the optimal breakpoint placement 
+        -margin : specifies the minimum distance between two adjacent breakpoints
+        -n_max : defines the upper limit of the number of breakpoints returned by the algorithm
+    simulate_options : dictionary
+        Specifies options for model simulation.  
+        -iter_num : defines the number of iterations for monte-carlo simulation.
+
     '''
 
     def __init__(self):
-        '''Constructor of an occupancy prediction object using a queueing approach.'''
+        '''Constructor of an occupancy model object using a queueing approach.
+
+        '''
+
         # Initialize options
         self.estimate_options = {};
         self.estimate_options['res'] = 3;
@@ -353,7 +786,10 @@ class QueueModel(OccupancyMethod):
         self.simulate_options['iter_num'] = 100;
         
     def _estimate(self, Model):
-        '''Use measured occupancy data to estimate the queue model parameters.'''
+        '''Use measured occupancy data to estimate the queue model parameters.
+
+        '''
+
         # Set estimation options
         res = self.estimate_options['res'];
         margin = self.estimate_options['margin'];
@@ -392,8 +828,11 @@ class QueueModel(OccupancyMethod):
             Model.parameters_data['mu'][day]['Free'] = variables.Static('mu_'+str(day)+'_free', True, units.boolean);
             Model.parameters_data['mu'][day]['Value'] = variables.Static('mu_'+str(day)+'_value', self.mu, units.unit1);
         
-    def _validate(self, Model):
-        '''Compare occupancy predictions to measurements.'''
+    def _validate(self, Model, plot):
+        '''Compare occupancy predictions to measurements.
+
+        '''
+
         # Load prediction and measurement data
         prediction = Model.measurements[self.occ_key]['Simulated'].display_data();
         std = Model.measurements[self.occ_key]['SimulatedError'].display_data();
@@ -401,15 +840,27 @@ class QueueModel(OccupancyMethod):
         prediction_pstd = prediction+std;
         prediction_mstd = prediction-std;
         prediction_mstd = (prediction_mstd>=0)*prediction_mstd;
-        # Plot data to compare
-        measurements.plot(label = 'measured', color = 'k', alpha = 0.5);
-        prediction.plot(label='prediction', color = 'r', alpha = 0.5);
-        plt.fill_between(prediction.index, prediction_pstd, prediction_mstd, color = 'r', alpha = 0.5);     
-        plt.legend();
-        plt.savefig(Model.validate_filename+'.png')        
+        
+        Model.RMSE = {};
+        for key in Model.measurements.keys():
+            data = Model.measurements[key]['Measured'].get_base_data()[Model.start_time:Model.final_time];
+            data_est = Model.measurements[key]['Simulated'].get_base_data()[Model.start_time:Model.final_time];
+            RMSE = np.sqrt(sum((data_est-data)**2)/len(data));
+            unit_class = Model.measurements[key]['Measured'].get_base_unit();
+            Model.RMSE[key] = variables.Static('RMSE_'+key, RMSE, unit_class);
+        if plot == 1:
+            # Plot data to compare
+            measurements.plot(label = 'measured', color = 'k', alpha = 0.5);
+            prediction.plot(label='prediction', color = 'r', alpha = 0.5);
+            plt.fill_between(prediction.index, prediction_pstd, prediction_mstd, color = 'r', alpha = 0.5);     
+            plt.legend();
+            plt.savefig(Model.validate_filename+'.png')        
         
     def _simulate(self, Model):
-        '''Use Monte Carlo simulation to predict an occupancy timeseries.'''
+        '''Use Monte Carlo simulation to predict an occupancy timeseries.
+
+        '''
+
         # Set the number of simulations for the Monte Carlo 
         iter_num = self.simulate_options['iter_num'];
         # Initialize variables 
@@ -444,7 +895,7 @@ class QueueModel(OccupancyMethod):
                 if np.any(syssize <0):
                     pdb.set_trace()
                     raise ValueError('negative syssize')
-                if jmptimes == None:
+                if jmptimes is None:
                     jmptimes_mc[iter_idx] = 0
                     syssize_mc[:, iter_idx] = 0
                 else:
@@ -480,7 +931,10 @@ class QueueModel(OccupancyMethod):
         Model.measurements[self.occ_key]['SimulatedError'] = variables.Timeseries('prediction', ts_std, unit);
         
     def _format_training_data(self, Model, day):
-        '''Format the training data for use in parameter estimation.'''
+        '''Format the training data for use in parameter estimation.
+
+        '''
+
         # Set the occupancy measurement key
         self.occ_key = Model.measurements.keys()[0];
         # Get the training data from measurements

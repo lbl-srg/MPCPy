@@ -1,10 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-utility.py
-by David Blum
+The ``utility`` module contains classes and functions that are primarily for 
+back-end functionality that is common across the other mpcpy modules.  These
+include interactions with ``pandas`` objects, fmu objects, and various other
+data management tasks.  For this reason, most of the classes and methods 
+contained in this module are private. Exceptions are listed in the following
+section.
 
-This module contains commonly used functions in the mpcpy library.
+=========
+Functions
+=========
+
+.. automethod:: mpcpy.utility.get_unit_class_from_unit_string
+
+.. automethod:: mpcpy.utility.get_MPCPy_path
+
 """
+
 from abc import ABCMeta
 import os
 import numpy as np
@@ -12,7 +24,6 @@ import pandas as pd
 from pyfmi.common import core
 from pyfmi.common import xmlparser
 import inspect
-import sets
 from mpcpy import variables
 from mpcpy import units
 from tzwhere import tzwhere
@@ -23,10 +34,31 @@ from pymodelica import compile_fmu
 
 
 #%%
-class mpcpyPandas(object):
-    __metaclass__ = ABCMeta;    
-    def mpcpy_ts_list_to_dataframe(self, mpcpy_ts_list, display_data = False):
-        '''Combine a number of mpcpy timeseries into one pandas dataframe with base units.'''
+class _mpcpyPandas(object):
+    '''Mixin class for methods related to pandas integration.
+    
+    '''
+    
+    __metaclass__ = ABCMeta;   
+    
+    def _mpcpy_ts_list_to_dataframe(self, mpcpy_ts_list, display_data = False):
+        '''Combine mpcpy timeseries into one pandas dataframe with base units.
+        
+        Parameters
+        ----------
+        mpcpy_ts_list : list of variables.Timeseries objects
+            List of mpcpy timeseries veriables to be combined into a dataframe.
+        display_data : boolean, default = False
+            True will use display units, False will use base units.
+            
+        Returns
+        -------
+        df : ``pandas`` dataframe
+            Dataframe where the columns are formed by the supplied list of 
+            mpcpy timeseries variables.
+        
+        '''
+        
         d = {};
         for mpcpy_ts in mpcpy_ts_list:
             if display_data:
@@ -38,10 +70,35 @@ class mpcpyPandas(object):
         except ValueError:
             for mpcpy_ts_name in d.keys():
                 d[mpcpy_ts_name].to_frame().to_csv(get_MPCPy_path() + os.sep + mpcpy_ts_name);
+        df.index.name = 'Time'; 
+        
         return df
     
-    def dataframe_to_mpcpy_ts_variable(self, df, key, varname, unit, **kwargs):
-        '''Convert a column in a dataframe with datetimeindex to an mpcy timeseries variable.'''
+    def _dataframe_to_mpcpy_ts_variable(self, df, key, varname, unit, **kwargs):
+        '''Convert dataframe column to mpcpy timeseries variable.
+        
+        Parameters
+        ----------
+        df : ``pandas`` dataframe object
+            Dataframe with a datetime index.
+        key : string
+            Column name to convert to mpcpy timeseries variable.
+        varname : string
+            Variable name to assign to mpcpy timeseries variable.
+        unit : units.unit class
+            Unit to assign to mpcpy timeseries variable
+        cleaning_type : variables.Timseries.cleaning_type class, optional
+            Cleaning to be done to the data.
+        cleaning_args : tuple, required if cleaning_type
+            Arguments of the cleaning type.
+            
+        Returns
+        -------
+        var : variables.Timeseries
+            mpcpy timeseries variable resulting from the dataframe column.
+        
+        '''
+        
         if 'start_time' in kwargs:
             start_time = kwargs['start_time'];
         else:
@@ -58,19 +115,63 @@ class mpcpyPandas(object):
                                        cleaning_args = cleaning_args);
         else:
             var = variables.Timeseries(varname, df.loc[start_time:final_time, key], unit, tz_name = self.tz_name);
+        
         return var
      
-    def add_simtime_column(self, df):
-        '''Add a simulation time column to a dataframe from the DateTimeIndex.'''
+    def _add_simtime_column(self, df):
+        '''Add a simulation time column to a dataframe from the DateTimeIndex.
+        
+        The simulation time is added in seconds starting at 0.
+        
+        Parameters
+        ----------
+        df : ``pandas`` dataframe object
+            Dataframe for which to add a simulation time column.
+        
+        Returns
+        -------
+        df_simtime : ``pandas`` dataframe object
+            Dataframe with ``'SimTime'`` column added.
+
+        '''
+        
         t = df.index.to_series();
         dt = t - t[0];
         dt = dt.apply(lambda x: x / np.timedelta64(1, 's'));
         dt.name = 'SimTime';
         df_simtime = df.join(dt)
+        
         return df_simtime
         
     def _set_time_interval(self, start_time, final_time):
-        '''Convert start and final time to utc timestamps and calculate other time metrics.'''
+        '''Convert start and final time to utc timestamps and other metrics.
+
+        Parameters
+        ----------
+        start_time : string
+            Starting time of period.
+        final_time : string
+            Final time of period.
+    
+        Yields
+        ------
+        start_time : datetime object
+            Attribute for starting time of period in local time.
+        final_time : datetime object
+            Attribute for final time of period in local time.
+        start_time_utc : datetime object
+            Attribute for starting time of period in utc time.
+        final_time_utc : datetime object
+            Attribute for final time of period in utc time.
+        elapsed_seconds : float
+            Attribute for number of seconds elapsed during time period specified.
+        year_start_seconds : float
+            Attribute for number of seconds elapsed from start of year to start time.
+        year_final_seconds : float
+            Attribute for number of seconds elapsed from start of year to final time.
+
+        '''
+
         try:
             getattr(self, 'tz_name')
         except AttributeError:
@@ -91,6 +192,26 @@ class mpcpyPandas(object):
         self.year_final_seconds = year_final_timedelta.total_seconds();
         
     def _parse_time_zone_kwargs(self, kwargs):
+        '''Set the timezone using geography or timezone name.
+        
+        If no timezone is supplied, than utc is assigned.
+        
+        Parameters
+        ----------
+        tz_name : string, optional
+            Name of timezone according to the package ``tzwhere``.  If 
+            ``'from_geography'``, than geography kwarg is required.
+        geography : string, optional
+            List or tuple with latitude in the first position and longitude in
+            the second position, both in degrees.
+            
+        Yields
+        ------
+        tz_name : string
+            Attribute for timezone name.
+        
+        '''
+        
         # Geography
         if 'geography' in kwargs:
             self.lat = variables.Static('lat', kwargs['geography'][0], units.deg);
@@ -109,11 +230,24 @@ class mpcpyPandas(object):
             self.tz_name = 'UTC';        
 
 #%%
-class FMU(mpcpyPandas):
+class _FMU(_mpcpyPandas):
+    '''Mixin class for methods related to utilizing fmus.
+    
+    '''
+    
     __metaclass__ = ABCMeta;
        
     def _simulate_fmu(self):
-        ''' Simulate an fmu using Jmodelica.'''
+        '''Simulate an fmu using pyfmi. 
+        
+        Yields
+        ------
+        measurements[key]['Simulated'] : variables.Timeseries
+            Populates the `Simulated` key of the ``measurements`` dictionary 
+            attribute with mpcpy timeseries variables.
+        
+        '''
+        
         # Create input_mpcpy_ts_list
         self._create_input_mpcpy_ts_list_sim();
         # Set inputs
@@ -121,10 +255,9 @@ class FMU(mpcpyPandas):
         # Load simulation fmu  
         simulate_model = load_fmu(self.fmupath);
         # Set parameters in fmu if they exist
-        if self.parameter_data:
+        if hasattr(self, 'parameter_data'):
             for key in self.parameter_data.keys():
-                if not self.parameter_data[key]['Free'].get_base_data():
-                    simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
+                simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
         # Get minimum measurement sample rate for simulation
         min_sample = 3600;
         for key in self.measurements.keys():
@@ -132,15 +265,15 @@ class FMU(mpcpyPandas):
             if sample < min_sample:
                 min_sample = sample; 
         # Set Options
-        self.sim_opts = simulate_model.simulate_options();
-        self.sim_opts['ncp'] = int(self.elapsed_seconds/min_sample);
+        self._sim_opts = simulate_model.simulate_options();
+        self._sim_opts['ncp'] = int(self.elapsed_seconds/min_sample);
         # Simulate
         self._res = simulate_model.simulate(start_time = 0, \
                                            final_time = self.elapsed_seconds, \
-                                           input = self.input_object, \
-                                           options = self.sim_opts);
+                                           input = self._input_object, \
+                                           options = self._sim_opts);
         # Retrieve measurements
-        fmu_variable_units = self.get_fmu_variable_units();
+        fmu_variable_units = self._get_fmu_variable_units();
         for key in self.measurements.keys():
             data = self._res[key];
             time = self._res['time'];
@@ -148,13 +281,16 @@ class FMU(mpcpyPandas):
             timeindex = self.start_time_utc + timedelta;
             ts = pd.Series(data = data, index = timeindex);
             ts.name = key;
-            unit = self.get_unit_class_from_fmu_variable_units(key,fmu_variable_units);
+            unit = self._get_unit_class_from_fmu_variable_units(key,fmu_variable_units);
             if not unit:
                 unit = units.unit1;                
             self.measurements[key]['Simulated'] = variables.Timeseries(key, ts, unit);
             
     def _create_input_mpcpy_ts_list_sim(self):
-        '''Create a list of mpcpy timeseries for input into fmu.'''
+        '''Create a list of mpcpy timeseries for input into fmu for simulation.
+        
+        '''
+        
         self._input_mpcpy_ts_list = [];
         # Weather
         for key in self.weather_data.keys():
@@ -175,7 +311,10 @@ class FMU(mpcpyPandas):
                 self._input_mpcpy_ts_list.append(self.other_inputs[key]);
 
     def _create_input_mpcpy_ts_list_opt(self):
-        '''Create a list of mpcpy timeseries for input into fmu.'''
+        '''Create a list of mpcpy timeseries for input into fmu for optimization.
+        
+        '''
+        
         self._input_mpcpy_ts_list_opt = [];
         # Weather
         for key in self.weather_data.keys():
@@ -196,12 +335,41 @@ class FMU(mpcpyPandas):
                 self._input_mpcpy_ts_list_opt.append(self.other_inputs[key]);
 
     def _create_input_object_from_input_mpcpy_ts_list(self, input_mpcpy_ts_list):
-        '''Create an input object for a list of mpcpy timeseries for input into fmu.'''
-        self.input_df = self.mpcpy_ts_list_to_dataframe(input_mpcpy_ts_list);
-        self.input_object = self.dataframe_to_input_object(self.input_df[self.start_time_utc:self.final_time_utc]);
+        '''Create a fmu input object from list of mpcpy timeseries.
+        
+        '''
+        
+        self._input_df = self._mpcpy_ts_list_to_dataframe(input_mpcpy_ts_list);
+        self._input_object = self._dataframe_to_input_object(self._input_df[self.start_time_utc:self.final_time_utc]);
     
     def _create_fmu(self, kwargs):
-        '''Store FMU or compile FMU and store from Modelica code.'''
+        '''Load fmu or compile and load fmu from Modelica code.
+        
+        Parameters
+        ----------
+        fmupath : string, required if moinfo not specified
+            Path to fmu file.
+        moinfo : (string, string, list), required if fmupath not specified
+            Tuple where [0] is path to .mo file, [1] is modelica path to model, 
+            [2] is list of required modelica library paths.
+            
+        Yields
+        ------
+        fmupath : string
+            Attribute for path to fmu file.
+        mopath : string
+            Attribute for path to .mo file.
+        modelpath : string
+            Attribute for modelica path to model.
+        libraries : list
+            Attribute for list of paths to required modelica libraries.
+        fmu : ``pyfmi`` fmu object
+            Attribute for fmu object using the load_fmu method of pyfmi.
+        fmu_version : string
+            Attribute for version of fmu.  ``'1.0'`` or ``'2.0'``.
+
+        '''
+        
         if 'fmupath' in kwargs:
             self.fmupath = kwargs['fmupath'];
             self.mopath = None;
@@ -222,18 +390,40 @@ class FMU(mpcpyPandas):
         self.fmu = load_fmu(self.fmupath);
         self.fmu_version = self.fmu.get_version();
         
-    def dataframe_to_input_object(self, df):
-        '''Create an input object for an fmu simulated in Jmodelica.'''
+    def _dataframe_to_input_object(self, df):
+        '''Create a fmu input object from dataframe.
+        
+        Parameters
+        ----------
+        df : ``pandas`` dataframe object
+            Dataframe to convert to fmu input_object.
+            
+        Returns
+        -------
+        input_object : tuple
+            Input object that can be used to simulate an fmu with pyfmi.
+
+        '''
+
         input_names = tuple(df);
-        input_df_simtime = self.add_simtime_column(df);
+        input_df_simtime = self._add_simtime_column(df);
         input_trajectory = input_df_simtime['SimTime'].get_values();
         for header in input_names:
             input_trajectory = np.vstack((input_trajectory, df[header].get_values()));
         input_object = (input_names, np.transpose(input_trajectory));
+        
         return input_object;
                           
-    def get_input_names(self):
-        '''Get the names of the input variables of an fmu.'''
+    def _get_input_names(self):
+        '''Get the names of the input variables of the fmu.
+        
+        Returns
+        -------
+        input_names : list
+            List of variable names that are fmu inputs.
+        
+        '''
+        
         if self.fmu_version == '1.0':
             input_names = self.fmu.get_model_variables(causality = 0).keys();
         elif self.fmu_version == '2.0':
@@ -243,8 +433,19 @@ class FMU(mpcpyPandas):
 
         return input_names;
         
-    def get_fmu_variable_units(self):
-        '''Get fmu model variable units.'''
+    def _get_fmu_variable_units(self):
+        '''Get fmu model variable units.
+        
+        Returns
+        -------
+        fmu_variable_units : dictionary
+            Dictionary where the keys are variable names and values are unit
+            strings.  These unit strings can be used by 
+            ``_get_unit_class_from_fmu_variable_units`` to get the 
+            corresponding mpcpy unit class.
+        
+        '''
+        
         tmpdir = core.unzip_unit(self.fmupath);
         element_tree = xmlparser._parse_XML(tmpdir+os.sep + 'modelDescription.xml');
         root = element_tree.getroot();
@@ -282,8 +483,24 @@ class FMU(mpcpyPandas):
             
         return fmu_variable_units
     
-    def get_unit_class_from_fmu_variable_units(self, variable_name, fmu_variable_units):
-        '''Get mpcpy.unit class for the given variable.'''
+    def _get_unit_class_from_fmu_variable_units(self, variable_name, fmu_variable_units):
+        '''Get units.unit class for the given variable.
+        
+        Parameters
+        ----------
+        variable_name : string
+            Name of the fmu variable for which to get the mpcpy unit class.
+        fmu_variable_units : dictionary
+            Dictionary where the keys are variable names and values are unit
+            strings.  Can be gotten by ``_get_fmu_variable_units``.
+            
+        Returns
+        -------
+        unit_class : units.unit
+            mpcpy unit class of fmu variable.
+        
+        '''
+        
         unit_class_items = inspect.getmembers(units);
         unit_class = [];
         for unit_class_item in unit_class_items:
@@ -294,14 +511,37 @@ class FMU(mpcpyPandas):
                     break
             except:
                 continue
+            
         return unit_class
         
 #%%
-class Building(object):
-    '''Abstract class for methods related to building models.'''
+class _Building(object):
+    '''Mixin class for methods related to building models.
+    
+    '''
+    
     __metaclass__ = ABCMeta;
+    
     def _parse_building_kwargs(self, kwargs):
-        '''Parse the keyword arguments associated with initializing a building model.'''
+        '''Parse the kwargs associated with initializing a building model.
+        
+        Yields
+        ------
+        zone_names : list
+            Zone name list attribute.
+        weather_data : dictionary
+            Weather ``exodata`` data dictionary attribute.
+        internal_data : dictionary
+            Internal load ``exodata`` data dictionary attribute.
+        control_data : dictionary
+            Control ``exodata`` data dictionary attribute.
+        other_inputs : dictionary
+            Other input ``exodata`` data dictionary attribute.
+        parameter_data : dictionary
+            Parameter ``exodata`` data dictionary attribute.
+
+        '''
+        
         # Zone names
         if 'zone_names' in kwargs:
             self.zone_names = kwargs['zone_names'];
@@ -338,11 +578,29 @@ class Building(object):
             self.parameter_data = {};
         
 #%%
-class DAQ(object):
-    '''Abstract class for methods related to collecting data.'''
+class _DAQ(object):
+    '''Mixin class for methods related to collecting data.
+    
+    '''
+    
     __metaclass__ = ABCMeta;
     
     def _parse_daq_kwargs(self, kwargs):
+        '''Parse the kwargs related to data collection.
+        
+        Yields
+        ------
+        time_format = timespec string
+            Attribute for the specification of the time format.
+        time_header = string
+            Attribute for the column header containing time stamp data.
+        clean_data : dictionary
+            Attribute to specify data cleaning.  
+            { 'csvHeader' : 'cleaning_type' = variables.Timeseries.cleaning_type,
+            'cleaning_args' = (cleaning_args)}
+        
+        '''
+    
         # Time Format
         if 'time_format' in kwargs:
             # String of timespec
@@ -351,33 +609,51 @@ class DAQ(object):
             self.time_format = None;
         # Time Header
         if 'time_header' in kwargs:
-            # String of timespec
+            # String of column header representing time
             self.time_header = kwargs['time_header'];
         else:
             self.time_header = None;
         # Data Cleaning
-        # { 'csvHeader' : 'cleaning_type' = variables.Timeseries.cleaning_type,
-        #                 'cleaning_args' = (cleaning_args)}
         if 'clean_data' in kwargs:
             self.clean_data = kwargs['clean_data'];
         else:
             self.clean_data = None;
         
     def _search_variable_map(self, mpcpy_varname):
-        '''Search variable map for column name matching the mpcpy variable name.''' 
+        '''Search variable map for column name matching the mpcpy variable name.
+        
+        Parameters
+        ----------
+        mpcpy_varname : string
+            Variable name used in mpcpy.
+            
+        Returns
+        -------
+        key : string
+            Variable name in column header.
+        
+        '''
+        
         for key in self.variable_map:
             if self.variable_map[key][0] == mpcpy_varname:
                 break
+            
         return key
         
     def _read_timeseries_from_csv(self):
-        '''Read timeseries data from a csv into mpcpy data.'''
+        '''Read timeseries data from a csv into mpcpy data.
+        
+        This method assumes the concrete class will define the method
+        ``_translate_variable_map``.
+        
+        '''
+        
         # Set time index from default or user-specified time header
         if self.time_header is not None:
             time_headers = self.time_header;
         else:
             time_headers = ['Time', 'time', 'Timestamp', 'timestamp']; 
-        self._df_csv = pd.read_csv(self.location);        
+        self._df_csv = pd.read_csv(self.file_path);        
         for key in self._df_csv.columns.values:
             if key in time_headers:
                 time = pd.to_datetime(self._df_csv[key], format = self.time_format);
@@ -406,7 +682,79 @@ class DAQ(object):
                     self._cleaning_args = None;   
                 self._translate_variable_map();    
     
+class _Measurements(object):
+    '''Mixin class to handle operations on measurement dictionaries.
+    
+    Concrete class requires _mpcpyPandas methods.
+    
+    '''
+    
+    def display_measurements(self, measurement_key):
+        '''Get measurements data in display units as pandas dataframe.
         
+        Parameters
+        ----------
+        measurement_key : string
+            The measurement dictionary key for which to get the data for all 
+            of the variables.
+        
+        Returns
+        -------
+        df : ``pandas`` dataframe
+            Timeseries dataframe in display units containing data for all 
+            measurement variables.
+        
+        '''
+
+        mpcpy_ts_list = self._make_mpcpy_ts_list(measurement_key);
+        df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = True);
+        
+        return df;
+
+    def get_base_measurements(self, measurement_key):
+        '''Get measurements data in base units as pandas dataframe.
+        
+        Parameters
+        ----------
+        measurement_key : string
+            The measurement dictionary key for which to get the data for all 
+            of the variables.
+        
+        Returns
+        -------
+        df : ``pandas`` dataframe
+            Timeseries dataframe in base units containing data for all 
+            measurement variables.
+        
+        '''
+
+        mpcpy_ts_list = self._make_mpcpy_ts_list(measurement_key);
+        df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = False);
+        
+        return df;
+        
+    def _make_mpcpy_ts_list(self, measurement_key):
+        '''Create mpcpy ts list from measurement dictionary.
+    
+        Parameters
+        ----------
+        measurement_key : string
+            The measurement dictionary key for which to get the data for all 
+            of the variables.
+
+        Returns
+        -------
+        mpcpy_ts_list : list
+            List of mpcpy timeseries variables.
+            
+        '''
+        
+        mpcpy_ts_list = [];
+        for key in self.measurements.keys():
+            mpcpy_ts_list.append(self.measurements[key][measurement_key])
+        
+        return mpcpy_ts_list
+       
 #%% Get the MPCPy path
 def get_MPCPy_path():
     '''Get the MPCPy home path.
@@ -420,11 +768,27 @@ def get_MPCPy_path():
     
     rel_path = os.sep + 'mpcpy' + os.sep + 'utility.py'
     MPCPy_path = os.path.abspath(__file__)[:-len(rel_path)];
+    
     return MPCPy_path
     
 #%% Get a unit class from a unit string
 def get_unit_class_from_unit_string(unit_string):
-    '''Get mpcpy.unit class for the given variable.'''
+    '''Get mpcpy.unit class for the given variable string.
+
+    Parameters
+    ----------
+    unit_string : string
+        Unit string.  For example, the unit string for a heat transfer
+        coefficient in SI units would be ``'W/(m2.K)'``.
+        
+    Returns
+    -------
+    unit_class : units.unit class
+        The mpcpy unit class for the given unit string.  This class can be used
+        to define an mpcpy variable object.  See ``variables``.
+    
+    '''
+
     unit_class_items = inspect.getmembers(units);
     unit_class = [];
     for unit_class_item in unit_class_items:
@@ -435,4 +799,5 @@ def get_unit_class_from_unit_string(unit_string):
                 break
         except:
             continue
-    return unit_class    
+
+    return unit_class

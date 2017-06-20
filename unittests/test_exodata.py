@@ -5,159 +5,157 @@ by David Blum
 
 This module contains the classes for testing the exodata of mpcpy.
 """
-from abc import ABCMeta
-import unittest
+
 from mpcpy import exodata
 from mpcpy import utility
 from mpcpy import units
 from mpcpy import variables
-from matplotlib import pyplot as plt
-import pandas as pd
+from testing import TestCaseMPCPy
+import unittest
+import numpy as np
 import pickle
 import copy
 import os
 
-#%% General Test Methods
-class TestExodata(unittest.TestCase):
-    '''General test methods for testing exodata objects.'''
-    __metaclass__ = ABCMeta;
-    def print_data(self, obj):
-        df = obj.display_data();
-        print(df)
-        df = obj.get_base_data();
-        print(df)
-
 #%% Weather Tests
-class Weather_epw(TestExodata):
-    '''Test the collection of weather data from an EPW.'''
+class WeatherFromEPW(TestCaseMPCPy):
+    '''Test the collection of weather data from an EPW.
+    
+    '''
+    
     def setUp(self):
-        self.start_time = '1/1/2015'; # No leap years!
-        self.final_time = '1/1/2016'; # No leap years!
-        self.test_varnames = ['weaPAtm', 'weaTDewPoi', 'weaTDryBul', 'weaRelHum', \
-                              'weaNOpa', 'weaCelHei', 'weaNTot', 'weaWinSpe', 'weaWinDir', \
-                              'weaHHorIR', 'weaHDirNor', 'weaHGloHor', 'weaHDifHor', \
-                              'weaIAveHor', 'weaIDirNor', 'weaIDifHor', 'weaZLum', \
-                              'weaHDifHor', 'weaTBlaSky', 'weaTWetBul', 'weaSolZen', \
-                              'weaCloTim', 'weaSolTim'];
-        # Instantiate weather object
-        self.epw_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'weather' + os.sep + 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
+        self.epw_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'weather', \
+                                         'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
         self.weather = exodata.WeatherFromEPW(self.epw_filepath);
-        # Get weather data
-        self.weather.collect_data(self.start_time, self.final_time);
-        self.initial_ref = utility.get_MPCPy_path() + os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'exodata_epw_dymola_out.csv';
-        self.test_ref = utility.get_MPCPy_path() + os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'exodata_epw_ref_out.csv';
+        
+    def test_instantiate(self):
+        self.assertEqual(self.weather.name, 'weather_from_epw');
+        self.assertEqual(self.weather.file_path, self.epw_filepath);
+        self.assertAlmostEqual(self.weather.lat.display_data(), 41.980, places=4);
+        self.assertAlmostEqual(self.weather.lon.display_data(), -87.92, places=4);
+        self.assertEqual(self.weather.tz_name, 'America/Chicago');
+        
+    def test_collect_data(self):
+        start_time = '1/1/2015';
+        final_time = '1/1/2016';
+        self.weather.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.weather.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');
+        
+    def test_collect_data_partial(self):
+        start_time = '10/2/2015 06:00:00';
+        final_time = '11/13/2015 16:00:00';
+        self.weather.collect_data(start_time, final_time);
+        # Check references
+        df_test = self.weather.display_data();
+        self.check_df_timeseries(df_test, 'collect_data_partial_display.csv');
+        df_test = self.weather.get_base_data();
+        self.check_df_timeseries(df_test, 'collect_data_partial_base.csv');
 
-    def test_values(self):
-        '''Compare the values of collected weather data to a reference.'''
-        try:
-            # Try reading reference values from established test base
-            df_ref = pd.read_csv(self.test_ref);
-            df_ref.index = pd.to_datetime(df_ref['Time'].get_values());
-            df_ref = df_ref.tz_localize('UTC');
-            for key in self.weather.data.keys():
-                if key in self.test_varnames and key in list(df_ref.columns.values):
-                    var = self.weather.data[key];
-                    test_data = var.get_base_data();
-                    ref_data = df_ref[key];
-                    if var.variability == 'Timeseries':
-                        data_range = (ref_data.max()-ref_data.min());
-                        if data_range == 0:
-                            rerror = test_data-ref_data;
-                        else:
-                            rerror = (test_data-ref_data)/data_range;
-                        rerror_gt = rerror>0.015;
-                        self.assertFalse(rerror_gt.any(), 'Relative error of {0} found in variable {1}.'.format(rerror, key));
-                        
-
-        except IOError:
-            # Read data from initial reference source
-            df_dymola = pd.read_csv(self.initial_ref, index_col = 'Time');
-            time_dymola = df_dymola.index.values;
-            # Turn data in dataframe
-            df_wea = self.weather.get_base_data();
-            df_wea = self.weather.add_simtime_column(df_wea);
-            # Plot values
-            i = 1;
-            for key in self.weather.data.keys():
-                if key in self.test_varnames and key in list(df_dymola.columns.values):
-                    data = df_wea[key].get_values();
-                    time_data = df_wea['SimTime'].get_values();
-                    plt.figure(i);
-                    plt.plot(time_data, data, '-', label = key+'_mpcpy');
-                    plt.plot(time_dymola, df_dymola.loc[:,key], '--', label = key+'_dymola');
-                    plt.title(key);
-                    plt.legend();
-                    i = i + 1;
-            df_wea.to_csv(self.test_ref, index_label = 'Time');
-            plt.show();
-
-class Weather_csv(TestExodata):
-    '''Test the collection of weather data from a CSV file.'''
+class WeatherFromCSV(TestCaseMPCPy):
+    '''Test the collection of weather data from a CSV file.
+    
+    '''
+    
     def setUp(self):
-        self.csv_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'weather' + os.sep + 'BerkeleyCSV.csv';
-        self.start_time = '2016-10-19 19:53:00';
-        self.final_time = '2016-10-20 06:53:00';
+        self.csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'weather', 'BerkeleyCSV.csv');
         self.geography = [37.8716, -122.2727];
-        self.time_header = 'DateUTC';
         self.variable_map = {'TemperatureF' : ('weaTDryBul', units.degF), \
                              'Dew PointF' : ('weaTDewPoi', units.degF), \
                              'Humidity' : ('weaRelHum', units.percent), \
                              'Sea Level PressureIn' : ('weaPAtm', units.inHg), \
-                             'WindDirDegrees' : ('weaWinDir', units.deg), \
-                             'Wind SpeedMPH' : ('weaWinSpe', units.mph)};
-        self.clean_data = {'Wind SpeedMPH' : {'cleaning_type' : variables.Timeseries.cleaning_replace, \
-                                              'cleaning_args' : ('Calm', 0)}};
-
-    def test_default_time(self):
+                             'WindDirDegrees' : ('weaWinDir', units.deg)};
+                             
+    def test_instantiate(self):
+        weather = exodata.WeatherFromCSV(self.csv_filepath, \
+                                         self.variable_map, 
+                                         geography = self.geography);
+        self.assertEqual(weather.name, 'weather_from_csv');
+        self.assertEqual(weather.file_path, self.csv_filepath);
+        self.assertAlmostEqual(weather.lat.display_data(), 37.8716, places=4);
+        self.assertAlmostEqual(weather.lon.display_data(), -122.2727, places=4);
+        self.assertEqual(weather.tz_name, 'UTC');
+        
+    def test_collect_data_default_time(self):
+        start_time = '2016-10-19 19:53:00';
+        final_time = '2016-10-20 06:53:00';
+        time_header = 'DateUTC';
         # Instantiate weather object
-        self.weather = exodata.WeatherFromCSV(self.csv_filepath, \
-                                              self.variable_map, \
-                                              geography = self.geography, \
-                                              time_header = self.time_header, \
-                                              clean_data = self.clean_data);
+        weather = exodata.WeatherFromCSV(self.csv_filepath, \
+                                         self.variable_map, \
+                                         geography = self.geography, \
+                                         time_header = time_header);
         # Get weather data
-        self.weather.collect_data(self.start_time, self.final_time);
-        self.print_data(self.weather);
+        weather.collect_data(start_time, final_time);
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df_timeseries(df_test, 'collect_data_default_time.csv');
 
-    def test_local_time_from_geography(self):
-        print('local time from geography')
-        self.time_header = 'TimePDT';
-        self.start_time = '12:53:00 PM';
-        self.final_time = '11:53:00 PM';
+    def test_collect_data_local_time_from_geography(self):
+        start_time = '10/19/2016 12:53:00 PM';
+        final_time = '10/19/2016 11:53:00 PM';
+        time_header = 'TimePDT';
         # Instantiate weather object
-        self.weather = exodata.WeatherFromCSV(self.csv_filepath, \
-                                              self.variable_map, \
-                                              geography = self.geography, \
-                                              time_header = self.time_header, \
-                                              clean_data = self.clean_data,
-                                              tz_name = 'from_geography');
+        weather = exodata.WeatherFromCSV(self.csv_filepath, \
+                                         self.variable_map, \
+                                         geography = self.geography, \
+                                         time_header = time_header, \
+                                         tz_name = 'from_geography');
         # Get weather data
-        self.weather.collect_data(self.start_time, self.final_time);
-        self.print_data(self.weather);
+        weather.collect_data(start_time, final_time);
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df_timeseries(df_test, 'collect_data_local_time_from_geography.csv');
 
-    def test_local_time_from_tz_name(self):
-        print('local time from tz_name')
-        self.time_header = 'TimePDT';
-        self.start_time = '12:53:00 PM';
-        self.final_time = '11:53:00 PM';
+    def test_collect_data_local_time_from_tz_name(self):
+        time_header = 'TimePDT';
+        start_time = '10/19/2016 12:53:00 PM';
+        final_time = '10/19/2016 11:53:00 PM';
         # Instantiate weather object
-        self.weather = exodata.WeatherFromCSV(self.csv_filepath, \
-                                              self.variable_map, \
-                                              geography = self.geography, \
-                                              time_header = self.time_header, \
-                                              clean_data = self.clean_data,
-                                              tz_name = 'America/Los_Angeles');
+        weather = exodata.WeatherFromCSV(self.csv_filepath, \
+                                         self.variable_map, \
+                                         geography = self.geography, \
+                                         time_header = time_header, \
+                                         tz_name = 'America/Los_Angeles');
         # Get weather data
-        self.weather.collect_data(self.start_time, self.final_time);
-        self.print_data(self.weather);
+        weather.collect_data(start_time, final_time);
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df_timeseries(df_test, 'collect_data_local_time_from_tz_name.csv');
+
+    def test_collect_data_clean_data(self):
+        start_time = '2016-10-19 19:53:00';
+        final_time = '2016-10-20 06:53:00';
+        time_header = 'DateUTC';
+        variable_map = {'TemperatureF' : ('weaTDryBul', units.degF), \
+                        'Dew PointF' : ('weaTDewPoi', units.degF), \
+                        'Humidity' : ('weaRelHum', units.percent), \
+                        'Sea Level PressureIn' : ('weaPAtm', units.inHg), \
+                        'WindDirDegrees' : ('weaWinDir', units.deg), \
+                        'Wind SpeedMPH' : ('weaWinSpe', units.mph)};
+        clean_data = {'Wind SpeedMPH' : {'cleaning_type' : variables.Timeseries.cleaning_replace, \
+                                         'cleaning_args' : ('Calm', 0)}};        
+        # Instantiate weather object
+        weather = exodata.WeatherFromCSV(self.csv_filepath, \
+                                         variable_map, \
+                                         geography = self.geography, \
+                                         time_header = time_header, 
+                                         clean_data = clean_data);
+        # Get weather data
+        weather.collect_data(start_time, final_time);
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df_timeseries(df_test, 'collect_data_clean_data.csv');
 
 #%% Internal Tests
-class Internal_csv(TestExodata):
-    '''Test the collection of internal data from a CSV file.'''
+class InternalFromCSV(TestCaseMPCPy):
+    '''Test the collection of internal data from a CSV file.
+    
+    '''
+    
     def setUp(self):
-        self.csv_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'internal' + os.sep + 'sampleCSV.csv';
-        self.start_time = '2015-1-1';
-        self.final_time = '2015-1-2';
+        self.csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'internal', 'sampleCSV.csv');
         self.variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
                              'intCon_wes' : ('wes', 'intCon', units.W_m2), \
                              'intLat_wes' : ('wes', 'intLat', units.W_m2), \
@@ -167,101 +165,129 @@ class Internal_csv(TestExodata):
                              'intRad_eas' : ('eas', 'intRad', units.W_m2), \
                              'intCon_eas' : ('eas', 'intCon', units.W_m2), \
                              'intLat_eas' : ('eas', 'intLat', units.W_m2)};
-        # Instantiate weather object
+        # Instantiate internal object
         self.internal = exodata.InternalFromCSV(self.csv_filepath, \
                                                 self.variable_map);
+
+    def test_collect_data(self):
+        start_time = '1/2/2015';
+        final_time = '1/3/2015';
         # Get internal data
-        self.internal.collect_data(self.start_time, self.final_time);
+        self.internal.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.internal.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');
 
-    def test_print(self):
-        self.print_data(self.internal);
-
-class Internal_occupancy(TestExodata):
-    '''Test the collection of internal data from an occupancy model.'''
+class InternalFromOccupancyModel(TestCaseMPCPy):
+    '''Test the collection of internal data from an occupancy model.
+    
+    '''
+    
     def setUp(self):
         # Time
-        self.start_time_occupancy = '4/1/2013';
-        self.final_time_occupancy = '4/7/2013 23:55:00';
-        self.start_time_internal = '4/2/2013';
-        self.final_time_internal = '4/4/2013';
+        start_time_occupancy = '4/1/2013';
+        final_time_occupancy = '4/7/2013 23:55:00';
         # Load occupancy models
-        with open(utility.get_MPCPy_path()+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_estimated.txt', 'r') as f:
-            self.occupancy_model = pickle.load(f);
+        with open(os.path.join(utility.get_MPCPy_path(), 'unittests', 'references', \
+                               'test_models', 'OccupancyFromQueueing', \
+                               'occupancy_model_estimated.txt'), 'r') as f:
+            occupancy_model = pickle.load(f);
         # Define zones and loads
-        self.zone_list = ['wes', 'hal', 'eas'];
-        self.load_list = [[0.4,0.4,0.2], [0.4,0.4,0.2], [0.4,0.4,0.2]];
+        zone_list = ['wes', 'hal', 'eas'];
+        load_list = [[0.4,0.4,0.2], [0.4,0.4,0.2], [0.4,0.4,0.2]];
         # Simulate occupancy models for each zone
-        self.occupancy_model_list = [];
-        for zone in self.zone_list:
-            simulate_options = self.occupancy_model.get_simulate_options();
+        occupancy_model_list = [];
+        np.random.seed(1); # start with same seed for random number generation
+        for zone in zone_list:
+            simulate_options = occupancy_model.get_simulate_options();
             simulate_options['iter_num'] = 5;
-            self.occupancy_model.simulate(self.start_time_occupancy, self.final_time_occupancy)
-            self.occupancy_model_list.append(copy.deepcopy(self.occupancy_model));
+            occupancy_model.simulate(start_time_occupancy, final_time_occupancy)
+            occupancy_model_list.append(copy.deepcopy(occupancy_model));
         # Instantiate internal object
-        self.internal = exodata.InternalFromOccupancyModel(self.zone_list, self.load_list, units.W_m2, self.occupancy_model_list);
-        # Get internal data
-        self.internal.collect_data(self.start_time_internal, self.final_time_internal);
+        self.internal = exodata.InternalFromOccupancyModel(zone_list, load_list, units.W_m2, occupancy_model_list);
 
-    def test_print(self):
-        self.print_data(self.internal);
+    def test_collect_data(self):
+        start_time = '4/2/2013';
+        final_time = '4/4/2013';
+        # Get internal data
+        self.internal.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.internal.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Control Tests
-class Control_csv(TestExodata):
-    '''Test the collection of control data from a CSV file.'''
+class ControlFromCSV(TestCaseMPCPy):
+    '''Test the collection of control data from a CSV file.
+    
+    '''
+    
     def setUp(self):
-        self.csv_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'building' + os.sep + 'ControlCSV_0.csv';
-        self.start_time = '1/1/2015 13:00:00';
-        self.final_time = '1/2/2015';
-        self.variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
-                             'conHeat_hal' : ('conHeat_hal', units.unit1), \
-                             'conHeat_eas' : ('conHeat_eas', units.unit1)};
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'building', 'ControlCSV_0.csv');
+        variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
+                        'conHeat_hal' : ('conHeat_hal', units.unit1), \
+                        'conHeat_eas' : ('conHeat_eas', units.unit1)};
         # Instantiate control object
-        self.control = exodata.ControlFromCSV(self.csv_filepath, \
-                                              self.variable_map);
-        # Get control data
-        self.control.collect_data(self.start_time, self.final_time);  
+        self.control = exodata.ControlFromCSV(csv_filepath, \
+                                              variable_map); 
 
-    def test_print(self):
-        self.print_data(self.control);
+    def test_collect_data(self):
+        start_time = '1/1/2015 13:00:00';
+        final_time = '1/2/2015';
+        # Get control data
+        self.control.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.control.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Other Input Tests
-class OtherInput_csv(TestExodata):
-    '''Test the collection of other input data from a CSV file.'''
+class OtherInputFromCSV(TestCaseMPCPy):
+    '''Test the collection of other input data from a CSV file.
+    
+    '''
+    
     def setUp(self):
-        self.csv_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'weather' + os.sep + 'Tamb.csv';
-        self.start_time = '1/1/2015 00:00:00';
-        self.final_time = '1/1/2015 02:00:00';
-        self.variable_map = {'T' : ('Tamb', units.degC)};
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'weather', 'Tamb.csv');
+        variable_map = {'T' : ('Tamb', units.degC)};
         # Instantiate other input object
-        self.otherinput = exodata.OtherInputFromCSV(self.csv_filepath, \
-                                                    self.variable_map);
-        # Get other input data
-        self.otherinput.collect_data(self.start_time, self.final_time);
+        self.otherinput = exodata.OtherInputFromCSV(csv_filepath, \
+                                                    variable_map);
 
-    def test_print(self):
-        self.print_data(self.otherinput);
+    def test_collect_data(self):
+        start_time = '1/1/2015 00:00:00';
+        final_time = '1/1/2015 06:00:00';
+        # Get other input data
+        self.otherinput.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.otherinput.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Parameter Tests
-class Parameters_csv(TestExodata):
-    '''Test the collection of parameter data from a CSV file.'''
+class ParameterFromCSV(TestCaseMPCPy):
+    '''Test the collection of parameter data from a CSV file.
+    
+    '''
+    
     def setUp(self):
-        self.csv_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'model' + os.sep + 'LBNL71T_Parameters.csv';
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'model', 'LBNL71T_Parameters.csv');
         # Instantiate weather object
-        self.parameters = exodata.ParameterFromCSV(self.csv_filepath);
-        # Get coefficient data
-        self.parameters.collect_data();
+        self.parameters = exodata.ParameterFromCSV(csv_filepath);
 
-    def test_print(self):
-        self.print_data(self.parameters);
+    def test_collect_data(self):
+        # Get parameter data
+        self.parameters.collect_data();
+        # Check reference
+        df_test = self.parameters.display_data();
+        self.check_df_general(df_test, 'collect_data.csv');
 
 #%% Constraint Tests
-class Constraint_csv(TestExodata):
-    '''Test the collection of constraint data from a CSV file.'''
+class ConstraintFromCSV(TestCaseMPCPy):
+    '''Test the collection of constraint data from a CSV file.
+    
+    '''
+    
     def setUp(self):
-        self.csv_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'optimization' + os.sep + 'sampleConstraintCSV_Setback.csv';
-        self.start_time = '1/1/2015 13:00:00';
-        self.final_time = '1/2/2015';
-        self.variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'optimization', 'sampleConstraintCSV_Setback.csv');
+        variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
                              'wesTdb_max' : ('wesTdb', 'LTE', units.degC), \
                              'easTdb_min' : ('easTdb', 'GTE', units.degC), \
                              'easTdb_max' : ('easTdb', 'LTE', units.degC), \
@@ -274,61 +300,77 @@ class Constraint_csv(TestExodata):
                              'conHeat_eas_min' : ('conHeat_eas', 'GTE', units.unit1), \
                              'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
         # Instantiate weather object
-        self.constraints = exodata.ConstraintFromCSV(self.csv_filepath, \
-                                                     self.variable_map);
+        self.constraints = exodata.ConstraintFromCSV(csv_filepath, \
+                                                     variable_map);
+
+    def test_collect_data(self):
+        start_time = '1/1/2015 13:00:00';
+        final_time = '1/2/2015';
         # Get constraint data
-        self.constraints.collect_data(self.start_time, self.final_time);
+        self.constraints.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.constraints.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');        
 
-    def test_print(self):
-        self.print_data(self.constraints);
-
-class Constraint_occupancy(TestExodata):
-    '''Test the collection of constraint data from an occupancy model.'''
+class ConstraintFromOccupancyModel(TestCaseMPCPy):
+    '''Test the collection of constraint data from an occupancy model.
+    
+    '''
+    
     def setUp(self):
         # Time
-        self.start_time_occupancy = '3/1/2012';
-        self.final_time_occupancy = '3/7/2012 23:55:00';
-        self.start_time_internal = '3/2/2012';
-        self.final_time_internal = '3/4/2012';
+        start_time_occupancy = '3/1/2012';
+        final_time_occupancy = '3/7/2012 23:55:00';
         # Load occupancy models
-        with open(utility.get_MPCPy_path()+os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'occupancy_model_estimated.txt', 'r') as f:
-            self.occupancy_model = pickle.load(f);
+        with open(os.path.join(utility.get_MPCPy_path(), 'unittests', 'references', 'test_models',\
+                               'OccupancyFromQueueing', 'occupancy_model_estimated.txt'), 'r') as f:
+            occupancy_model = pickle.load(f);
         # Define state variables and values
-        self.state_variable_list = ['wesTdb', 'wesTdb', 'easTdb', 'easTdb', 'halTdb', 'halTdb'];
-        self.values_list = [[25,30], [20,15], [25+273.15, 30+273.15], [20+273.15, 15+273.15], [25,30], [20,15]];
-        self.constraint_type_list = ['LTE', 'GTE', 'LTE', 'GTE', 'LTE', 'GTE'];
-        self.unit_list = [units.degC, units.degC, units.K, units.K, units.degC, units.degC]
+        state_variable_list = ['wesTdb', 'wesTdb', 'easTdb', 'easTdb', 'halTdb', 'halTdb'];
+        values_list = [[25,30], [20,15], [25+273.15, 30+273.15], [20+273.15, 15+273.15], [25,30], [20,15]];
+        constraint_type_list = ['LTE', 'GTE', 'LTE', 'GTE', 'LTE', 'GTE'];
+        unit_list = [units.degC, units.degC, units.K, units.K, units.degC, units.degC]
         # Simulate occupancy model
-        simulate_options = self.occupancy_model.get_simulate_options();
+        simulate_options = occupancy_model.get_simulate_options();
         simulate_options['iter_num'] = 5;
-        self.occupancy_model.simulate(self.start_time_occupancy, self.final_time_occupancy);
+        np.random.seed(1); # start with same seed for random number generation
+        occupancy_model.simulate(start_time_occupancy, final_time_occupancy);
         # Instantiate constraint object
-        self.constraints = exodata.ConstraintFromOccupancyModel(self.state_variable_list, self.values_list, self.constraint_type_list, self.unit_list, self.occupancy_model);
-        # Get internal data
-        self.constraints.collect_data(self.start_time_internal, self.final_time_internal);
+        self.constraints = exodata.ConstraintFromOccupancyModel(state_variable_list, values_list, constraint_type_list, unit_list, occupancy_model);
 
-    def test_print(self):
-        self.print_data(self.constraints);
+    def test_collect_data(self):
+        start_time = '3/2/2012';
+        final_time = '3/4/2012';
+        # Get constraint data
+        self.constraints.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.constraints.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');         
 
 #%% Prices Tests
-class Price_csv(TestExodata):
-    '''Test the collection of control data from a CSV file.'''
+class PriceFromCSV(TestCaseMPCPy):
+    '''Test the collection of control data from a CSV file.
+    
+    '''
+    
     def setUp(self):
-        self.csv_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'optimization' + os.sep + 'PriceCSV.csv';
-        self.start_time = '1/1/2015 13:00:00';
-        self.final_time = '1/2/2015';
-        self.variable_map = {'pi_e' : ('pi_e', units.unit1)};
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'optimization', 'PriceCSV.csv');
+        variable_map = {'pi_e' : ('pi_e', units.unit1)};
         # Instantiate weather object
-        self.prices = exodata.PriceFromCSV(self.csv_filepath, \
-                                           self.variable_map);
-        # Get weather data
-        self.prices.collect_data(self.start_time, self.final_time);  
+        self.prices = exodata.PriceFromCSV(csv_filepath, \
+                                           variable_map);
 
     def test_print(self):
-        self.print_data(self.prices);
+        start_time = '1/1/2015 13:00:00';
+        final_time = '1/2/2015';
+        # Get price data
+        self.prices.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.prices.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');        
 
 #%% Source Tests
-class Source(unittest.TestCase):
+class Source(TestCaseMPCPy):
     '''Test the general methods of a Source object.'''
     def setUp(self):
         self.epw_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'weather' + os.sep + 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
