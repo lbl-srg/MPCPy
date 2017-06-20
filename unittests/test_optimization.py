@@ -15,6 +15,7 @@ from mpcpy import utility
 from mpcpy import variables
 from mpcpy import units
 from testing import TestCaseMPCPy
+import pandas as pd
 
 #%%
 class SimpleRC(TestCaseMPCPy):
@@ -88,6 +89,98 @@ class SimpleRC(TestCaseMPCPy):
         # Check references
         df_test = model.display_measurements('Simulated');
         self.check_df_timeseries(df_test, 'optimize_subpackage.csv');
+        
+    def test_get_options(self):
+        '''Test the getting of optimization options.
+        
+        '''
+        
+        modelpath = 'Simple.RC';        
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Get options
+        opt_options = opt_problem.get_optimization_options();
+        # Check references
+        json_test = opt_options;
+        self.check_json(json_test, 'initial_options.txt');
+        
+    def test_set_options(self):
+        '''Test the setting of optimization options.
+        
+        '''
+        
+        modelpath = 'Simple.RC';
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Get initial options
+        opt_options = opt_problem.get_optimization_options();
+        # Set new options
+        opt_options['IPOPT_options']['max_iter'] = 2;
+        opt_problem.set_optimization_options(opt_options)
+        # Get new options
+        opt_options = opt_problem.get_optimization_options();
+        # Check references
+        json_test = opt_options;
+        self.check_json(json_test, 'new_options.txt');
+        # Solve optimization problem                     
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Update model
+        model = opt_problem.Model;
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'optimize_new_options.csv');
+
+    def test_set_options_error(self):
+        '''Test the setting of optimization options cannot occur with auto options.
+        
+        '''
+        
+        modelpath = 'Simple.RC';        
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Get initial options
+        opt_options = opt_problem.get_optimization_options();
+        # Set new options
+        opt_options['n_e'] = 2;
+        self.assertRaises(KeyError, opt_problem.set_optimization_options(opt_options));
+        opt_options['external_data'] = 2;
+        self.assertRaises(KeyError, opt_problem.set_optimization_options(opt_options));
+        opt_options['init_traj'] = 2;
+        self.assertRaises(KeyError, opt_problem.set_optimization_options(opt_options));
+        opt_options['nominal_traj'] = 2;
+        self.assertRaises(KeyError, opt_problem.set_optimization_options(opt_options));
+        
+        
         
 #%% Temperature tests
 class OptimizeFromJModelica(TestCaseMPCPy):
@@ -218,8 +311,7 @@ class OptimizeFromJModelica(TestCaseMPCPy):
         self.model = self.opt_problem.Model;
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'energycostmin.csv');                                  
-    
+        self.check_df_timeseries(df_test, 'energycostmin.csv');
         
 if __name__ == '__main__':
     unittest.main()
