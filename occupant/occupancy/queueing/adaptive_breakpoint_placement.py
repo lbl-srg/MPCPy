@@ -118,7 +118,7 @@ def adaptive_breakpoint_placement(data, res, margin, n_max):
 
 
 
-                if jmptimes == None:
+                if jmptimes is None:
                     jmptimes_mc[iter_idx] = 0
                     syssize_mc[:,iter_idx] = nstart*np.ones((len(time_int),))
                 else:
