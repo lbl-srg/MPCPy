@@ -106,10 +106,13 @@ class EstimateFromJModelica(TestCaseMPCPy):
         self.parameters.data['lat'] = {};
         self.parameters.data['lat']['Value'] = self.weather.lat;    
         # Instantiate building
+        building_parameters_data = {};
+        building_parameters_data['lat'] = {};
+        building_parameters_data['lat']['Value'] = self.weather.lat;  
         self.building = systems.EmulationFromFMU(self.measurements, \
                                                  fmupath = self.building_source_file_path, \
                                                  zone_names = self.zone_names, \
-                                                 parameter_data = self.parameters.data);
+                                                 parameter_data = building_parameters_data);
                                                  
     def test_simulate_initial_parameters(self):
         '''Test the simulation of the model.'''
