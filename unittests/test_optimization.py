@@ -46,6 +46,10 @@ class SimpleRC(TestCaseMPCPy):
         self.constraints.data['T_db']['Initial'] = variables.Static('T_db_start', 295, units.K);
 
     def test_optimize(self):
+        '''Test the optimization of a model.
+        
+        '''
+        
         modelpath = 'Simple.RC';        
         # Instantiate model
         model = models.Modelica(models.JModelica, \
@@ -67,7 +71,55 @@ class SimpleRC(TestCaseMPCPy):
         df_test = model.display_measurements('Simulated');
         self.check_df_timeseries(df_test, 'optimize.csv');
         
+    def test_set_problem_type(self):
+        '''Test the dynamic setting of a problem type.
+
+        '''
+        
+        modelpath = 'Simple.RC';        
+        # Instantiate model
+        parameter_data = {};
+        parameter_data['heatCapacitor.C'] = {};
+        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
+        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 3e6, units.boolean);
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data, \
+                                parameter_data = parameter_data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Solve optimization problem                     
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Update model
+        model = opt_problem.Model;
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'optimize_energy.csv');
+        # Set new problem type
+        opt_problem.set_problem_type(optimization.EnergyCostMin);
+        # Gather prices
+        price_csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/SimpleRC_Prices.csv';
+        price_variable_map = {'energy' : ('pi_e', units.unit1)};
+        price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
+        price.collect_data(self.start_time, self.final_time);
+        opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
+        # Update model
+        model = opt_problem.Model;
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'optimize_energycost.csv');
+        
     def test_optimize_subpackage(self):
+        '''Test the optimization of a model within a subpackage.
+        
+        '''
+        
         modelpath = 'Simple.SubPackage.RC';     
         # Instantiate model
         model = models.Modelica(models.JModelica, \
