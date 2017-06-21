@@ -10,7 +10,6 @@ from mpcpy import utility
 import pandas as pd
 import os
 import json
-import sys
 
 class TestCaseMPCPy(unittest.TestCase):
     '''General test methods for testing in mpcpy.
@@ -20,13 +19,13 @@ class TestCaseMPCPy(unittest.TestCase):
     __metaclass__ = ABCMeta;
     
     def get_ref_path(self):
-        ref_path = utility.get_MPCPy_path() + '/unittests/references/' + self.__module__.split('.')[-1] + '/' + self.__class__.__name__;
+        ref_path = os.path.join(utility.get_MPCPy_path(), 'unittests', 'references', self.__module__.split('.')[-1], self.__class__.__name__);
         
         return ref_path;
         
     def check_df_timeseries(self, df_test, ref_file_name):
         # Define reference file
-        ref_file_path = self.get_ref_path() + '/' + ref_file_name;
+        ref_file_path = os.path.join(self.get_ref_path(), ref_file_name);
         # Check if reference file exists
         try:
             df_ref = pd.read_csv(ref_file_path, index_col=0);
@@ -42,7 +41,7 @@ class TestCaseMPCPy(unittest.TestCase):
             
     def check_df_general(self, df_test, ref_file_name):
         # Define reference file
-        ref_file_path = self.get_ref_path() + '/' + ref_file_name;
+        ref_file_path = os.path.join(self.get_ref_path(), ref_file_name);
         # Check if reference file exists
         try:
             df_ref = pd.read_csv(ref_file_path, index_col=0);
@@ -56,8 +55,8 @@ class TestCaseMPCPy(unittest.TestCase):
             
     def check_json(self, json_test, ref_file_name):
         # Define reference file
-        ref_file_path = self.get_ref_path() + '/' + ref_file_name;
-        test_file_path = self.get_ref_path() + '/' + 'test.txt';
+        ref_file_path = os.path.join(self.get_ref_path(), ref_file_name);
+        test_file_path = os.path.join(self.get_ref_path(), 'test.txt');
         # Check if reference file exists
         try:
             with open(ref_file_path, 'r') as file_ref:

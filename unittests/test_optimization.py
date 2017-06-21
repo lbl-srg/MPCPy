@@ -104,7 +104,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         # Set new problem type
         opt_problem.set_problem_type(optimization.EnergyCostMin);
         # Gather prices
-        price_csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/SimpleRC_Prices.csv';
+        price_csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
         price_variable_map = {'energy' : ('pi_e', units.unit1)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
