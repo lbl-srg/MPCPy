@@ -1,0 +1,49 @@
+{
+    "IPOPT_options": {
+        "acceptable_compl_inf_tol": 1e+100,
+        "acceptable_constr_viol_tol": 1e+100,
+        "acceptable_dual_inf_tol": 1e+100,
+        "compl_inf_tol": 1e+100,
+        "constr_viol_tol": 1e+100,
+        "dual_inf_tol": 1e+100,
+        "max_iter": 2
+    },
+    "WORHP_options": {},
+    "blocking_factors": null,
+    "checkpoint": false,
+    "delayed_feedback": null,
+    "discr": "LGR",
+    "eliminate_cont_var": false,
+    "eliminate_der_var": false,
+    "equation_scaling": false,
+    "expand_to_sx": "NLP",
+    "explicit_hessian": false,
+    "external_data": null,
+    "free_element_lengths_data": null,
+    "h_bounds": [
+        0.7,
+        1.3
+    ],
+    "hs": null,
+    "init_dual": null,
+    "init_traj": null,
+    "mutable_external_data": true,
+    "n_cp": 3,
+    "n_e": 50,
+    "n_eval_points": 20,
+    "named_vars": false,
+    "nominal_traj": null,
+    "nominal_traj_mode": {
+        "_default_mode": "linear"
+    },
+    "order": "default",
+    "print_condition_numbers": false,
+    "quadrature_constraint": true,
+    "result_file_name": "",
+    "result_mode": "collocation_points",
+    "solver": "IPOPT",
+    "variable_scaling": true,
+    "variable_scaling_allow_update": false,
+    "verbosity": 3,
+    "write_scaled_result": false
+}

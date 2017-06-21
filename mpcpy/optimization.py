@@ -83,8 +83,8 @@ class Optimization(object):
         else:
             self.constraint_data = {};
         self.objective_variable = objective_variable;
-        self.set_problem_type(problem_type);
-        self.set_package_type(package_type);
+        self._problem_type = problem_type();
+        self._package_type = package_type(self);
         
     def optimize(self, start_time, final_time, **kwargs):
         '''Solve the optimization problem over the specified time horizon.
@@ -108,8 +108,10 @@ class Optimization(object):
         self.Model._set_time_interval(start_time, final_time);
         self._problem_type._optimize(self, **kwargs);
 
-    def set_problem_type(self, problem_type, **kwargs):
+    def set_problem_type(self, problem_type):
         '''Set the problem type of the optimization.
+        
+        Note that optimization options will be reset.
         
         Parameters
         ----------
@@ -119,7 +121,9 @@ class Optimization(object):
         
         '''
 
-        self._problem_type = problem_type();       
+        self._problem_type = problem_type();
+        package_type = type(self._package_type);
+        self._package_type = package_type(self);
 
     def set_package_type(self, package_type):
         '''Set the solver package type of the optimization.
@@ -133,6 +137,45 @@ class Optimization(object):
         '''
 
         self._package_type = package_type(self);
+        
+    def get_optimization_options(self):
+        '''Get the options for the optimization solver package.
+        
+        Returns
+        -------
+        opt_options : dictionary
+            The options for the optimization solver package.  See specific 
+            documentation on solver package for more information.
+        
+        '''
+        
+        return self._package_type._get_optimization_options();
+        
+    def set_optimization_options(self, opt_options):
+        '''Set the options for the optimization solver package.
+        
+        Parameters
+        ----------
+        opt_options : dictionary
+            The options for the optimization solver package.  See specific 
+            documentation on solver package for more information.
+        
+        '''
+        
+        return self._package_type._set_optimization_options(opt_options);
+        
+    def get_optimization_statistics(self):
+        '''Get the optimization result statistics from the solver package.
+        
+        Returns
+        -------
+        opt_statistics : dictionary
+            The options for the optimization solver package.  See specific 
+            documentation on solver package for more information.
+        
+        '''
+        opt_statistics = self._package_type._get_optimization_statistics();
+        return opt_statistics;
         
 #%% Problem Type Abstract Interface
 class _Problem(object):
@@ -198,7 +241,31 @@ class _Package(object):
         
         '''
         
-        pass;          
+        pass;
+        
+    @abstractmethod
+    def _get_optimization_options(self):
+        '''Get the optimization options of the solver in a dictionary.
+        
+        '''
+        
+        pass;   
+        
+    @abstractmethod
+    def _set_optimization_options(self):
+        '''Set the optimization options of the solver from a dictionary.
+        
+        '''
+        
+        pass;
+        
+    @abstractmethod
+    def _get_optimization_statistics(self):
+        '''Get the optimization result statistics from the solver package.
+        
+        '''
+        
+        pass;    
               
 #%% Problem Type Implementation
 class EnergyMin(_Problem):
@@ -284,7 +351,9 @@ class _ParameterEstimate(_Problem):
 class JModelica(_Package, utility._FMU):
     '''Use JModelica to solve the optimization problem.
     
-    This package is compatible with ``models.Modelica`` objects.
+    This package is compatible with ``models.Modelica`` objects.  Please
+    consult the JModelica user guide for more information regarding 
+    optimization options and solver statistics.
     
     '''
     
@@ -293,7 +362,10 @@ class JModelica(_Package, utility._FMU):
         
         '''
         
+        # Setup JModelica optimization problem
         Optimization._problem_type._setup_jmodelica(self, Optimization);
+        # Set default optimization options
+        self._set_optimization_options(self.opt_problem.optimize_options(), init = True)
     
     def _energymin(self, Optimization):
         '''Perform the energy minimization.
@@ -502,11 +574,10 @@ class JModelica(_Package, utility._FMU):
         # Create ExternalData structure
         self._create_external_data();
         # Set optimization options
-        self.opt_opts = self.opt_problem.optimize_options()
-        self.opt_opts['external_data'] = self.external_data;
-        self.opt_opts['init_traj'] = self.res_init;
-        self.opt_opts['nominal_traj'] = self.res_init;
-        self.opt_opts['n_e'] = self._sim_opts['ncp'];
+        self.opt_options['external_data'] = self.external_data;
+        self.opt_options['init_traj'] = self.res_init;
+        self.opt_options['nominal_traj'] = self.res_init;
+        self.opt_options['n_e'] = self._sim_opts['ncp'];
         # Set parameters if they exist
         if hasattr(self, 'parameter_data'):
             for key in self.parameter_data.keys():
@@ -515,7 +586,7 @@ class JModelica(_Package, utility._FMU):
         self.opt_problem.set('start_time', 0);
         self.opt_problem.set('final_time', self.Model.elapsed_seconds);
         # Optimize
-        self.res_opt = self.opt_problem.optimize(options=self.opt_opts);
+        self.res_opt = self.opt_problem.optimize(options=self.opt_options);
         print(self.res_opt.get_solver_statistics());
         
     def _create_external_data(self):   
@@ -609,3 +680,30 @@ class JModelica(_Package, utility._FMU):
         self.opt_problem = transfer_optimization_problem(self.mopmodelpath + '_optimize', \
                                                          self.moppath, \
                                                          compiler_options = {'extra_lib_dirs':self.Model.libraries});
+                                                         
+    def _get_optimization_options(self):
+        '''Get the JModelica optimization options in a dictionary.
+        
+        '''
+        
+        return self.opt_options;
+        
+    def _set_optimization_options(self, opt_options, init = False):
+        '''Set the JModelica optimization options using a dictionary.
+        
+        '''
+        # Check that automatically set options are not being changed
+        if not init:
+            for key in opt_options:
+                if key in ['external_data', 'init_traj', 'nominal_traj', 'n_e']:
+                    if opt_options[key] != self.opt_options[key]:
+                        raise KeyError('Key {} is set automatically upon solve.'.format(key));
+        # Set options
+        self.opt_options = opt_options;
+        
+    def _get_optimization_statistics(self):
+        '''Get the JModelica optimization result statistics.
+        
+        '''
+        
+        return self.res_opt.get_solver_statistics();
