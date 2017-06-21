@@ -9,6 +9,8 @@ import unittest
 from mpcpy import utility
 import pandas as pd
 import os
+import json
+import sys
 
 class TestCaseMPCPy(unittest.TestCase):
     '''General test methods for testing in mpcpy.
@@ -50,4 +52,27 @@ class TestCaseMPCPy(unittest.TestCase):
             ref_file_dir = self.get_ref_path();
             if not os.path.exists(ref_file_dir):
                 os.makedirs(ref_file_dir);
-            df_test.to_csv(ref_file_path);              
+            df_test.to_csv(ref_file_path);
+            
+    def check_json(self, json_test, ref_file_name):
+        # Define reference file
+        ref_file_path = self.get_ref_path() + '/' + ref_file_name;
+        test_file_path = self.get_ref_path() + '/' + 'test.txt';
+        # Check if reference file exists
+        try:
+            with open(ref_file_path, 'r') as file_ref:
+                json_ref = json.load(file_ref);
+            # Convert json_test
+            with open(test_file_path, 'w') as file_test:
+                json.dump(json_test, file_test);
+            with open(test_file_path, 'r') as file_test:
+                json_test = json.load(file_test);
+            os.remove(test_file_path)
+            self.assertEqual(json_test, json_ref);
+        # If reference file does not exist, create one
+        except IOError:
+            ref_file_dir = self.get_ref_path();
+            if not os.path.exists(ref_file_dir):
+                os.makedirs(ref_file_dir);
+            with open(ref_file_path, 'w') as file_ref:
+                json.dump(json_test, file_ref, sort_keys=True, indent=4, separators=(',', ': '));  
