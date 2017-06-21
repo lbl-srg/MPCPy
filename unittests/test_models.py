@@ -213,6 +213,9 @@ class OccupancyFromQueueing(TestCaseMPCPy):
     '''
     
     def setUp(self):
+        # Testing time
+        self.start_time = '3/8/2013';
+        self.final_time = '3/15/2013 23:59';   
         # Set path variable(s)
         self.MPCPyPath = utility.get_MPCPy_path();
         # Setup building measurement collection from csv
@@ -233,30 +236,30 @@ class OccupancyFromQueueing(TestCaseMPCPy):
     def test_estimate(self):
         '''Test the estimation method.'''
         plt.close('all');
-        # Time
-        self.start_time = '2/1/2013';
-        self.final_time = '7/24/2013 23:59';
+        # Training Time
+        start_time = '2/1/2013';
+        final_time = '7/24/2013 23:59';
         # Collect measurements
-        self.building.collect_measurements(self.start_time, self.final_time);
+        self.building.collect_measurements(start_time, final_time);
         # Instantiate occupancy model
         self.occupancy = models.Occupancy(models.QueueModel, self.building.measurements);
         # Estimate occupancy model parameters
         np.random.seed(1);
-        self.occupancy.estimate(self.start_time, self.final_time);
+        self.occupancy.estimate(start_time, final_time);
         try:
             with open(self.occupancy_model_file, 'r') as f:
                 self.occupancy = pickle.load(f);
         except IOError:
-            os.makedirs(self.get_ref_path());
+            try:
+                os.makedirs(self.get_ref_path());
+            except OSError:
+                pass;
             with open(self.occupancy_model_file, 'w') as f:
                 pickle.dump(self.occupancy, f);
             
     def test_simulate(self):
         '''Test occupancy prediction.'''
         plt.close('all');
-        # Time
-        self.start_time = '3/1/2013';
-        self.final_time = '3/7/2013 23:59';
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
             self.occupancy = pickle.load(f);
@@ -271,10 +274,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
 
     def test_validate(self):
         '''Test occupancy prediction comparison with measured data.'''
-        plt.close('all');
-        # Time
-        self.start_time = '3/1/2013';
-        self.final_time = '3/7/2013 23:59';           
+        plt.close('all');          
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
             self.occupancy = pickle.load(f);
@@ -300,10 +300,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         
     def test_get_load(self):
         '''Test generation of occupancy load data using occupancy prediction.'''
-        plt.close('all');
-        # Time
-        self.start_time = '3/1/2013';
-        self.final_time = '3/7/2013 23:59';        
+        plt.close('all');      
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
             self.occupancy = pickle.load(f);        
@@ -320,10 +317,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         
     def test_get_constraint(self):
         '''Test generation of occupancy constraint data using occupancy prediction.'''
-        plt.close('all');
-        # Time
-        self.start_time = '3/1/2013';
-        self.final_time = '3/7/2013 23:59';        
+        plt.close('all');      
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
             self.occupancy = pickle.load(f);        
@@ -352,8 +346,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Estimate occupancy model parameters and expect error
         with self.assertRaises(ValueError):
             np.random.seed(1);
-            self.occupancy.estimate(self.start_time, self.final_time);
-                                                    
+            self.occupancy.estimate(self.start_time, self.final_time);    
     
 if __name__ == '__main__':
     unittest.main()

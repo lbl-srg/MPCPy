@@ -938,9 +938,9 @@ class QueueModel(_OccupancyMethod):
         # Set the occupancy measurement key
         self.occ_key = Model.measurements.keys()[0];
         # Get the training data from measurements
-        self.df_data_train = Model.measurements[self.occ_key]['Measured'].get_base_data()[Model.start_time:Model.final_time];        
+        self.df_data_train = Model.measurements[self.occ_key]['Measured'].get_base_data()[Model.start_time:Model.final_time].to_frame(name='occ');        
         # Specify the weekday number of each measurement point
-        self.df_data_train['day'] = self.df_data_train.index.weekday;
+        self.df_data_train['day'] = pd.Series(self.df_data_train.index.weekday, index=self.df_data_train.index);
         # Calculate the number of measurement points in a full day
         self.points_per_day = 3600*24.0/Model.measurements[self.occ_key]['Sample'].get_base_data();
         # Check that points_per_day is whole number and convert to integer
@@ -951,6 +951,6 @@ class QueueModel(_OccupancyMethod):
         # Isolate the measurement data for the day of interest
         df_interest = self.df_data_train[self.df_data_train['day'] == day];
         # Format isolated data for use in parameter estimation procedure
-        self.data_train = df_interest.as_matrix();
+        self.data_train = df_interest['occ'].as_matrix();
         self.data_train = self.data_train.reshape((self.data_train.size/self.points_per_day, self.points_per_day));
     
