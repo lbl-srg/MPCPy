@@ -122,6 +122,7 @@ Classes
 from abc import ABCMeta, abstractmethod
 from tzwhere import tzwhere
 import numpy as np
+import os
 
 #%% Variable abstract class
 class _Variable(object):

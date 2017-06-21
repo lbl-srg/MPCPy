@@ -15,6 +15,8 @@ import unittest
 import numpy as np
 import pickle
 import copy
+import os
+
 #%% Weather Tests
 class WeatherFromEPW(TestCaseMPCPy):
     '''Test the collection of weather data from an EPW.
@@ -22,7 +24,8 @@ class WeatherFromEPW(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        self.epw_filepath = utility.get_MPCPy_path()+'/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
+        self.epw_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'weather', \
+                                         'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
         self.weather = exodata.WeatherFromEPW(self.epw_filepath);
         
     def test_instantiate(self):
@@ -56,7 +59,7 @@ class WeatherFromCSV(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        self.csv_filepath = utility.get_MPCPy_path()+'/resources/weather/BerkeleyCSV.csv';
+        self.csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'weather', 'BerkeleyCSV.csv');
         self.geography = [37.8716, -122.2727];
         self.variable_map = {'TemperatureF' : ('weaTDryBul', units.degF), \
                              'Dew PointF' : ('weaTDewPoi', units.degF), \
@@ -152,7 +155,7 @@ class InternalFromCSV(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        self.csv_filepath = utility.get_MPCPy_path()+'/resources/internal/sampleCSV.csv';
+        self.csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'internal', 'sampleCSV.csv');
         self.variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
                              'intCon_wes' : ('wes', 'intCon', units.W_m2), \
                              'intLat_wes' : ('wes', 'intLat', units.W_m2), \
@@ -185,7 +188,9 @@ class InternalFromOccupancyModel(TestCaseMPCPy):
         start_time_occupancy = '4/1/2013';
         final_time_occupancy = '4/7/2013 23:55:00';
         # Load occupancy models
-        with open(utility.get_MPCPy_path()+'/unittests/references/test_models/OccupancyFromQueueing/occupancy_model_estimated.txt', 'r') as f:
+        with open(os.path.join(utility.get_MPCPy_path(), 'unittests', 'references', \
+                               'test_models', 'OccupancyFromQueueing', \
+                               'occupancy_model_estimated.txt'), 'r') as f:
             occupancy_model = pickle.load(f);
         # Define zones and loads
         zone_list = ['wes', 'hal', 'eas'];
@@ -217,7 +222,7 @@ class ControlFromCSV(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        csv_filepath = utility.get_MPCPy_path()+'/resources/building/ControlCSV_0.csv';
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'building', 'ControlCSV_0.csv');
         variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                         'conHeat_hal' : ('conHeat_hal', units.unit1), \
                         'conHeat_eas' : ('conHeat_eas', units.unit1)};
@@ -241,7 +246,7 @@ class OtherInputFromCSV(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        csv_filepath = utility.get_MPCPy_path()+'/resources/weather/Tamb.csv';
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'weather', 'Tamb.csv');
         variable_map = {'T' : ('Tamb', units.degC)};
         # Instantiate other input object
         self.otherinput = exodata.OtherInputFromCSV(csv_filepath, \
@@ -263,7 +268,7 @@ class ParameterFromCSV(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        csv_filepath = utility.get_MPCPy_path()+'/resources/model/LBNL71T_Parameters.csv';
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'model', 'LBNL71T_Parameters.csv');
         # Instantiate weather object
         self.parameters = exodata.ParameterFromCSV(csv_filepath);
 
@@ -281,7 +286,7 @@ class ConstraintFromCSV(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/sampleConstraintCSV_Setback.csv';
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'optimization', 'sampleConstraintCSV_Setback.csv');
         variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
                              'wesTdb_max' : ('wesTdb', 'LTE', units.degC), \
                              'easTdb_min' : ('easTdb', 'GTE', units.degC), \
@@ -317,7 +322,8 @@ class ConstraintFromOccupancyModel(TestCaseMPCPy):
         start_time_occupancy = '3/1/2012';
         final_time_occupancy = '3/7/2012 23:55:00';
         # Load occupancy models
-        with open(utility.get_MPCPy_path()+'/unittests/references/test_models/OccupancyFromQueueing/occupancy_model_estimated.txt', 'r') as f:
+        with open(os.path.join(utility.get_MPCPy_path(), 'unittests', 'references', 'test_models',\
+                               'OccupancyFromQueueing', 'occupancy_model_estimated.txt'), 'r') as f:
             occupancy_model = pickle.load(f);
         # Define state variables and values
         state_variable_list = ['wesTdb', 'wesTdb', 'easTdb', 'easTdb', 'halTdb', 'halTdb'];
@@ -348,7 +354,7 @@ class PriceFromCSV(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        csv_filepath = utility.get_MPCPy_path()+'/resources/optimization/PriceCSV.csv';
+        csv_filepath = os.path.join(utility.get_MPCPy_path(), 'resources', 'optimization', 'PriceCSV.csv');
         variable_map = {'pi_e' : ('pi_e', units.unit1)};
         # Instantiate weather object
         self.prices = exodata.PriceFromCSV(csv_filepath, \
@@ -367,7 +373,7 @@ class PriceFromCSV(TestCaseMPCPy):
 class Source(TestCaseMPCPy):
     '''Test the general methods of a Source object.'''
     def setUp(self):
-        self.epw_filepath = utility.get_MPCPy_path()+'/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
+        self.epw_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'weather' + os.sep + 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
         self.weather = exodata.WeatherFromEPW(self.epw_filepath);
     def test_set_time_interval(self):
         '''Test this method sets the time metrics properly in the exodata source.'''

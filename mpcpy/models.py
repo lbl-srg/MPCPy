@@ -73,6 +73,7 @@ from occupant.occupancy.queueing.parameter_inference_given_segments import param
 from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
+import os
 
 #%% Model Class
 class _Model(utility._mpcpyPandas, utility._Measurements):

@@ -30,10 +30,10 @@ class SimpleRC(TestCaseMPCPy):
         self.final_time = '1/2/2017';
         MPCPyPath = utility.get_MPCPy_path();
         # Set model paths
-        mopath = MPCPyPath+'/resources/model/Simple.mo';
+        mopath = os.path.join(MPCPyPath, 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC';
         # Gather control inputs
-        control_csv_filepath = MPCPyPath+'/resources/model/SimpleRC_Input.csv';
+        control_csv_filepath = os.path.join(MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         controls.collect_data(self.start_time, self.final_time);
@@ -64,10 +64,10 @@ class EstimateFromJModelica(TestCaseMPCPy):
     def setUp(self):
         self.MPCPyPath = utility.get_MPCPy_path();
         ## Setup building fmu emulation
-        self.building_source_file_path = self.MPCPyPath + '/resources/building/LBNL71T_Emulation_JModelica_v2.fmu';
+        self.building_source_file_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'building' + os.sep + 'LBNL71T_Emulation_JModelica_v2.fmu';
         self.zone_names = ['wes', 'hal', 'eas'];
-        self.weather_path = self.MPCPyPath + '/resources/weather/USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
-        self.internal_path = self.MPCPyPath + '/resources/internal/sampleCSV.csv';
+        self.weather_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'weather' + os.sep + 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
+        self.internal_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'internal' + os.sep + 'sampleCSV.csv';
         self.internal_variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
                                       'intCon_wes' : ('wes', 'intCon', units.W_m2), \
                                       'intLat_wes' : ('wes', 'intLat', units.W_m2), \
@@ -77,7 +77,7 @@ class EstimateFromJModelica(TestCaseMPCPy):
                                       'intRad_eas' : ('eas', 'intRad', units.W_m2), \
                                       'intCon_eas' : ('eas', 'intCon', units.W_m2), \
                                       'intLat_eas' : ('eas', 'intLat', units.W_m2)};        
-        self.control_path = self.MPCPyPath + '/resources/building/ControlCSV_0.csv';
+        self.control_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'building' + os.sep + 'ControlCSV_0.csv';
         self.control_variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                                      'conHeat_hal' : ('conHeat_hal', units.unit1), \
                                      'conHeat_eas' : ('conHeat_eas', units.unit1)};        
@@ -91,7 +91,7 @@ class EstimateFromJModelica(TestCaseMPCPy):
         self.measurements['easPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         self.measurements['Ptot'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         ## Setup model
-        self.mopath = self.MPCPyPath + '/resources/model/LBNL71T_MPC.mo';
+        self.mopath = self.MPCPyPath + os.sep + 'resources' + os.sep + 'model' + os.sep + 'LBNL71T_MPC.mo';
         self.modelpath = 'LBNL71T_MPC.MPC';
         self.libraries = os.environ.get('MODELICAPATH');
         self.estimate_method = models.JModelica; 
@@ -101,7 +101,7 @@ class EstimateFromJModelica(TestCaseMPCPy):
         self.internal = exodata.InternalFromCSV(self.internal_path, self.internal_variable_map, tz_name = self.weather.tz_name);
         self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);   
         # Parameters        
-        self.parameters = exodata.ParameterFromCSV(self.MPCPyPath + '/resources/model/LBNL71T_Parameters.csv');
+        self.parameters = exodata.ParameterFromCSV(self.MPCPyPath + os.sep + 'resources' + os.sep + 'model' + os.sep + 'LBNL71T_Parameters.csv');
         self.parameters.collect_data();
         self.parameters.data['lat'] = {};
         self.parameters.data['lat']['Value'] = self.weather.lat;    
@@ -195,7 +195,8 @@ class EstimateFromJModelica(TestCaseMPCPy):
         # Validate on validation data
         self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
         self.model.measurements = self.building.measurements;
-        self.model.validate(self.start_time_validation, self.final_time_validation, self.MPCPyPath+'/unittests/resources/model_validation');
+        self.model.validate(self.start_time_validation, self.final_time_validation, \
+                            os.path.join(self.MPCPyPath, 'unittests', 'resources', 'model_validation'));
         # Check references
         RMSE = {};
         for key in self.model.RMSE.keys():
@@ -215,7 +216,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Set path variable(s)
         self.MPCPyPath = utility.get_MPCPy_path();
         # Setup building measurement collection from csv
-        self.csv_filepath = self.MPCPyPath+'/resources/building/OccData.csv';   
+        self.csv_filepath = self.MPCPyPath+os.sep + 'resources' + os.sep + 'building' + os.sep + 'OccData.csv';   
         # Measurements
         self.measurements = {};
         self.measurements['occupancy'] = {'Sample' : variables.Static('occupancy_sample', 300, units.s)};
@@ -226,7 +227,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
                                             self.measurement_variable_map,
                                             time_header = 'Date');
         # Where to save ref occupancy model
-        self.occupancy_model_file = self.get_ref_path()+'/occupancy_model_estimated.txt';
+        self.occupancy_model_file = self.get_ref_path() + os.sep +'occupancy_model_estimated.txt';
         
         
     def test_estimate(self):
@@ -286,7 +287,9 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         simulate_options['iter_num'] = 5;
         self.occupancy.set_simulate_options(simulate_options);
         np.random.seed(1);
-        self.occupancy.validate(self.start_time, self.final_time, self.MPCPyPath+'/unittests/resources/occupancy_model_validate');
+        self.occupancy.validate(self.start_time, self.final_time, \
+                                os.path.join(self.MPCPyPath, 'unittests', 'resources', \
+                                             'occupancy_model_validate'));
         # Check references
         RMSE = {};
         for key in self.occupancy.RMSE.keys():

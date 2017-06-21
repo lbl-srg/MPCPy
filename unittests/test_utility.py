@@ -20,9 +20,9 @@ class TestEmulationFromFMU(unittest.TestCase):
         self.parameter_data['par'] = {};
         self.parameter_data['par']['Value'] = 1;        
         # instantiate building fmu v1.0
-        self.building_1 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+'/resources/building/LBNL71T_Emulation_JModelica_v1.fmu', parameter_data = self.parameter_data);
+        self.building_1 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'building' + os.sep + 'LBNL71T_Emulation_JModelica_v1.fmu', parameter_data = self.parameter_data);
         # instantiate building fmu v2.0
-        self.building_2 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+'/resources/building/LBNL71T_Emulation_JModelica_v2.fmu', parameter_data = self.parameter_data);
+        self.building_2 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'building' + os.sep + 'LBNL71T_Emulation_JModelica_v2.fmu', parameter_data = self.parameter_data);
     def test_fmu_version(self):
         # fmu 1.0
         self.assertEqual(self.building_1.fmu_version, '1.0');
@@ -49,7 +49,7 @@ class TestEmulationFromFMU(unittest.TestCase):
 
 class TestFMIVersionDefault(unittest.TestCase):
     def setUp(self):
-        self.mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
+        self.mopath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'model' + os.sep + 'Simple.mo';
         self.modelpath = 'Simple.RC';
 
     def test_fmi_default(self):
@@ -60,7 +60,7 @@ class TestFMIVersionDefault(unittest.TestCase):
         
 class TestGetInputNames(unittest.TestCase):
     def setUp(self):
-        self.mopath = utility.get_MPCPy_path()+'/resources/model/Simple.mo';
+        self.mopath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'model' + os.sep + 'Simple.mo';
         self.modelpath = 'Simple.RC';
         
     def test_fmi_version(self):

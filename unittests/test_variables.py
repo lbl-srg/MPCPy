@@ -12,6 +12,8 @@ from mpcpy import units
 import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+import os
+
 
 class Static(unittest.TestCase):
     '''Tests for Static class.'''    

@@ -58,6 +58,7 @@ Classes
 
 from abc import ABCMeta, abstractmethod
 from mpcpy import utility
+import os
 
 #%% System class
 class _System(utility._mpcpyPandas, utility._Building, utility._Measurements):
