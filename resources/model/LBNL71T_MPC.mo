@@ -3382,5 +3382,6 @@ First implementation.
     type HeatCapacityCoefficient = Real (final quantity="HeatCapacityCoefficient", final unit="J/(m2.K)");
     type HeatResistanceCoefficient = Real (final quantity="HeatResistanceCoefficient", final unit="(m2.K)/W");
   end Units;
-  annotation (uses(Modelica(version="3.2.2"), Buildings(version="3.0.1")));
+  annotation (uses(Modelica(version="3.2.2"),
+                   Buildings(version="3.0.1")));
 end LBNL71T_MPC;
