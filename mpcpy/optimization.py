@@ -412,7 +412,7 @@ class JModelica(_Package, utility._FMU):
             # Write line to file
             if 'end ' + self.Model.modelpath.split('.')[0] in line:
                 break;
-            elif 'within ;' not in line and 'uses(Modelica(version=' not in line:
+            elif 'within ;' not in line and 'annotation (uses' not in line and '(version="' not in line:
                 self.mopfile.write(line);
         mofile.close();                
         # Add initialization model to package.mop (must be same name as model in optimization)
