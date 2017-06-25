@@ -660,9 +660,11 @@ class JModelica(_Package, utility._FMU):
         for key in Optimization.Model.parameter_data.keys():
             if Optimization.Model.parameter_data[key]['Free'].get_base_data():
                 self.fmu_variable_units = self._get_fmu_variable_units();
-                unit_class = self._get_unit_class_from_fmu_variable_units('mpc_model.'+key, self.fmu_variable_units);
+                unit = self._get_unit_class_from_fmu_variable_units('mpc_model.'+key, self.fmu_variable_units);
+                if not unit:
+                    unit = units.unit1;
                 data = self.res_opt.initial('mpc_model.' + key);
-                Optimization.Model.parameter_data[key]['Value'].set_display_unit(unit_class);
+                Optimization.Model.parameter_data[key]['Value'].set_display_unit(unit);
                 Optimization.Model.parameter_data[key]['Value'].set_data(data);        
         
     def _compile_transfer_problem(self):
