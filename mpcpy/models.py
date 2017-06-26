@@ -572,6 +572,7 @@ class _Validate(utility._mpcpyPandas):
             yunit = measurement.get_display_unit_name();
             plt.ylabel(yname + ' [' + yunit + ']');
             plt.rcParams.update({'font.size': 16});
+            plt.legend();
             plt.savefig(validate_filename + '_' + key + '.png');
 
 #%% OccupancyModelMethod Interface
