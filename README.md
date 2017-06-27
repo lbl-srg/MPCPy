@@ -5,9 +5,9 @@ This is the development site for MPCPy, the python-based open-source platform fo
 MPCPy facilitates the testing and implementation of Model Predictive Control (MPC) for building systems.  The software package focuses on the use of data-driven simplified physical or statistical models to predict building performance and optimize control.  Python modules and classes exist for importing data, interacting with a real or emulated system, estimating and validating data-driven models, and optimizing control inputs.  Contributions of new methods for any of these features are welcome.
 
 ## Getting Started
-See Section 2 of the [User Guide](https://github.com/lbl-srg/MPCPy/tree/master/doc/userGuide).
+For installation, see Section 2 of the [User Guide](https://github.com/lbl-srg/MPCPy/tree/master/doc/userGuide).
 
-Checkout the ipython notebook examples in the ``examples`` directory!
+Then, take a look at the ipython notebook examples in the ``examples`` directory.
 
 ## License
 MPCPy is available under the following open-source [license](https://github.com/lbl-srg/MPCPy/blob/master/license.txt).
