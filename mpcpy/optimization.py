@@ -11,7 +11,9 @@ Classes
 =======
 
 .. autoclass:: mpcpy.optimization.Optimization
-    :members: optimize, set_problem_type, set_package_type
+    :members: optimize, set_problem_type, set_package_type, 
+              get_optimization_options, set_optimization_options, 
+              get_optimization_statistics, 
 
 Problem Types
 =============

@@ -87,6 +87,11 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
     def estimate(self):
         '''Estimate parameters of the model.
 
+        Yields
+        ------
+        Updates the ``'Value'`` key for each estimated parameter in the 
+        parameter_data attribute.
+
         '''
 
         pass;
@@ -102,6 +107,11 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
     @abstractmethod        
     def simulate(self):
         '''Simulate the model.
+
+        Yields
+        ------
+        Updates the ``'Simulated'`` key for each measured variable in the 
+        measurements dictionary attribute.
 
         '''
 
@@ -188,9 +198,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
         Yields
         ------
-        parameter_data : dictionary
-            Updates the ``'Value'`` key for each estimated parameter in the 
-            parameter_data attribute.
+        Updates the ``'Value'`` key for each estimated parameter in the 
+        parameter_data attribute.
 
         '''
         

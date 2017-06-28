@@ -71,7 +71,12 @@ class _System(utility._mpcpyPandas, utility._Building, utility._Measurements):
     @abstractmethod
     def collect_measurements():
         '''An object of the System class must gather system measurements.
-        
+
+        Yields
+        ------
+        Updates the ``'Measured'`` key for each measured variable in the 
+        measurements dictionary attribute.
+
         '''
         
         pass;         
@@ -96,8 +101,8 @@ class _Emulation(_System):
             
         Yields
         ------
-        measurements : dictionary
-            measurements attribute.
+        Updates the ``'Measured'`` key for each measured variable in the 
+        measurements dictionary attribute.
 
         '''
 
@@ -123,8 +128,8 @@ class _Real(_System):
             
         Yields
         ------
-        measurements : dictionary
-            Measurement attribute.
+        Updates the ``'Measured'`` key for each measured variable in the 
+        measurements dictionary attribute.
         
         '''
 
