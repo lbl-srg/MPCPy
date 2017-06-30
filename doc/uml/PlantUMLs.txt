@@ -4,6 +4,7 @@ abstract Variable
 abstract DisplayUnit
 abstract Temperature
 abstract Power
+abstract OtherQuantity
 
 Variable <|-- Static
 Variable <|-- Timeseries
@@ -11,10 +12,13 @@ Variable <|-- Timeseries
 Variable *-- DisplayUnit  
 DisplayUnit <|-- Temperature
 DisplayUnit <|-- Power
+DisplayUnit <|-- OtherQuantity
 Temperature <|-- K
 Temperature <|-- degC
 Temperature <|-- degF
 Temperature <|-- degR
+Power <|-- PowerDisplayUnit
+OtherQuantity <|-- OtherDisplayUnit
 @enduml
 
 ExoData
@@ -22,18 +26,30 @@ ExoData
 abstract Type
 abstract Weather
 abstract Internal
+abstract Control
+abstract OtherInput
+abstract Parameter
 abstract Constraint
+abstract Price
 
 Type <|-- Weather
 Type <|-- Internal
+Type <|-- Control
+Type <|-- OtherInput
+Type <|-- Parameter
 Type <|-- Constraint
+Type <|-- Price
 
 Weather <|-- WeatherFromEPW
 Weather <|-- WeatherFromCSV
 Internal <|-- InternalFromCSV
 Internal <|-- InternalFromOccupancyModel
-Constraint <|-- Constraint FromCSV
-Constraint <|-- Constraint FromOccupancyModel
+Control <|-- ControlFromCSV
+OtherInput <|-- OtherInputFromCSV
+Parameter <|-- ParameterFromCSV
+Constraint <|-- ConstraintFromCSV
+Constraint <|-- ConstraintFromOccupancyModel
+Price <|-- PriceFromCSV
 @enduml
 
 
@@ -57,17 +73,6 @@ abstract Model
 abstract Estimate
 abstract Validate
 abstract OccupancyMethod
-
-Model : estimate()
-Model : validate()
-Model : simulate()
-
-Modelica : _simulate()
-Estimate : _estimate()
-Validate : _validate()
-OccupancyMethod : _estimate()
-OccupancyMethod : _validate()
-OccupancyMethod : _simulate()
 
 Model <|-- Modelica
 Model <|-- Occupancy
