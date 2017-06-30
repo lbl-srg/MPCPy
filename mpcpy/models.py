@@ -546,6 +546,22 @@ class _Estimate(utility._mpcpyPandas):
     
     @abstractmethod
     def _estimate():
+        '''Estimation method-specific call to perform the parameter estimation.
+        
+        Parameters
+        ----------
+        Model : mpcpy.Models._Model object
+            The model on which the parameter estimation is performed.  Please
+            see documentation on the _Model class for info about attributes.
+        
+        Yields
+        ------
+        parameter_data : dictionary
+            Updates the ``'Value'`` key for each estimated parameter in the 
+            parameter_data attribute of the Model.
+            
+        '''
+                
         pass;
         
 #%% ValidateMethod Interface
