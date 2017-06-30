@@ -219,7 +219,7 @@ Classes
     
 """
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from mpcpy import utility
 import numpy as np
 import pandas as pd
