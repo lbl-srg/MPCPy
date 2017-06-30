@@ -14,3 +14,4 @@ User Guide
    models
    optimization
    occupant
+   license
