@@ -14,4 +14,6 @@ User Guide
    models
    optimization
    occupant
+   disclaimers
    license
+   
