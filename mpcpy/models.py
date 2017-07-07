@@ -74,6 +74,7 @@ from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
 import os
+import modestpy.estimation  # TODO: Update to new modestpy API
 
 #%% Model Class
 class _Model(utility._mpcpyPandas, utility._Measurements):
@@ -715,7 +716,157 @@ class JModelica(_Estimate):
 
         self.opt_problem = optimization.Optimization(Model, optimization._ParameterEstimate, optimization.JModelica, {});
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
-        
+
+
+class ModestPy(_Estimate):
+    """
+    ModestPy estimation method using combined genetic algorithm
+    and Hooke-Jeeves (AKA pattern search).
+    
+    .. note::
+    
+        The method uses base units, not display units.
+
+    Implementation comments/questions
+    =================================
+
+    - When is this class instantiated? It's not clear what can be placed in *__init__()*
+
+    - *weather_data*, *internal_data*, *control_data*, *other_inputs*, *parameter_data* attributes
+      are not available in *__init__()*. They can be accessed only in *_estimate()*. It wasn't so obvious.
+
+    - It's not clear whether *_estimate()* should estimate all zones in *Model* and how to deal with multi-zone cases.
+
+    - How does MPCPy deal with multiobjective estimation/optimization, where multiple measurements are used?
+
+    - Functions altering the passed arguments make the code more difficult to understand; this is not practitioned
+      in popular packages like NumPy or Pandas
+    """
+
+    def __init__(self, Model):
+        self.name = 'ModestPy'
+
+    def _estimate(self, Model, **kwargs):
+
+        # Settings
+        # ========
+        # Default
+        workdir = os.getcwd() # Directory to save outputs of modestpy (can be changed by the user)
+        fmu_path = Model.fmupath
+        ga_iter = 20        # Maximum number of genetic algorithm iterations (generations) (can be changed by the user)
+        ps_iter = 100       # Maximum number of pattern search iterations (can be changed by the user)
+        lp_n = 1            # One learning period (can be changed by the user)
+        lp_len = None       # Take entire data set (can be changed by the user)
+        lp_frame = None     # Take entire data set (cannot be changed)
+        vp = None           # Validation not needed, because it's performed by MPCPy (cannot be changed)
+        ic_param = None     # TODO: Decide with Dave what to do with IC parameters
+
+        # Custom settings from kwargs
+        for key in kwargs:
+            if key == 'workdir':
+                workdir = kwargs[key]
+            elif key == 'ga_iter':
+                ga_iter = kwargs[key]
+            elif key == 'ps_iter':
+                ps_iter = kwargs[key]
+            elif key == 'lp_n':
+                lp_n = kwargs[key]
+            elif key == 'lp_len':
+                lp_len = kwargs[key]
+
+        # Get measurements
+        # ================
+        ideal = pd.DataFrame()
+        meas_vars = Model.measurements.keys()
+        for v in meas_vars:
+            if 'Measured' in Model.measurements[v]:
+                ideal[v] = Model.measurements[v]['Measured'].get_base_data()
+
+        # Get inputs
+        # ==========
+        input_names = Model.input_names
+        inp = pd.DataFrame(columns=input_names)
+
+        # Add weather variables (but only those used in the model)
+        weather_vars = Model.weather_data.keys()
+        for v in weather_vars:
+            if v in input_names:
+                inp[v] = Model.weather_data[v].get_base_data()
+
+        # Add internal heat gain variables (only those used in the model)
+        zones = Model.internal_data.keys()
+        for zone in zones:
+            internal_vars = Model.internal_data[zone].keys()
+            for v in internal_vars:
+                v_zone = v + '_' + zone
+                if v_zone in input_names:
+                    inp[v_zone] = Model.internal_data[zone][v].get_base_data()
+
+        # Add control variables (only those used in the model)
+        control_vars = Model.control_data.keys()
+        for v in control_vars:
+            if v in input_names:
+                inp[v] = Model.control_data[v].get_base_data()
+
+        # Add other input variables (only those used in the model)
+        other_vars = Model.other_inputs.keys()
+        for v in other_vars:
+            if v in input_names:
+                inp[v] = Model.other_inputs[v].get_base_data()
+
+        # Get parameters
+        # ==============
+        est = dict()
+        known = dict()
+
+        for par_name in Model.parameter_data:
+
+            # Value
+            val = Model.parameter_data[par_name]['Value'].get_base_data()
+            # Variability
+            is_free = Model.parameter_data[par_name]['Free'].display_data()
+
+            if (is_free is True) or (is_free is 1):
+                # Estimated parameter
+                lo = Model.parameter_data[par_name]['Minimum'].get_base_data()
+                hi = Model.parameter_data[par_name]['Maximum'].get_base_data()
+                est[par_name] = (val, lo, hi)
+            else:
+                # Known parameter
+                known[par_name] = val
+
+        # Trim dataframes and adust indexes
+        # ==================================
+        # Learning period
+        start = ideal.index[0]
+        end = ideal.index[-1]
+
+        # Adjust inp index to ideal
+        inp = inp[start:end]
+        inp = inp.reindex(ideal.index, method='ffill')
+
+        # Indexes to seconds
+        inp.index = inp.index.astype(np.int64) // 10**9
+        ideal.index = ideal.index.astype(np.int64) // 10**9
+
+        # Rename indexes
+        inp.index.name = 'time'
+        ideal.index.name = 'time'
+
+        # Estimation using ModestPy
+        # =========================
+        session = modestpy.estimation.Estimation(workdir, fmu_path, inp, known, est, ideal,
+                                                lp_n=lp_n, lp_len=lp_len, lp_frame=lp_frame, 
+                                                vp=vp, ic_param=ic_param,
+                                                ga_iter=ga_iter, ps_iter=ps_iter)
+        estimates = session.estimate()
+
+        # Put estimates into Model.parameter_data
+        for par_name in estimates:
+            Model.parameter_data[par_name]['Value'].set_data(estimates[par_name])
+
+        return None
+
 #%% Validate Method Interfaces
 class RMSE(_Validate):
     '''Validation method that computes the RMSE between estimated and measured data.
