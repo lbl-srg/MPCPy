@@ -74,7 +74,7 @@ from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
 import os
-import modestpy.estimation  # TODO: Update to new modestpy API
+import modestpy
 
 #%% Model Class
 class _Model(utility._mpcpyPandas, utility._Measurements):
@@ -855,10 +855,10 @@ class ModestPy(_Estimate):
 
         # Estimation using ModestPy
         # =========================
-        session = modestpy.estimation.Estimation(workdir, fmu_path, inp, known, est, ideal,
-                                                lp_n=lp_n, lp_len=lp_len, lp_frame=lp_frame, 
-                                                vp=vp, ic_param=ic_param,
-                                                ga_iter=ga_iter, ps_iter=ps_iter)
+        session = modestpy.Estimation(workdir, fmu_path, inp, known, est, ideal,
+                                      lp_n=lp_n, lp_len=lp_len, lp_frame=lp_frame, 
+                                      vp=vp, ic_param=ic_param,
+                                      ga_iter=ga_iter, ps_iter=ps_iter)
         estimates = session.estimate()
 
         # Put estimates into Model.parameter_data
