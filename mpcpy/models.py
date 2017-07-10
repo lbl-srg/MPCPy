@@ -776,7 +776,7 @@ class ModestPy(_Estimate):
             elif key == 'ps_iter':
                 ps_iter = kwargs[key]
             elif key == 'ps_tol':
-                ps_tol == kwargs[key]
+                ps_tol = kwargs[key]
             elif key == 'lp_n':
                 lp_n = kwargs[key]
 
