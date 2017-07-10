@@ -85,7 +85,7 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
     __metaclass__ = ABCMeta;
 
     @abstractmethod
-    def estimate(self):
+    def estimate(self, **kwargs):
         '''Estimate parameters of the model.
 
         '''
@@ -169,7 +169,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
         
-    def estimate(self, start_time, final_time, measurement_variable_list):
+    def estimate(self, start_time, final_time, measurement_variable_list, **kwargs):
         '''Estimate the parameters of the model using measurement data.
         
         The estimation of the parameters is based on the data in the 
@@ -186,6 +186,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
             List of strings defining for which variables defined in the 
             measurements dictionary attirubute the estimation will 
             try to minimize the error.
+        kwargs: Optional parameters
+            Additional parameters that can be passed to the estimation method.
 
         Yields
         ------
@@ -197,7 +199,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         
         self._set_time_interval(start_time, final_time);        
         self.measurement_variable_list = measurement_variable_list;
-        self._estimate_method._estimate(self);
+        self._estimate_method._estimate(self, **kwargs);
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
         '''Validate the estimated parameters of the model.
@@ -727,20 +729,20 @@ class ModestPy(_Estimate):
     
         The method uses base units, not display units.
 
-    Implementation comments/questions
-    =================================
-
-    - When is this class instantiated? It's not clear what can be placed in *__init__()*
-
-    - *weather_data*, *internal_data*, *control_data*, *other_inputs*, *parameter_data* attributes
-      are not available in *__init__()*. They can be accessed only in *_estimate()*. It wasn't so obvious.
-
-    - It's not clear whether *_estimate()* should estimate all zones in *Model* and how to deal with multi-zone cases.
-
-    - How does MPCPy deal with multiobjective estimation/optimization, where multiple measurements are used?
-
-    - Functions altering the passed arguments make the code more difficult to understand; this is not practitioned
-      in popular packages like NumPy or Pandas
+    Optional parameters
+    -------------------
+    workdir: string
+        ...
+    ga_iter: int
+        Maximum number of genetic algorithm iterations (generations), default 30
+    ga_tol: float
+        GA tolerance (accepted error), default 1e-3
+    ps_iter: int
+        Maximum number of pattern search iterations, default 150
+    ps_tol: float
+        PS tolerance (accepted error), default 1e-4
+    lp_n: int
+        Number of learning runs (average parameters returned if > 1), default 1
     """
 
     def __init__(self, Model):
@@ -753,10 +755,12 @@ class ModestPy(_Estimate):
         # Default
         workdir = os.getcwd() # Directory to save outputs of modestpy (can be changed by the user)
         fmu_path = Model.fmupath
-        ga_iter = 20        # Maximum number of genetic algorithm iterations (generations) (can be changed by the user)
-        ps_iter = 100       # Maximum number of pattern search iterations (can be changed by the user)
+        ga_iter = 30        # Maximum number of genetic algorithm iterations (generations) (can be changed by the user)
+        ga_tol = 0.001      # GA tolerance (accepted error)
+        ps_iter = 150       # Maximum number of pattern search iterations (can be changed by the user)
+        ps_tol = 0.0001     # PS tolerance (accepted error)
         lp_n = 1            # One learning period (can be changed by the user)
-        lp_len = None       # Take entire data set (can be changed by the user)
+        lp_len = None       # Take entire data set (cannot be changed)
         lp_frame = None     # Take entire data set (cannot be changed)
         vp = None           # Validation not needed, because it's performed by MPCPy (cannot be changed)
         ic_param = None     # TODO: Decide with Dave what to do with IC parameters
@@ -767,12 +771,14 @@ class ModestPy(_Estimate):
                 workdir = kwargs[key]
             elif key == 'ga_iter':
                 ga_iter = kwargs[key]
+            elif key == 'ga_tol':
+                ga_tol = kwargs[key]
             elif key == 'ps_iter':
                 ps_iter = kwargs[key]
+            elif key == 'ps_tol':
+                ps_tol == kwargs[key]
             elif key == 'lp_n':
                 lp_n = kwargs[key]
-            elif key == 'lp_len':
-                lp_len = kwargs[key]
 
         # Get measurements
         # ================
@@ -858,7 +864,8 @@ class ModestPy(_Estimate):
         session = modestpy.Estimation(workdir, fmu_path, inp, known, est, ideal,
                                       lp_n=lp_n, lp_len=lp_len, lp_frame=lp_frame, 
                                       vp=vp, ic_param=ic_param,
-                                      ga_iter=ga_iter, ps_iter=ps_iter)
+                                      ga_iter=ga_iter, ga_tol=ga_tol,
+                                      ps_iter=ps_iter, ps_tol=ps_tol)
         estimates = session.estimate()
 
         # Put estimates into Model.parameter_data
