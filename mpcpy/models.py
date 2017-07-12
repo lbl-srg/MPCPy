@@ -742,7 +742,7 @@ class ModestPy(_Estimate):
     ps_tol: float
         PS tolerance (accepted error), default 1e-4
     lp_n: int
-        Number of learning runs (average parameters returned if > 1), default 1
+        Number of learning runs (best parameters returned if > 1), default 1
     """
 
     def __init__(self, Model):
@@ -827,7 +827,7 @@ class ModestPy(_Estimate):
 
         for par_name in Model.parameter_data:
 
-            # Value
+            # Initial value
             val = Model.parameter_data[par_name]['Value'].get_base_data()
             # Variability
             is_free = Model.parameter_data[par_name]['Free'].display_data()
@@ -866,7 +866,7 @@ class ModestPy(_Estimate):
                                       vp=vp, ic_param=ic_param,
                                       ga_iter=ga_iter, ga_tol=ga_tol,
                                       ps_iter=ps_iter, ps_tol=ps_tol)
-        estimates = session.estimate()
+        estimates = session.estimate('best')
 
         # Put estimates into Model.parameter_data
         for par_name in estimates:
