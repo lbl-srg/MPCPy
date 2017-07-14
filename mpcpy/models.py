@@ -723,16 +723,37 @@ class JModelica(_Estimate):
 class ModestPy(_Estimate):
     """
     ModestPy estimation method using combined genetic algorithm
-    and Hooke-Jeeves (AKA pattern search).
-    
-    .. note::
-    
-        The method uses base units, not display units.
+    and pattern search (also known as Hooke-Jeeves).
+
+    The method accepts optional arguments described below. The arguments
+    control error tolerance, number of iterations and number of learning periods.
+
+    Either method can be switched off by setting the respective maximum
+    number of iterations to zero (*ga_iter*, *ps_iter*). It is advised however
+    not to switch off the pattern search, as it helps to achieve the local optimum.
+
+    If the number of learning periods is more than 1, the user can choose the
+    type of parameters to be calculated by the method: average from all runs or
+    best from all runs (i.e. with the lowest error). If the are concerns about
+    overfitting the model, the average parameters are advised. On the other hand,
+    if the cost function is highly non-convex, it might be better to use multiple
+    learning periods and pick the best parameters with the lowest error.
+
+    The method saves additional output files: 
+
+    * all_estimates.csv - estimates and errors from all runs (run per row),
+    * all_estimates.png - scatter matrix plot of all estimates vs. errors,
+    * err_evo.csv - error evolution (run per column),
+    * err_evo.png - error evolution plot,
+    * ga_N.png and ps_N.png - parameter evolution plots for N run of GA and PS.
+
+    By default the files are saved in the current working directory. A custom
+    directory can be chosen with the *workdir* argument.
 
     Optional parameters
     -------------------
     workdir: string
-        ...
+        Working directory
     ga_iter: int
         Maximum number of genetic algorithm iterations (generations), default 30
     ga_tol: float
@@ -742,7 +763,9 @@ class ModestPy(_Estimate):
     ps_tol: float
         PS tolerance (accepted error), default 1e-4
     lp_n: int
-        Number of learning runs (best parameters returned if > 1), default 1
+        Number of learning runs, default 1
+    par_type: str
+        Return parameter type: 'best' (default) or 'avg'
     """
 
     def __init__(self, Model):
@@ -760,6 +783,7 @@ class ModestPy(_Estimate):
         ps_iter = 150       # Maximum number of pattern search iterations (can be changed by the user)
         ps_tol = 0.0001     # PS tolerance (accepted error)
         lp_n = 1            # One learning period (can be changed by the user)
+        par_type = 'best'   # Parameter type
         lp_len = None       # Take entire data set (cannot be changed)
         lp_frame = None     # Take entire data set (cannot be changed)
         vp = None           # Validation not needed, because it's performed by MPCPy (cannot be changed)
@@ -779,6 +803,8 @@ class ModestPy(_Estimate):
                 ps_tol = kwargs[key]
             elif key == 'lp_n':
                 lp_n = kwargs[key]
+            elif key == 'par_type':
+                par_type = kwargs[key]
 
         # Get measurements
         # ================
@@ -866,7 +892,7 @@ class ModestPy(_Estimate):
                                       vp=vp, ic_param=ic_param,
                                       ga_iter=ga_iter, ga_tol=ga_tol,
                                       ps_iter=ps_iter, ps_tol=ps_tol)
-        estimates = session.estimate('best')
+        estimates = session.estimate(par_type)
 
         # Put estimates into Model.parameter_data
         for par_name in estimates:
