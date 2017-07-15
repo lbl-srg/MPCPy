@@ -872,10 +872,16 @@ class ModestPy(_Estimate):
         # Learning period
         start = ideal.index[0]
         end = ideal.index[-1]
-
-        # Adjust inp index to ideal
         inp = inp[start:end]
-        inp = inp.reindex(ideal.index, method='ffill')
+
+        # Adjust index to the smallest step
+        inp_step = inp.index[1] - inp.index[0]
+        ideal_step = ideal.index[1] - ideal.index[1]
+
+        if ideal_step <= inp_step:
+            inp = inp.reindex(ideal.index, method='ffill')
+        else:
+            ideal = ideal.reindex(inp.index, method='ffill')
 
         # Indexes to seconds
         inp.index = inp.index.astype(np.int64) // 10**9
