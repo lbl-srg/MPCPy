@@ -28,25 +28,26 @@ class SimpleRC(TestCaseMPCPy):
     def setUp(self):
         self.start_time = '1/1/2017';
         self.final_time = '1/2/2017';
-        MPCPyPath = utility.get_MPCPy_path();
+        self.MPCPyPath = utility.get_MPCPy_path();
+        # Set measurements
+        self.measurements = {};
+        self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+
+    def test_simulate(self):
         # Set model paths
-        mopath = os.path.join(MPCPyPath, 'resources', 'model', 'Simple.mo');
+        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC';
         # Gather control inputs
-        control_csv_filepath = os.path.join(MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
+        control_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         controls.collect_data(self.start_time, self.final_time);
-        # Set measurements
-        measurements = {};
-        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
         # Instantiate model
         self.model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
-                                     measurements, \
+                                     self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
                                      control_data = controls.data);
-    def test_simulate(self):
         # Simulate model
         self.model.simulate(self.start_time, self.final_time);
         # Check references
@@ -54,6 +55,21 @@ class SimpleRC(TestCaseMPCPy):
         self.check_df_timeseries(df_test, 'simulate_display.csv');
         df_test = self.model.get_base_measurements('Simulated');
         self.check_df_timeseries(df_test, 'simulate_base.csv');
+        
+    def test_simulate_noinputs(self):
+        # Set model paths
+        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}));
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'simulate_noinputs.csv');
 
 #%%    
 class EstimateFromJModelica(TestCaseMPCPy):
