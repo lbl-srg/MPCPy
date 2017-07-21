@@ -34,6 +34,7 @@ class SimpleRC(TestCaseMPCPy):
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
 
     def test_simulate(self):
+        '''Test simulation of a model.'''
         # Set model paths
         mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC';
@@ -57,6 +58,7 @@ class SimpleRC(TestCaseMPCPy):
         self.check_df_timeseries(df_test, 'simulate_base.csv');
         
     def test_simulate_noinputs(self):
+        '''Test simulation of a model with no external inputs.'''
         # Set model paths
         mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_noinputs';

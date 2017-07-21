@@ -339,10 +339,13 @@ class _FMU(_mpcpyPandas):
         
         '''
         
+        # Check if empty
         if input_mpcpy_ts_list:
+            # If not, fill input object
             self._input_df = self._mpcpy_ts_list_to_dataframe(input_mpcpy_ts_list);
             self._input_object = self._dataframe_to_input_object(self._input_df[self.start_time_utc:self.final_time_utc]);
         else:
+            # Otherwise, create empty input object
             self._input_object = ();
 
     
