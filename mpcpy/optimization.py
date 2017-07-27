@@ -613,7 +613,7 @@ class JModelica(_Package, utility._FMU):
         eliminated = {};
         i = 1;
         N_input = 0;
-        if self._input_object != {}:
+        if self._input_object:
             for key in self._input_object[0]:
                 input_traj = np.vstack((np.transpose(self._input_object[1][:,0]), \
                                        np.transpose(self._input_object[1][:,i])));
