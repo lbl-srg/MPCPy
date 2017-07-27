@@ -270,20 +270,10 @@ class EstimateFromUKF(TestCaseMPCPy):
         mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC';
         self.moinfo = (mopath, modelpath, {})
-        # Set parameters
-        self.parameter_data = {};
-        self.parameter_data['heatCapacitor.C'] = {};
-        self.parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_Value', 0.7e5, units.J_K);
-        self.parameter_data['heatCapacitor.C']['Minimum'] = variables.Static('C_Min', 0.6e5, units.J_K);
-        self.parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 1.6e5, units.J_K);
-        self.parameter_data['heatCapacitor.C']['Covariance'] = variables.Static('C_Cov', 1e3, units.J_K);
-        self.parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
-        self.parameter_data['thermalResistor.R'] = {};
-        self.parameter_data['thermalResistor.R']['Value'] = variables.Static('R_Value', 0.007, units.K_W);
-        self.parameter_data['thermalResistor.R']['Minimum'] = variables.Static('R_Min', 0.006, units.K_W);
-        self.parameter_data['thermalResistor.R']['Maximum'] = variables.Static('R_Max', 0.016, units.K_W);
-        self.parameter_data['thermalResistor.R']['Covariance'] = variables.Static('R_Cov', 0.0001, units.K_W);
-        self.parameter_data['thermalResistor.R']['Free'] = variables.Static('R_Free', True, units.boolean);
+        # Gather parameters
+        parameter_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Parameters.csv');
+        self.parameters = exodata.ParameterFromCSV(parameter_csv_filepath);
+        self.parameters.collect_data();
         # Gather control inputs
         control_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
@@ -303,7 +293,7 @@ class EstimateFromUKF(TestCaseMPCPy):
                                      models.RMSE, \
                                      self.system.measurements, \
                                      moinfo = self.moinfo, \
-                                     parameter_data = self.parameter_data, \
+                                     parameter_data = self.parameters.data, \
                                      control_data = self.controls.data, \
                                      version = '1.0');                      
         # Estimate
@@ -327,7 +317,7 @@ class EstimateFromUKF(TestCaseMPCPy):
                                          models.RMSE, \
                                          self.system.measurements, \
                                          moinfo = self.moinfo, \
-                                         parameter_data = self.parameter_data, \
+                                         parameter_data = self.parameters.data, \
                                          control_data = self.controls.data, \
                                          version = '2.0');
             
