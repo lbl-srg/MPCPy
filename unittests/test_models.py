@@ -253,7 +253,74 @@ class EstimateFromJModelica(TestCaseMPCPy):
         df_test = pd.DataFrame(data = RMSE);
         self.check_df_general(df_test, 'validate_RMSE.csv');
         
-         
+
+#%%
+class EstimateFromUKF(TestCaseMPCPy):
+    '''Test the parameter estimation of a model using UKF.
+    
+    '''
+    def setUp(self):
+        self.start_time = '1/1/2017';
+        self.final_time = '1/10/2017';
+        self.MPCPyPath = utility.get_MPCPy_path();
+        # Set measurements
+        self.measurements = {};
+        self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC';
+        self.moinfo = (mopath, modelpath, {})
+        # Gather parameters
+        parameter_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Parameters.csv');
+        self.parameters = exodata.ParameterFromCSV(parameter_csv_filepath);
+        self.parameters.collect_data();
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        self.controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        self.controls.collect_data(self.start_time, self.final_time);
+        # Instantiate system
+        self.system = systems.EmulationFromFMU(self.measurements, \
+                                               moinfo = self.moinfo, \
+                                               control_data = self.controls.data);
+        # Get measurements
+        self.system.collect_measurements(self.start_time, self.final_time);
+        
+    def test_estimate_and_validate(self):
+        '''Test the estimation of a model's coefficients based on measured data.'''
+        # Instantiate model
+        self.model = models.Modelica(models.UKF, \
+                                     models.RMSE, \
+                                     self.system.measurements, \
+                                     moinfo = self.moinfo, \
+                                     parameter_data = self.parameters.data, \
+                                     control_data = self.controls.data, \
+                                     version = '1.0');                      
+        # Estimate
+        self.model.estimate(self.start_time, self.final_time, ['T_db']);
+        # Validate
+        self.model.validate(self.start_time, self.final_time, 'validate', plot = 0);
+        # Check references
+        RMSE = {};
+        for key in self.model.RMSE.keys():
+            RMSE[key] = {};
+            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+        df_test = pd.DataFrame(data = RMSE);
+        self.check_df_general(df_test, 'validate_RMSE.csv');
+        
+    def test_error_fmu_version(self):
+        '''Test error raised if wrong fmu version.'''
+        # Check error raised with wrong fmu version (2.0 instead of 1.0)
+        with self.assertRaises(ValueError):
+            # Instantiate model
+            self.model = models.Modelica(models.UKF, \
+                                         models.RMSE, \
+                                         self.system.measurements, \
+                                         moinfo = self.moinfo, \
+                                         parameter_data = self.parameters.data, \
+                                         control_data = self.controls.data, \
+                                         version = '2.0');
+            
 #%% Occupancy tests
 class OccupancyFromQueueing(TestCaseMPCPy):
     '''Test the occupancy model using a queueing approach.

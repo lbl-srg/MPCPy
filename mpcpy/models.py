@@ -607,103 +607,6 @@ class _OccupancyMethod(utility._mpcpyPandas):
         pass            
              
 #%% Estimate Method Interface Implementations
-class UKF(_Estimate):
-    '''Estimation method using the Unscented Kalman Filter.
-    
-    This estimation method uses the UKF implementation from EstimationPy_.
-    
-    .. _EstimationPy: https://github.com/lbl-srg/EstimationPy
-
-    '''
-
-    def __init__(self, Model):
-        '''Constructor of UKF estimation method.
-        
-        '''
-
-        self.name = 'UKF';
-        # Instantiate UKF model
-        self.model = ukf_model.Model(Model.fmupath);          
-    def _estimate(self, Model):
-        '''Perform UKF estimation.
-
-        '''
-
-        estimationpy_logging.configure_logger(log_level = logging.DEBUG, log_level_console = logging.INFO, log_level_file = logging.DEBUG)
-        # Write the inputs, measurements, and parameters to csv
-        self._writeukfcsv(Model);
-        # Select inputs
-        for name in Model.input_names:
-            inputvar = self.model.get_input_by_name(name);
-            inputvar.get_csv_reader().open_csv(Model.csv_path);
-            inputvar.get_csv_reader().set_selected_column(name);    
-        # Select outputs
-        for name in Model.measured_data.keys():
-            outputvar = self.model.get_output_by_name(name);
-            outputvar.get_csv_reader().open_csv(Model.csv_path);
-            outputvar.get_csv_reader().set_selected_column(name);        
-            outputvar.set_measured_output()
-            outputvar.set_covariance(0.5)        
-        # Select the parameters to be identified
-        i = 0;
-        for name in Model.parameter_data.keys():
-            if Model.parameter_data[name]['Free'].get_base_data():
-                self.model.add_parameter(self.model.get_variable_object(name));
-                par = self.model.get_parameters()[i];
-                par.set_initial_value(Model.parameter_data[name]['Value']);
-                par.set_covariance(Model.parameter_data[name]['Covariance']);
-                par.set_min_value(Model.parameter_data[name]['Minimum']);
-                par.set_max_value(Model.parameter_data[name]['Maximum']);
-                par.set_constraint_low(True);
-                par.set_constraint_high(True);
-                i = i + 1;
-        # Initialize the model for the simulation
-        self.model.initialize_simulator();
-        # Set model parameters
-        for name in Model.parameter_data.keys():
-            self.model.set_real(self.model.get_variable_object(name),Model.parameter_data[name]['Data']); 
-        for name in Model.coefficients.keys():
-            self.model.set_real(self.model.get_variable_object(name),Model.coefficients[name]['InitialGuess']);
-            print(self.model.get_real(self.model.get_variable_object(name)));
-        # Instantiate the UKF for the FMU
-        ukf_FMU = UkfFmu(self.model);
-        # Start filter
-        t0 = pd.to_datetime(0, unit = "s", utc = True);
-        t1 = pd.to_datetime(Model.final_time, unit = "s", utc = True);
-        time, x, sqrtP, y, Sy, y_full = ukf_FMU.filter(start = t0, stop = t1);
-        
-    def _writeukfcsv(self, Model):
-        '''Write the UKF csv file.
-
-        '''
-
-        ## Write the inputs, measurements, and coefficients to csv
-        Model.csv_path = 'ukf.csv';        
-        self.other_inputs = {};
-        for key_meas in Model.measured_data.keys():
-            self.other_inputs[key_meas] = {};
-            self.other_inputs[key_meas]['Data'] = Model.measured_data[key_meas]['Data'];
-            self.other_inputs[key_meas]['Time'] = Model.measured_data[key_meas]['Time'];
-        for key_coeff in Model.coefficients.keys():
-            if Model.parameter_data[key_coeff]['Free'].get_base_data():
-                self.other_inputs[key_coeff] = {};
-                self.other_inputs[key_coeff]['Data'] = Model.parameter_data[key_coeff]['Value']*np.ones(len(Model.measured_data[key_meas]['Time']));
-                self.other_inputs[key_coeff]['Time'] = Model.measured_data[key_meas]['Time'];
-        # Add measurements and coefficients to "input_names" for input object
-        input_names = Model.input_names + Model.measured_data.keys() + Model.coefficients.keys();
-        # Create input object to write to csv
-        input_object = utility.createInputObject(Model.final_time, \
-                                                 input_names, \
-                                                 Model.weather_data, \
-                                                 Model.internal_data, \
-                                                 self.other_inputs);
-        # Write to csv                                                 
-        with open(Model.csv_path, 'wb') as f:
-            ukfwriter = csv.writer(f);
-            ukfwriter.writerow(['time'] + list(input_object[0]));
-            for i in range(len(input_object[1][:,0])):
-                ukfwriter.writerow(input_object[1][i]);        
-
 class JModelica(_Estimate):
     '''Estimation method using JModelica optimization.
     
@@ -729,6 +632,159 @@ class JModelica(_Estimate):
         self.opt_problem = optimization.Optimization(Model, optimization._ParameterEstimate, optimization.JModelica, {});
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
         
+
+class UKF(_Estimate, utility._FMU):
+    '''Estimation method using the Unscented Kalman Filter.
+    
+    This estimation method uses the UKF implementation EstimationPy-KA_, 
+    which is a fork of EstimationPy_ that allows for parameter estimation 
+    without any state estimation.
+    
+    .. _EstimationPy: https://github.com/lbl-srg/EstimationPy
+    
+    .. _EstimationPy-KA: https://github.com/krzysztofarendt/EstimationPy-KA
+
+    '''
+
+    def __init__(self, Model):
+        '''Constructor of UKF estimation method.
+        
+        '''
+
+        self.name = 'UKF';
+        # Check correct fmu version
+        if Model.fmu_version != '1.0':
+            raise ValueError('Compiled fmu version is {0} and needs to be 1.0.'.format(Model.fmu_version));
+        else:
+            self.fmu_version = Model.fmu_version;
+        # Instantiate UKF model
+        self.model = ukf_model.Model(Model.fmupath);
+        
+    def _estimate(self, Model):
+        '''Perform UKF estimation.
+
+        '''
+
+        estimationpy_logging.configure_logger(log_level = logging.DEBUG, log_level_console = logging.INFO, log_level_file = logging.DEBUG)
+        # Write the inputs, measurements, and parameters to csv
+        self._writeukfcsv(Model);
+        # Select inputs
+        for key in Model.input_names:
+            inputvar = self.model.get_input_by_name(key);
+            inputvar.get_csv_reader().open_csv(self.csv_path);
+            inputvar.get_csv_reader().set_selected_column(key);    
+        # Select outputs
+        for key in Model.measurement_variable_list:
+            outputvar = self.model.get_output_by_name(key);
+            outputvar.get_csv_reader().open_csv(self.csv_path);
+            outputvar.get_csv_reader().set_selected_column(key);        
+            outputvar.set_measured_output()
+            outputvar.set_covariance(0.5);
+        # Select the parameters to be identified
+        i = 0;
+        for key in Model.parameter_data.keys():
+            if Model.parameter_data[key]['Free'].get_base_data():
+                self.model.add_parameter(self.model.get_variable_object(key));
+                par = self.model.get_parameters()[i];
+                par.set_initial_value(Model.parameter_data[key]['Value'].get_base_data());
+                par.set_covariance(Model.parameter_data[key]['Covariance'].get_base_data());
+                par.set_min_value(Model.parameter_data[key]['Minimum'].get_base_data());
+                par.set_max_value(Model.parameter_data[key]['Maximum'].get_base_data());
+                par.set_constraint_low(True);
+                par.set_constraint_high(True);
+                i = i + 1;
+        # Initialize the model for the simulation
+        self.model.initialize_simulator();
+        # Set model parameters
+        for name in Model.parameter_data.keys():
+            self.model.set_real(self.model.get_variable_object(name),Model.parameter_data[name]['Value'].get_base_data());
+        # Instantiate the UKF for the FMU
+        ukf_FMU = UkfFmu(self.model);
+        # Start filter
+        t0 = pd.to_datetime(0, unit = "s", utc = True);
+        t1 = pd.to_datetime(Model.elapsed_seconds, unit = "s", utc = True);
+        self.res_est = ukf_FMU.filter(start = t0, stop = t1);
+        # Update parameter results
+        self._get_parameter_results(Model);
+        
+    def _writeukfcsv(self, Model):
+        '''Write the UKF csv file.
+
+        '''
+
+        # Collect additional inputs for csv file     
+        self._additional_inputs = {};
+        # Measurements
+        for key_mea in Model.measurement_variable_list:
+            variable = Model.measurements[key_mea];
+            self._additional_inputs[key_mea] = {};
+            self._additional_inputs[key_mea] = variable['Measured'];
+        # Parameters
+        free_parameters = [];
+        for key_par in Model.parameter_data.keys():
+            variable = Model.parameter_data[key_par];
+            if variable['Free'].get_base_data():
+                free_parameters.append(key_par)
+                time = self._additional_inputs[key_mea].get_base_data().index.values;
+                data = variable['Value'].get_base_data()*np.ones(len(time));
+                unit = variable['Value'].get_base_unit();
+                ts = pd.Series(index = time, data = data)
+                self._additional_inputs[key_par] = variables.Timeseries(key_par+'_ukf', ts, unit);
+                
+        # Create mpcpy ts list
+        self._input_mpcpy_ts_list = [];
+        # Weather
+        for key in Model.weather_data.keys():
+            if key in Model.input_names:
+                self._input_mpcpy_ts_list.append(Model.weather_data[key]);
+        # Internal
+        for zone in Model.internal_data.keys():
+            for intLoad in ['intCon', 'intRad', 'intLat']:
+                if intLoad+'_'+zone in Model.input_names:
+                    self._input_mpcpy_ts_list.append(Model.internal_data[zone][intLoad]);
+        # Controls
+        for key in Model.control_data.keys():
+            if key in Model.input_names:
+                self._input_mpcpy_ts_list.append(Model.control_data[key]);                     
+        # Other inputs                   
+        for key in Model.other_inputs.keys():
+            if key in Model.input_names:
+                self._input_mpcpy_ts_list.append(Model.other_inputs[key]);
+        # Add measurements and parameters
+        for key in self._additional_inputs.keys():
+            self._input_mpcpy_ts_list.append(self._additional_inputs[key]);
+            
+        # Create input object to write to csv
+        # Set timing
+        self.start_time_utc = Model.start_time_utc;
+        self.final_time_utc = Model.final_time_utc;   
+        self.elapsed_seconds = Model.elapsed_seconds; 
+        self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list)
+        # Write to csv
+        self.csv_path = 'ukf.csv';                                               
+        with open(self.csv_path, 'wb') as f:
+            ukfwriter = csv.writer(f);
+            ukfwriter.writerow(['time'] + list(self._input_object[0]));
+            for i in range(len(self._input_object[1][:,0])):
+                ukfwriter.writerow(self._input_object[1][i]);
+
+    def _get_parameter_results(self, Model):
+        '''Update the parameter data dictionary in the model with ukf results.
+        
+        '''
+        
+        i = 0;
+        for key in Model.parameter_data.keys():
+            if Model.parameter_data[key]['Free'].get_base_data():
+                fmu_variable_units = Model._get_fmu_variable_units();
+                unit = self._get_unit_class_from_fmu_variable_units(key, fmu_variable_units);
+                if not unit:
+                    unit = units.unit1;
+                data = self.res_est[1][-1][i];
+                Model.parameter_data[key]['Value'].set_display_unit(unit);
+                Model.parameter_data[key]['Value'].set_data(data);
+                i = i + 1;
+       
 #%% Validate Method Interfaces
 class RMSE(_Validate):
     '''Validation method that computes the RMSE between estimated and measured data.
