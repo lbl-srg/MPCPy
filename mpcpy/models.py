@@ -636,9 +636,13 @@ class JModelica(_Estimate):
 class UKF(_Estimate, utility._FMU):
     '''Estimation method using the Unscented Kalman Filter.
     
-    This estimation method uses the UKF implementation from EstimationPy_.
+    This estimation method uses the UKF implementation EstimationPy-KA_, 
+    which is a fork of EstimationPy_ that allows for parameter estimation 
+    without any state estimation.
     
     .. _EstimationPy: https://github.com/lbl-srg/EstimationPy
+    
+    .. _EstimationPy-KA: https://github.com/krzysztofarendt/EstimationPy-KA
 
     '''
 
@@ -768,6 +772,7 @@ class UKF(_Estimate, utility._FMU):
         '''Update the parameter data dictionary in the model with ukf results.
         
         '''
+        
         i = 0;
         for key in Model.parameter_data.keys():
             if Model.parameter_data[key]['Free'].get_base_data():
