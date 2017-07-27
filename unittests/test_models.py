@@ -259,9 +259,7 @@ class EstimateFromUKF(TestCaseMPCPy):
     '''Test the parameter estimation of a model using UKF.
     
     '''
-    
-    def test_estimate_and_validate(self):
-        '''Test the estimation of a model's coefficients based on measured data.'''
+    def setUp(self):
         self.start_time = '1/1/2017';
         self.final_time = '1/10/2017';
         self.MPCPyPath = utility.get_MPCPy_path();
@@ -271,38 +269,42 @@ class EstimateFromUKF(TestCaseMPCPy):
         # Set model paths
         mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC';
+        self.moinfo = (mopath, modelpath, {})
         # Set parameters
-        parameter_data = {};
-        parameter_data['heatCapacitor.C'] = {};
-        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_Value', 0.7e5, units.J_K);
-        parameter_data['heatCapacitor.C']['Minimum'] = variables.Static('C_Min', 0.5e5, units.J_K);
-        parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 1.5e5, units.J_K);
-        parameter_data['heatCapacitor.C']['Covariance'] = variables.Static('C_Cov', 1e3, units.J_K);
-        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
-        parameter_data['thermalResistor.R'] = {};
-        parameter_data['thermalResistor.R']['Value'] = variables.Static('R_Value', 0.007, units.K_W);
-        parameter_data['thermalResistor.R']['Minimum'] = variables.Static('R_Min', 0.005, units.K_W);
-        parameter_data['thermalResistor.R']['Maximum'] = variables.Static('R_Max', 0.015, units.K_W);
-        parameter_data['thermalResistor.R']['Covariance'] = variables.Static('R_Cov', 0.0001, units.K_W);
-        parameter_data['thermalResistor.R']['Free'] = variables.Static('R_Free', True, units.boolean);
+        self.parameter_data = {};
+        self.parameter_data['heatCapacitor.C'] = {};
+        self.parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_Value', 0.7e5, units.J_K);
+        self.parameter_data['heatCapacitor.C']['Minimum'] = variables.Static('C_Min', 0.5e5, units.J_K);
+        self.parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 1.5e5, units.J_K);
+        self.parameter_data['heatCapacitor.C']['Covariance'] = variables.Static('C_Cov', 1e3, units.J_K);
+        self.parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
+        self.parameter_data['thermalResistor.R'] = {};
+        self.parameter_data['thermalResistor.R']['Value'] = variables.Static('R_Value', 0.007, units.K_W);
+        self.parameter_data['thermalResistor.R']['Minimum'] = variables.Static('R_Min', 0.005, units.K_W);
+        self.parameter_data['thermalResistor.R']['Maximum'] = variables.Static('R_Max', 0.015, units.K_W);
+        self.parameter_data['thermalResistor.R']['Covariance'] = variables.Static('R_Cov', 0.0001, units.K_W);
+        self.parameter_data['thermalResistor.R']['Free'] = variables.Static('R_Free', True, units.boolean);
         # Gather control inputs
         control_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
-        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
-        controls.collect_data(self.start_time, self.final_time);
+        self.controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        self.controls.collect_data(self.start_time, self.final_time);
         # Instantiate system
         self.system = systems.EmulationFromFMU(self.measurements, \
-                                               moinfo = (mopath, modelpath, {}), \
-                                               control_data = controls.data);
+                                               moinfo = self.moinfo, \
+                                               control_data = self.controls.data);
         # Get measurements
         self.system.collect_measurements(self.start_time, self.final_time);
+        
+    def test_estimate_and_validate(self):
+        '''Test the estimation of a model's coefficients based on measured data.'''
         # Instantiate model
         self.model = models.Modelica(models.UKF, \
                                      models.RMSE, \
                                      self.system.measurements, \
-                                     moinfo = (mopath, modelpath, {}), \
-                                     parameter_data = parameter_data, \
-                                     control_data = controls.data, \
+                                     moinfo = self.moinfo, \
+                                     parameter_data = self.parameter_data, \
+                                     control_data = self.controls.data, \
                                      version = '1.0');                      
         # Estimate
         self.model.estimate(self.start_time, self.final_time, ['T_db']);
@@ -315,6 +317,19 @@ class EstimateFromUKF(TestCaseMPCPy):
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df_general(df_test, 'validate_RMSE.csv');
+        
+    def test_error_fmu_version(self):
+        '''Test error raised if wrong fmu version.'''
+        # Check error raised with wrong fmu version (2.0 instead of 1.0)
+        with self.assertRaises(ValueError):
+            # Instantiate model
+            self.model = models.Modelica(models.UKF, \
+                                         models.RMSE, \
+                                         self.system.measurements, \
+                                         moinfo = self.moinfo, \
+                                         parameter_data = self.parameter_data, \
+                                         control_data = self.controls.data, \
+                                         version = '2.0');
             
 #%% Occupancy tests
 class OccupancyFromQueueing(TestCaseMPCPy):
