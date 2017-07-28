@@ -28,25 +28,27 @@ class SimpleRC(TestCaseMPCPy):
     def setUp(self):
         self.start_time = '1/1/2017';
         self.final_time = '1/2/2017';
-        MPCPyPath = utility.get_MPCPy_path();
+        self.MPCPyPath = utility.get_MPCPy_path();
+        # Set measurements
+        self.measurements = {};
+        self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+
+    def test_simulate(self):
+        '''Test simulation of a model.'''
         # Set model paths
-        mopath = os.path.join(MPCPyPath, 'resources', 'model', 'Simple.mo');
+        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC';
         # Gather control inputs
-        control_csv_filepath = os.path.join(MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
+        control_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         controls.collect_data(self.start_time, self.final_time);
-        # Set measurements
-        measurements = {};
-        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
         # Instantiate model
         self.model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
-                                     measurements, \
+                                     self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
                                      control_data = controls.data);
-    def test_simulate(self):
         # Simulate model
         self.model.simulate(self.start_time, self.final_time);
         # Check references
@@ -54,6 +56,52 @@ class SimpleRC(TestCaseMPCPy):
         self.check_df_timeseries(df_test, 'simulate_display.csv');
         df_test = self.model.get_base_measurements('Simulated');
         self.check_df_timeseries(df_test, 'simulate_base.csv');
+        
+    def test_simulate_noinputs(self):
+        '''Test simulation of a model with no external inputs.'''
+        # Set model paths
+        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}));
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'simulate_noinputs.csv');
+        
+    def test_estimate_error_nofreeparameters(self):
+        '''Test error raised if no free parameters passed.'''
+        # Set model paths
+        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';
+        # Instantiate model
+        self.model_no_params = models.Modelica(models.JModelica, \
+                                               models.RMSE, \
+                                               self.measurements, \
+                                               moinfo = (mopath, modelpath, {}));
+        # Check error raised with no parameters
+        with self.assertRaises(ValueError):
+            self.model_no_params.estimate(self.start_time, self.final_time, []);
+        # Set parameters
+        parameter_data = {};
+        parameter_data['C'] = {};
+        parameter_data['C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
+        parameter_data['C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
+        parameter_data['C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
+        parameter_data['C']['Free'] = variables.Static('C_Free', False, units.boolean);
+        # Instantiate model
+        self.model_no_free = models.Modelica(models.JModelica, \
+                                               models.RMSE, \
+                                               self.measurements, \
+                                               moinfo = (mopath, modelpath, {}), \
+                                               parameter_data = parameter_data);
+        # Check error raised with no free parameters
+        with self.assertRaises(ValueError):
+            self.model_no_params.estimate(self.start_time, self.final_time, []);
 
 #%%    
 class EstimateFromJModelica(TestCaseMPCPy):
@@ -205,7 +253,74 @@ class EstimateFromJModelica(TestCaseMPCPy):
         df_test = pd.DataFrame(data = RMSE);
         self.check_df_general(df_test, 'validate_RMSE.csv');
         
-         
+
+#%%
+class EstimateFromUKF(TestCaseMPCPy):
+    '''Test the parameter estimation of a model using UKF.
+    
+    '''
+    def setUp(self):
+        self.start_time = '1/1/2017';
+        self.final_time = '1/10/2017';
+        self.MPCPyPath = utility.get_MPCPy_path();
+        # Set measurements
+        self.measurements = {};
+        self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC';
+        self.moinfo = (mopath, modelpath, {})
+        # Gather parameters
+        parameter_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Parameters.csv');
+        self.parameters = exodata.ParameterFromCSV(parameter_csv_filepath);
+        self.parameters.collect_data();
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        self.controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        self.controls.collect_data(self.start_time, self.final_time);
+        # Instantiate system
+        self.system = systems.EmulationFromFMU(self.measurements, \
+                                               moinfo = self.moinfo, \
+                                               control_data = self.controls.data);
+        # Get measurements
+        self.system.collect_measurements(self.start_time, self.final_time);
+        
+    def test_estimate_and_validate(self):
+        '''Test the estimation of a model's coefficients based on measured data.'''
+        # Instantiate model
+        self.model = models.Modelica(models.UKF, \
+                                     models.RMSE, \
+                                     self.system.measurements, \
+                                     moinfo = self.moinfo, \
+                                     parameter_data = self.parameters.data, \
+                                     control_data = self.controls.data, \
+                                     version = '1.0');                      
+        # Estimate
+        self.model.estimate(self.start_time, self.final_time, ['T_db']);
+        # Validate
+        self.model.validate(self.start_time, self.final_time, 'validate', plot = 0);
+        # Check references
+        RMSE = {};
+        for key in self.model.RMSE.keys():
+            RMSE[key] = {};
+            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+        df_test = pd.DataFrame(data = RMSE);
+        self.check_df_general(df_test, 'validate_RMSE.csv');
+        
+    def test_error_fmu_version(self):
+        '''Test error raised if wrong fmu version.'''
+        # Check error raised with wrong fmu version (2.0 instead of 1.0)
+        with self.assertRaises(ValueError):
+            # Instantiate model
+            self.model = models.Modelica(models.UKF, \
+                                         models.RMSE, \
+                                         self.system.measurements, \
+                                         moinfo = self.moinfo, \
+                                         parameter_data = self.parameters.data, \
+                                         control_data = self.controls.data, \
+                                         version = '2.0');
+            
 #%% Occupancy tests
 class OccupancyFromQueueing(TestCaseMPCPy):
     '''Test the occupancy model using a queueing approach.
