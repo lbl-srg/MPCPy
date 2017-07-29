@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-To get started with MPCPy, first follow the installation instructions below.  Then, explore the ipython notebooks in the ``examples`` directory to get a feel for the workflow of MPCPy.  You can always consult the user guide for more information.
+To get started with MPCPy, first follow the installation instructions below.  Then, checkout the introductory tutorial or explore the ipython notebooks in the ``examples`` directory to get a feel for the workflow of MPCPy.  You can always consult the user guide for more information.
 
 Installation Instructions For Linux (Ubuntu 16.04 LTS)
 ------------------------------------------------------
@@ -49,6 +49,13 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
 7. Test the installation
     - Run the ipython notebook examples located in ``examples`` or run the unit tests as outlined below.
+
+
+Introductory Tutorial
+---------------------
+
+.. automodule:: doc.userGuide.tutorial.introductory
+
 
 Run Unit Tests
 --------------

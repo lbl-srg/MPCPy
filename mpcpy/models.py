@@ -35,7 +35,8 @@ Validate Methods
 Occupancy
 =========
 
-``Occupancy`` model objects represent the prediction of occupancy.
+``Occupancy`` models consider when occupants arrive and depart a space 
+or building as well as how many occupants are present at a particular time.
 
 Classes
 =======
