@@ -383,13 +383,13 @@ exodata data object.  The constraint CSV looks like:
 ::
 
     Time,Qflow_min,Qflow_max,T_min,T_max
-    01/01/17 12:00 AM,0,8000,20,25
-    01/01/17 01:00 AM,0,8000,20,25
-    01/01/17 02:00 AM,0,8000,20,25
+    01/01/17 12:00 AM,0,4000,20,25
+    01/01/17 01:00 AM,0,4000,20,25
+    01/01/17 02:00 AM,0,4000,20,25
     ...
-    01/02/17 10:00 PM,0,8000,20,25
-    01/02/17 11:00 PM,0,8000,20,25
-    01/03/17 12:00 AM,0,8000,20,25
+    01/02/17 10:00 PM,0,4000,20,25
+    01/02/17 11:00 PM,0,4000,20,25
+    01/03/17 12:00 AM,0,4000,20,25
     
 The constraint exodata object is used to determine which column of data matches
 with which model variable and whether it is a less-than-or-equal-to (LTE) or 
