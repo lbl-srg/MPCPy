@@ -139,17 +139,13 @@ Let's take our control input signal from a CSV file.  The CSV file looks like:
 ::
 
     Time,Qflow_csv
-    01/01/17 12:00 AM,1000
-    01/01/17 01:00 AM,1000
-    01/01/17 02:00 AM,1000
-    01/01/17 03:00 AM,1000
-    01/01/17 04:00 AM,1000
+    01/01/17 12:00 AM,3000
+    01/01/17 01:00 AM,3000
+    01/01/17 02:00 AM,3000
     ...
-    01/02/17 08:00 PM,1000
-    01/02/17 09:00 PM,1000
-    01/02/17 10:00 PM,1000
-    01/02/17 11:00 PM,1000
-    01/03/17 12:00 AM,1000
+    01/02/17 10:00 PM,3000
+    01/02/17 11:00 PM,3000
+    01/03/17 12:00 AM,3000
     
 We instantiate the control exodata object by supplying the path to the CSV file
 as well as a map of the names of the columns to the input of our model.  
@@ -233,9 +229,7 @@ time period and display the results as a pandas dataframe.  The
 timeseries data in the ``'Measured'`` field for each variable.
 
 >>> # Collect the data
->>> start_time = '1/1/2017'
->>> final_time = '1/2/2017'
->>> emulation.collect_measurements(start_time, final_time) # doctest: +ELLIPSIS
+>>> emulation.collect_measurements('1/1/2017', '1/2/2017') # doctest: +ELLIPSIS
 -etc-
 >>> # Display the results
 >>> emulation.display_measurements('Measured') # doctest: +ELLIPSIS
@@ -310,9 +304,7 @@ guesses.  The ``simulate()`` function updates the measurement dictionary with
 timeseries data in the ``'Simulated'`` field for each variable.
 
 >>> # Simulate the model
->>> start_time = '1/1/2017'
->>> final_time = '1/2/2017'
->>> model.simulate(start_time, final_time) # doctest: +ELLIPSIS
+>>> model.simulate('1/1/2017', '1/2/2017') # doctest: +ELLIPSIS
 -etc-
 >>> # Display the results
 >>> model.display_measurements('Simulated') # doctest: +ELLIPSIS
@@ -331,7 +323,7 @@ and measured data.  In this case, we only have one, ``'Tzone'``.  The
 ``estimate()`` function updates the Value field for the parameter data in 
 the model.  
 
->>> model.estimate(start_time, final_time, ['Tzone']) # doctest: +ELLIPSIS
+>>> model.estimate('1/1/2017', '1/2/2017', ['Tzone']) # doctest: +ELLIPSIS
 -etc-
 
 Let's validate the estimation on the training period.  The ``validate()``
@@ -341,7 +333,7 @@ working directory that shows the simulated and measured data for each
 measurement variable.
 
 >>> # Perform validation
->>> model.validate(start_time, final_time, 'validate_tra', plot=1) # doctest: +ELLIPSIS
+>>> model.validate('1/1/2017', '1/2/2017', 'validate_tra', plot=1) # doctest: +ELLIPSIS
 -etc-
 >>> # Get RMSE
 >>> print(model.RMSE['Tzone'].display_data()) # doctest: +NORMALIZE_WHITESPACE
@@ -467,6 +459,7 @@ Time
 2017-01-02 06:00:00+00:00         298.15
 2017-01-02 06:09:18.183693+00:00  293.15
 2017-01-02 06:38:41.816307+00:00  293.15
+2017-01-02 07:00:00+00:00         293.15
 -etc-
 
 """
