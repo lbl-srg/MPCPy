@@ -29,6 +29,13 @@ stat
 status
 stop
 
+# Tutorial
+##########
+doc/userGuide/tutorial/*.txt
+doc/userGuide/tutorial/*.fmu
+doc/userGuide/tutorial/*.mop
+doc/userGuide/tutorial/*.png
+
 # UserGuide Build
 #########################
 doc/userGuide/build
