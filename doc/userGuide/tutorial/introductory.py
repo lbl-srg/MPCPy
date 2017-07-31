@@ -154,7 +154,9 @@ weather file, and so we supply this optional parameter, tz_name, upon
 instantiation as well.  If no time zone is supplied, it is assumed to be UTC.
 
 >>> variable_map = {'Qflow_csv' : ('Qflow', units.W)}
->>> control = exodata.ControlFromCSV('ControlSignal.csv', variable_map, tz_name = weather.tz_name)
+>>> control = exodata.ControlFromCSV('ControlSignal.csv',
+...                                  variable_map,
+...                                  tz_name = weather.tz_name)
 
 Now we are ready to collect the exogenous data from our data sources for a
 given time period.
@@ -200,7 +202,9 @@ is the output of the model, called 'Tzone'.  Note that 'heatCapacitor.T' would
 also be valid.  
 
 >>> measurements = {'Tzone' : {}}
->>> measurements['Tzone']['Sample'] = variables.Static('sample_rate_Tzone', 3600, units.s)
+>>> measurements['Tzone']['Sample'] = variables.Static('sample_rate_Tzone',
+...                                                    3600,
+...                                                    units.s)
 
 The model information is given by a tuple containing the path to the 
 Modelica (.mo) file, the path of the model within the .mo file, and a list of 
@@ -273,7 +277,8 @@ set to False, then the value is set to the parameter upon simulation.  The
 Minimum and Maximum fields set the minimum and maximum value allowed by the 
 parameter during estimation.  The Covariance field sets the covariance of
 the parameter, and is only used for unscented kalman filtering.  Finally, the 
-Unit field specifies the unit of the parameter.
+Unit field specifies the unit of the parameter using the name string of 
+MPCPy unit classes.
 
 >>> parameters = exodata.ParameterFromCSV('Parameters.csv')
 >>> parameters.collect_data()
@@ -376,7 +381,7 @@ the optimization module of MPCPy.
 
 First, we need to collect some constraint data to add to our optimization
 problem.  In this case, we will constrain the heating input to between 
-0 and 8000 W, and the temperature to a comfortable range, between 
+0 and 4000 W, and the temperature to a comfortable range, between 
 20 and 25 degC.  We collect contraint data from a CSV using a constraint 
 exodata data object.  The constraint CSV looks like:
 

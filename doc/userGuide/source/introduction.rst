@@ -21,6 +21,7 @@ Three other modules provide additional, mainly internal, functionality to MPCPy:
     
     Software architecture diagram for MPCPy.  Note that a user interface has not been developed.
 
+
 Third-Party Software
 --------------------
 While MPCPy provides an integration platform, it relies on free, open-source, third-party software packages for model implementation, simulators, parameter estimation algorithms, and optimization solvers.  This includes python packages for scripting and data manipulation as well as other more comprehensive software packages for specific purposes.  In particular, emulation and MPC models for real systems rely heavily on the Modelica language specification (https://www.modelica.org/) and FMI standard (http://fmi-standard.org/) in order to leverage model library and tool development on these standards occurring elsewhere within building research and in other industries.  Two examples of these third-party tools are:
@@ -30,7 +31,7 @@ While MPCPy provides an integration platform, it relies on free, open-source, th
 
 Contributing
 ------------
-A large amount of research has shown that MPC can address emerging control challenges faced by buildings.  However, there exists no standard practice or methods for implementing MPC in buildings.  Implementation is defined here as model structure, complexity, and training methods, data resolution and amount, optimization problem structure and algorithm, and transfer of optimal control solution to real building control.  Infact, different applications likely require different implementations.  Therefore, the aim is for MPCPy to be flexible enough to accommodate different and new approaches to MPC in buildings.  
+Research has shown that MPC can address emerging control challenges faced by buildings.  However, there exists no standard practice or methods for implementing MPC in buildings.  Implementation is defined here as model structure, complexity, and training methods, data resolution and amount, optimization problem structure and algorithm, and transfer of optimal control solution to real building control.  Infact, different applications likely require different implementations.  Therefore, the aim is for MPCPy to be flexible enough to accommodate different and new approaches to MPC in buildings.  
 
 If you are interested in contributing to this project, please contact the developers and visit the development site at https://github.com/lbl-srg/MPCPy.
 

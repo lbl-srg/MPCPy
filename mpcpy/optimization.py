@@ -49,7 +49,7 @@ class Optimization(object):
     ----------
     Model :  mpcpy.model object
         Model with which to perform the optimization.
-    problem_type ; mpcpy.optimization.problem_type
+    problem_type : mpcpy.optimization.problem_type
         The type of poptimization problem to solve.  See specific documentation
         on available problem types.
     package_type : mpcpy.optimization.package_type
