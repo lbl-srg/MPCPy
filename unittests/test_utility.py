@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_utility.py
-by David Blum
-
 This module contains the classes for testing the utility functions of mpcpy.
+
 """
 
 import unittest

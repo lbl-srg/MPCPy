@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_models.py
-by David Blum
-
 This module contains the classes for testing the model module of mpcpy.
+
 """
 import unittest
 from mpcpy import models

@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_exodata.py
-by David Blum
-
 This module contains the classes for testing the exodata of mpcpy.
+
 """
 
 from mpcpy import exodata
@@ -350,7 +348,7 @@ class ConstraintFromOccupancyModel(TestCaseMPCPy):
 #%% Prices Tests
 class PriceFromCSV(TestCaseMPCPy):
     '''Test the collection of control data from a CSV file.
-    
+
     '''
     
     def setUp(self):
@@ -370,8 +368,11 @@ class PriceFromCSV(TestCaseMPCPy):
         self.check_df_timeseries(df_test, 'collect_data.csv');        
 
 #%% Source Tests
-class Source(TestCaseMPCPy):
-    '''Test the general methods of a Source object.'''
+class Type(TestCaseMPCPy):
+    '''Test the general methods of a Type object.
+    
+    '''
+    
     def setUp(self):
         self.epw_filepath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'weather' + os.sep + 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
         self.weather = exodata.WeatherFromEPW(self.epw_filepath);

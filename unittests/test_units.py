@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_units.py
-by David Blum
-
 This module contains the classes for testing the units of mpcpy.
+
 """
 
 import unittest

@@ -2,7 +2,6 @@
 """
 Run the unit tests for mpcpy.
 
-by David Blum
 """
 import unittest
 import doctest
