@@ -32,5 +32,5 @@ Contributing
 ------------
 A large amount of research has shown that MPC can address emerging control challenges faced by buildings.  However, there exists no standard practice or methods for implementing MPC in buildings.  Implementation is defined here as model structure, complexity, and training methods, data resolution and amount, optimization problem structure and algorithm, and transfer of optimal control solution to real building control.  Infact, different applications likely require different implementations.  Therefore, the aim is for MPCPy to be flexible enough to accommodate different and new approaches to MPC in buildings.  
 
-If you are interested in contributing to this project, please contact contact the developers and visit the development site at https://github.com/lbl-srg/MPCPy.
+If you are interested in contributing to this project, please contact the developers and visit the development site at https://github.com/lbl-srg/MPCPy.
 

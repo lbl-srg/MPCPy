@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-To get started with MPCPy, first follow the installation instructions below.  Then, checkout the introductory tutorial or explore the ipython notebooks in the ``examples`` directory to get a feel for the workflow of MPCPy.  You can always consult the user guide for more information.
+To get started with MPCPy, first follow the installation instructions below.  Then, checkout the introductory tutorial or explore the ipython notebooks in the ``examples/`` directory to get a feel for the workflow of MPCPy.  You can always consult the user guide for more information.
 
 Installation Instructions For Linux (Ubuntu 16.04 LTS)
 ------------------------------------------------------
@@ -20,6 +20,7 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 2. Install JModelica 2.0 (for Modelica compiling, optimization, and fmu simulation)
 
 3. Create JModelica environmental variables
+
     - add the following lines to your bashrc script:
 
         ::
@@ -32,12 +33,15 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
             export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64/"
 
 4. Download or Clone EstimationPy-KA
+
     - go to https://github.com/krzysztofarendt/EstimationPy-KA and clone or download repository into a directory (let's call it ``.../EstimationPy-KA``).
 
 5. Download or Clone MPCPy
+
     - go to https://github.com/lbl-srg/MPCPy and clone or download repository into a directory (let's call it ``.../MPCPy``).
 
 6. Edit PYTHONPATH environmental variable
+
     - add the following lines to your bashrc script (assumes 3. above sets JMODELICA_HOME):
         
         ::
@@ -48,8 +52,14 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
             export PYTHONPATH=$PYTHONPATH:".../MPCPy"
 
 7. Test the installation
-    - Run the ipython notebook examples located in ``examples`` or run the unit tests as outlined below.
 
+    - Run the introductory tutorial example.  From the command-line, use the commands:
+
+    .. code-block:: text
+
+    	> cd doc/userGuide/tutorial
+    	> python introductory.py
+    	
 
 Introductory Tutorial
 ---------------------
