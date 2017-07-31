@@ -4,8 +4,8 @@ The ``utility`` module contains classes and functions that are primarily for
 back-end functionality that is common across the other mpcpy modules.  These
 include interactions with ``pandas`` objects, fmu objects, and various other
 data management tasks.  For this reason, most of the classes and methods 
-contained in this module are private. Exceptions are listed in the following
-section.
+contained in this module are intended for internal use. Exceptions are listed 
+in the following section.
 
 =========
 Functions
@@ -200,10 +200,9 @@ class _mpcpyPandas(object):
         ----------
         tz_name : string, optional
             Name of timezone according to the package ``tzwhere``.  If 
-            ``'from_geography'``, than geography kwarg is required.
-        geography : string, optional
-            List or tuple with latitude in the first position and longitude in
-            the second position, both in degrees.
+            ``'from_geography'``, then geography kwarg is required.
+        geography : list or tuple, optional
+            List or tuple with (latitude, longitude) in degrees.   
             
         Yields
         ------
@@ -238,7 +237,7 @@ class _FMU(_mpcpyPandas):
     __metaclass__ = ABCMeta;
        
     def _simulate_fmu(self):
-        '''Simulate an fmu using pyfmi. 
+        '''Simulate an fmu with pyfmi and using any given exodata inputs.
         
         Yields
         ------

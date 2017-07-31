@@ -89,7 +89,8 @@ class _Emulation(_System):
     __metaclass__ = ABCMeta;
 
     def collect_measurements(self, start_time, final_time):
-        '''Collect measurement data for the emulated system by simulation.
+        '''Collect measurement data for the emulated system by simulation 
+        using any given exodata inputs.
         
         Parameters
         ----------
@@ -149,33 +150,36 @@ class EmulationFromFMU(_Emulation, utility._FMU):
         (mopath, modelpath, libraries).  `mopath` is the path to the modelica file.
         `modelpath` is the path to the model to be compiled within the package specified in the modelica file.
         `libraries` is a list of paths directing to extra libraries required to compile the fmu.
+    zone_names : list, optional
+        List of zone name strings.
+    weather_data : dictionary, optional
+        ``exodata`` weather object data attribute.
+    internal_data : dictionary, optional
+        ``exodata`` internal object data attribute.
+    control_data : dictionary, optional
+        ``exodata`` control object data attribute.    
+    other_inputs : dictionary, optional
+        ``exodata`` other inputs object data attribute.    
+    parameter_data : dictionary, optional
+        ``exodata`` parameter object data attribute.
+    tz_name : string, optional
+        Name of timezone according to the package ``tzwhere``.  If 
+        ``'from_geography'``, then geography kwarg is required.
+    geography : list or tuple, optional
+        List or tuple with (latitude, longitude) in degrees. 
 
     Attributes
     ----------
     measurements : dictionary
         {"Measurement Name" : {"Measurement Key_" : mpcpy.Variables.Timeseries/Static}}.
-    zone_names : [strings]
-        List of zone names.
-    weather_data : dictionary
-        ``exodata`` weather object data attribute.
-    internal_data : dictionary
-        ``exodata`` internal object data attribute.
-    control_data : dictionary
-        ``exodata`` control object data attribute.    
-    other_inputs : dictionary
-        ``exodata`` other inputs object data attribute.    
-    parameter_data : dictionary
-        ``exodata`` parameter object data attribute.    
-    lat : numeric
-        Latitude in degrees.  For timezone.
-    lon : numeric
-        Longitude in degrees.  For timezone.
-    tz_name : string
-        Timezone name.
     fmu : pyfmi fmu object
         FMU respresenting the emulated system.
     fmupath : string
         Path to the FMU file.
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
         
     '''
 
@@ -208,32 +212,23 @@ class RealFromCSV(_Real, utility._DAQ):
     measurements : dictionary
         {"Measurement Name" : {"Sample" : mpcpy.Variables.Static}}.
     variable_map : dictionary
-        {"Column Header Name" : ("Measurement Variable Name", mpcpy.Units.unit)}.        
+        {"Column Header Name" : ("Measurement Variable Name", mpcpy.Units.unit)}.
+    tz_name : string, optional
+        Name of timezone according to the package ``tzwhere``.  If 
+        ``'from_geography'``, then geography kwarg is required.
+    geography : list or tuple, optional
+        List or tuple with (latitude, longitude) in degrees. 
 
     Attributes
     ----------
     measurements : dictionary
         {"Measurement Variable Name" : {{"Measurement Key_" : mpcpy.Variables.Timeseries/Static}}.
-    zone_names : [strings]
-        List of zone names.
-    weather_data : dictionary
-        ``exodata`` weather object data attribute.
-    internal_data : dictionary
-        ``exodata`` internal object data attribute.
-    control_data : dictionary
-        ``exodata`` control object data attribute.    
-    other_inputs : dictionary
-        ``exodata`` other inputs object data attribute.    
-    parameter_data : dictionary
-        ``exodata`` parameter object data attribute.    
+    file_path : string
+        Path of csv file. 
     lat : numeric
         Latitude in degrees.  For timezone.
     lon : numeric
         Longitude in degrees.  For timezone.
-    tz_name : string
-        Timezone name.
-    file_path : string
-        Path of csv file.
         
     '''
 

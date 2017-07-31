@@ -74,7 +74,6 @@ from occupant.occupancy.queueing.parameter_inference_given_segments import param
 from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
-import os
 
 #%% Model Class
 class _Model(utility._mpcpyPandas, utility._Measurements):
@@ -86,7 +85,8 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
 
     @abstractmethod
     def estimate(self):
-        '''Estimate parameters of the model.
+        '''Estimate parameters of the model using the measurement and 
+        parameter_data dictionary attributes.
 
         Yields
         ------
@@ -99,7 +99,8 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
 
     @abstractmethod        
     def validate(self):
-        '''Validate parameter estimation of the model.
+        '''Validate parameters of the model using the measurement and 
+        parameter_data dictionary attributes.
 
         '''
 
@@ -107,7 +108,7 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
 
     @abstractmethod        
     def simulate(self):
-        '''Simulate the model.
+        '''Simulate the model using any given exodata inputs.
 
         Yields
         ------
@@ -135,33 +136,39 @@ class Modelica(_Model, utility._FMU, utility._Building):
     moinfo : tuple or list
         Modelica information for the model.  See documentation for 
         ``systems.EmulationFromFMU`` for more information.
+    zone_names : list, optional
+        List of zone name strings.
+    weather_data : dictionary, optional
+        ``exodata`` weather object data attribute.
+    internal_data : dictionary, optional
+        ``exodata`` internal object data attribute.
+    control_data : dictionary, optional
+        ``exodata`` control object data attribute.    
+    other_inputs : dictionary, optional
+        ``exodata`` other inputs object data attribute.    
+    parameter_data : dictionary, optional
+        ``exodata`` parameter object data attribute.
+    tz_name : string, optional
+        Name of timezone according to the package ``tzwhere``.  If 
+        ``'from_geography'``, then geography kwarg is required.
+    geography : list or tuple, optional
+        List or tuple with (latitude, longitude) in degrees.          
+
 
     Attributes
     ----------
     measurements : dictionary
         ``systems`` measurement object attribute.
-    zone_names : [strings]
-        List of zone names.
-    weather_data : dictionary
-        ``exodata`` weather object data attribute.
-    internal_data : dictionary
-        ``exodata`` internal object data attribute.
-    control_data : dictionary
-        ``exodata`` control object data attribute.    
-    other_inputs : dictionary
-        ``exodata`` other inputs object data attribute.    
-    parameter_data : dictionary
-        ``exodata`` parameter object data attribute.    
+    fmu : pyfmi fmu object
+        FMU respresenting the emulated system.
+    fmupath : string
+        Path to the FMU file.
     lat : numeric
         Latitude in degrees.  For timezone.
     lon : numeric
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
-    fmu : pyfmi fmu object
-        FMU respresenting the emulated system.
-    fmupath : string
-        Path to the FMU file.
 
     '''
     
@@ -180,11 +187,11 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self._parse_time_zone_kwargs(kwargs);
         
     def estimate(self, start_time, final_time, measurement_variable_list):
-        '''Estimate the parameters of the model using measurement data.
+        '''Estimate the parameters of the model.
         
         The estimation of the parameters is based on the data in the 
-        ``'Measured'`` key in the measurements dictionary attribute of the 
-        model object.
+        ``'Measured'`` key in the measurements dictionary attribute, 
+        the parameter_data dictionary attribute, and any exodata inputs.
         
         Parameters
         ----------
@@ -225,8 +232,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
         '''Validate the estimated parameters of the model.
 
         The validation of the parameters is based on the data in the 
-        ``'Measured'`` key in the measurements dictionary attribute of the 
-        model object.
+        ``'Measured'`` key in the measurements dictionary attribute, 
+        the parameter_data dictionary attribute, and any exodata inputs.
 
         Parameters
         ----------
@@ -255,7 +262,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self._validate_method._validate(self, validate_filename, plot = plot);
             
     def simulate(self, start_time, final_time):
-        '''Simulate the model with current parameter estimates.
+        '''Simulate the model with current parameter estimates and any exodata 
+        inputs.
 
         Parameters
         ----------
@@ -266,9 +274,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
         Yields
         ------
-        measurements : dictionary
-            Updates the ``'Simulated'`` key for each measurement in the 
-            measurements attribute.
+        Updates the ``'Simulated'`` key for each measurement in the 
+        measurements attribute.
 
         '''
         
@@ -308,8 +315,13 @@ class Occupancy(_Model):
     measurements : dictionary
         Measurement variables for the model.  Same as the measurements 
         attribute from a ``systems`` class.  See documentation for ``systems`` 
-        for more information.  this measurement dictionary should only have
+        for more information.  This measurement dictionary should only have
         one variable key, which represents occupancy count.
+    tz_name : string, optional
+        Name of timezone according to the package ``tzwhere``.  If 
+        ``'from_geography'``, then geography kwarg is required.
+    geography : list or tuple, optional
+        List or tuple with (latitude, longitude) in degrees.   
 
     Attributes
     ----------
@@ -651,7 +663,7 @@ class JModelica(_Estimate):
         self.name = 'Jmo';        
         
     def _estimate(self, Model):
-        '''Perform JModelica estimation.
+        '''Perform estimation using JModelica optimization.
 
         '''
 
@@ -818,8 +830,9 @@ class RMSE(_Validate):
     Yields
     ------
     RMSE : dictionary
+        {"Measurement Name" : mpcpy.Variables.Static}.
         Attribute of the model object that contains the RMSE for each 
-        measurement variable used to perform the validation.
+        measurement variable used to perform the validation in base units.
     
     '''
 
