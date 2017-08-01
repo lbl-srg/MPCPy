@@ -154,7 +154,6 @@ class Modelica(_Model, utility._FMU, utility._Building):
     geography : list or tuple, optional
         List or tuple with (latitude, longitude) in degrees.          
 
-
     Attributes
     ----------
     measurements : dictionary
