@@ -14,12 +14,17 @@ For installation and an introductory tutorial, see Section 2 of the [User Guide]
 Then, take a look at the ipython notebook examples in the ``examples`` directory.
 
 ## Contributing
-Research has shown that MPC can address emerging control challenges faced by buildings.  However, there exists no standard practice or methods for implementing MPC in buildings.  Implementation is defined here as model structure, complexity, and training methods, data resolution and amount, optimization problem structure and algorithm, and transfer of optimal control solution to real building control.  In fact, different applications likely require different implementations.  Therefore, we aim for MPCPy to be flexible enough to accommodate different and new approaches to MPC in buildings as research approaches a consensus on best-practice methods.
-
 If you are interested in contributing to this project:
 
 - You are welcome to report any issues in [Issues](https://github.com/lbl-srg/MPCPy/issues).
 - You are welcome to make a contribution by following the steps outlined on the [Contribution Workflow](https://github.com/lbl-srg/MPCPy/wiki/Contribution-Workflow) page.
 
+Research has shown that MPC can address emerging control challenges faced by buildings.  However, there exists no standard practice or methods for implementing MPC in buildings.  Implementation is defined here as model structure, complexity, and training methods, data resolution and amount, optimization problem structure and algorithm, and transfer of optimal control solution to real building control.  In fact, different applications likely require different implementations.  Therefore, we aim for MPCPy to be flexible enough to accommodate different and new approaches to MPC in buildings as research approaches a consensus on best-practice methods.
+
 ## License
 MPCPy is available under the following open-source [license](https://github.com/lbl-srg/MPCPy/blob/master/license.txt).
+
+## Cite
+To cite MPCPy, please use:
+
+Blum, D. H. and Wetter, M. “MPCPy: An Open-Source Software Platform for Model Predictive Control in Buildings.” Proceedings of the 15th Conference of International Building Performance Simulation, Aug 7 – 9, 2017. San Francisco, CA, Accepted.
