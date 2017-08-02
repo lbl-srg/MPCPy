@@ -918,7 +918,7 @@ class WeatherFromEPW(_Weather):
                 ts_old = self.data[key].display_data();
                 ts = ts_old.resample('30T').interpolate(method='time');
                 ts = ts.shift(freq = '-30T');
-                ts = ts.resample(rule='H', how = 'first');
+                ts = ts.resample(rule='H').first();
                 ts = ts.ix[1:].append(ts_old.tail(n=1));
                 self.data[key].set_data(ts);
                      

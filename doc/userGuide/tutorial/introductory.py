@@ -87,11 +87,11 @@ Quantity: Power
 Display Unit: Btuh
 >>> # Get the data in display units
 >>> power_data.display_data()
-2017-01-01 00:00:00+00:00     0
-2017-01-01 01:00:00+00:00     5
-2017-01-01 02:00:00+00:00    10
-2017-01-01 03:00:00+00:00    15
-2017-01-01 04:00:00+00:00    20
+2017-01-01 00:00:00+00:00     0.0
+2017-01-01 01:00:00+00:00     5.0
+2017-01-01 02:00:00+00:00    10.0
+2017-01-01 03:00:00+00:00    15.0
+2017-01-01 04:00:00+00:00    20.0
 Freq: H, Name: power_data, dtype: float64
 >>> # Get the data in base units
 >>> power_data.get_base_data()
@@ -172,11 +172,11 @@ and control objects to get the data in the form of a pandas dataframe. Note
 that the data is given in UTC time.  
 
 >>> control.display_data() # doctest: +ELLIPSIS
-                           Qflow
-Time                            
-2017-01-01 06:00:00+00:00   3000
-2017-01-01 07:00:00+00:00   3000
-2017-01-01 08:00:00+00:00   3000
+                            Qflow
+Time                             
+2017-01-01 06:00:00+00:00  3000.0
+2017-01-01 07:00:00+00:00  3000.0
+2017-01-01 08:00:00+00:00  3000.0
 -etc-
 
 
@@ -411,11 +411,11 @@ greater-than-or-equal-to (GTE) constraint:
 >>> constraints.collect_data('1/1/2017', '1/3/2017')
 >>> # Get data
 >>> constraints.display_data() # doctest: +ELLIPSIS
-                           Qflow_GTE  Qflow_LTE  Tzone_GTE  Tzone_LTE
+                       	   Qflow_GTE  Qflow_LTE  Tzone_GTE  Tzone_LTE
 Time                                                                 
-2017-01-01 00:00:00+00:00          0       4000         20         25
-2017-01-01 01:00:00+00:00          0       4000         20         25
-2017-01-01 02:00:00+00:00          0       4000         20         25
+2017-01-01 00:00:00+00:00        0.0     4000.0       20.0       25.0
+2017-01-01 01:00:00+00:00        0.0     4000.0       20.0       25.0
+2017-01-01 02:00:00+00:00        0.0     4000.0       20.0       25.0
 -etc-
 
 We can now instantiate an optimization object using our calibrated MPC model, 
