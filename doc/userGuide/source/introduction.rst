@@ -35,3 +35,9 @@ Research has shown that MPC can address emerging control challenges faced by bui
 
 If you are interested in contributing to this project, please contact the developers and visit the development site at https://github.com/lbl-srg/MPCPy.
 
+Cite
+----
+To cite MPCPy, please use:
+
+Blum, D. H. and Wetter, M. “MPCPy: An Open-Source Software Platform for Model Predictive Control in Buildings.” Proceedings of the 15th Conference of International Building Performance Simulation, Aug 7 – 9, 2017. San Francisco, CA, Accepted.
+
