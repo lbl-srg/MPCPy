@@ -32,8 +32,8 @@ and a singal heat input.  It is written in Modelica:
     end RC;
 
 
-1. Variables and Units
-----------------------
+Variables and Units
+-------------------
 
 First, lets get familiar with variables and units, the basic building blocks of MPCPy.
 
@@ -116,8 +116,8 @@ setting new data and getting the units.  Consult the documentation on these
 classes for more information.
 
 
-2. Collect model weather and control signal data
-------------------------------------------------
+Collect model weather and control signal data
+---------------------------------------------
 
 Now, we would like to collect the weather data and control signal inputs
 for our model.  We do this using exodata objects:
@@ -181,8 +181,8 @@ Time
 
 
 
-3. Simulate as Emulated System
-------------------------------
+Simulate as Emulated System
+---------------------------
 
 The model has parameters for the resistance and capacitance set in the 
 modelica code.  For the purposes of this tutorial, we will assume that the 
@@ -245,8 +245,8 @@ Time
 -etc-
 
 
-4. Estimate Parameters
-----------------------
+Estimate Parameters
+-------------------
 
 Now assume that we do not know the parameters of the model.  Or, that we have
 measurements from a real or emulated system, and would like to estimate
@@ -369,8 +369,8 @@ Finally, let's view the estimated parameter values:
 ('thermalResistor.R', 0.0100114401286855)
 
 
-5. Optimize Control
--------------------
+Optimize Control
+----------------
 
 We are now ready to optimize control of our system heater using our calibrated 
 MPC model.  Specificlaly, we would like to maintain a comfortable temperature
