@@ -29,7 +29,7 @@ import os
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = ['sphinx.ext.autodoc','sphinx.ext.autosummary','sphinx.ext.doctest','sphinx.ext.todo','sphinx.ext.mathjax','numpydoc']
-#numpydoc_show_class_members = False
+numpydoc_show_class_members = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -47,8 +47,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'MPCPy User Guide'
-copyright = u'2017, David H. Blum'
-author = u'David H. Blum'
+copyright = u'2017, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy).  All rights reserved.'
+author = u'Lawrence Berkeley National Laboratory'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -223,7 +223,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'MPCPyUserGuide.tex', u'MPCPy User Guide',
-     u'David H. Blum', 'manual'),
+     u'Lawrence Berkeley National Laboratory', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

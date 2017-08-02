@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_optimization.py
-by David Blum
-
 This module contains the classes for testing the optimization module of mpcpy.
+
 """
 import unittest
 import os

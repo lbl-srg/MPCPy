@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_variables.py
-by David Blum
-
 This module contains the classes for testing the variables of mpcpy.
+
 """
 
 import unittest
@@ -12,11 +10,13 @@ from mpcpy import units
 import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
-import os
 
 
 class Static(unittest.TestCase):
-    '''Tests for Static class.'''    
+    '''Tests for Static class.
+    
+    '''   
+    
     def setUp(self):
         '''Instantiate static variable.'''
         self.var = variables.Static('var1', 20, units.degC);
@@ -65,7 +65,10 @@ class Static(unittest.TestCase):
             i = i + 1;
         
 class Timeseries(unittest.TestCase):
-    '''Tests for Timeseries class.'''
+    '''Tests for Timeseries class.
+    
+    '''
+    
     def setUp(self):
         '''Instantiate timeseries variable.'''
         self.dataC = np.array([20,21,22,23,24,25]);
@@ -124,7 +127,10 @@ class Timeseries(unittest.TestCase):
         
         
 class Operations_Static(unittest.TestCase):
-    '''Tests for static addition and subtraction.'''
+    '''Tests for static addition and subtraction.
+    
+    '''
+    
     def setUp(self):
         '''Instantiate static variables.'''
         self.a = variables.Static('a', 5, units.degC)
@@ -143,7 +149,10 @@ class Operations_Static(unittest.TestCase):
         self.assertEqual(self.d.display_data(), -5);
         
 class Operations_Timeseries(unittest.TestCase):
-    '''Tests for timeseries addition and subtraction.'''
+    '''Tests for timeseries addition and subtraction.
+    
+    '''
+    
     def setUp(self):   
         '''Instantiate timeseries variables.'''
         self.dataC = np.array([20,21,22,23,24,25]);
@@ -169,7 +178,10 @@ class Operations_Timeseries(unittest.TestCase):
             self.assertEqual(self.g.display_data().get_values()[i], 2*self.dataC[i]);
             
 class Cleaning(unittest.TestCase):
-    '''Tests for cleaning methods.'''
+    '''Tests for cleaning methods.
+    
+    '''
+    
     def setUp(self):
         '''Create test data.'''
         self.time = pd.date_range('9/1/2015 00:00:00', '9/1/2015 03:00:00', freq = 'H');

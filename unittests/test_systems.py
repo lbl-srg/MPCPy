@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_systems.py
-by David Blum
-
 This module contains the classes for testing the buildings module of mpcpy.
+
 """
 
 import unittest
@@ -13,7 +11,6 @@ from mpcpy import variables
 from mpcpy import units
 from mpcpy import utility
 from testing import TestCaseMPCPy
-import pandas as pd
 from matplotlib import pyplot as plt
 import os
 

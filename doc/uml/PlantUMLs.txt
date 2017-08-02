@@ -1,0 +1,103 @@
+Variables and Units
+@startuml
+abstract Variable
+abstract DisplayUnit
+abstract Temperature
+abstract Power
+abstract OtherQuantity
+
+Variable <|-- Static
+Variable <|-- Timeseries
+
+Variable *-- DisplayUnit  
+DisplayUnit <|-- Temperature
+DisplayUnit <|-- Power
+DisplayUnit <|-- OtherQuantity
+Temperature <|-- K
+Temperature <|-- degC
+Temperature <|-- degF
+Temperature <|-- degR
+Power <|-- PowerDisplayUnit
+OtherQuantity <|-- OtherDisplayUnit
+@enduml
+
+ExoData
+@startuml
+abstract Type
+abstract Weather
+abstract Internal
+abstract Control
+abstract OtherInput
+abstract Parameter
+abstract Constraint
+abstract Price
+
+Type <|-- Weather
+Type <|-- Internal
+Type <|-- Control
+Type <|-- OtherInput
+Type <|-- Parameter
+Type <|-- Constraint
+Type <|-- Price
+
+Weather <|-- WeatherFromEPW
+Weather <|-- WeatherFromCSV
+Internal <|-- InternalFromCSV
+Internal <|-- InternalFromOccupancyModel
+Control <|-- ControlFromCSV
+OtherInput <|-- OtherInputFromCSV
+Parameter <|-- ParameterFromCSV
+Constraint <|-- ConstraintFromCSV
+Constraint <|-- ConstraintFromOccupancyModel
+Price <|-- PriceFromCSV
+@enduml
+
+
+Systems
+@startuml
+abstract System
+abstract Emulation
+abstract Real
+
+System <|-- Emulation
+System <|-- Real
+
+Emulation <|-- EmulationFromFMU
+Real <|-- RealFromCSV
+@enduml
+
+
+Models
+@startuml
+abstract Model
+abstract Estimate
+abstract Validate
+abstract OccupancyMethod
+
+Model <|-- Modelica
+Model <|-- Occupancy
+Modelica *-- Estimate
+Modelica *-- Validate
+
+Validate <|-- RMSE
+Estimate <|-- JModelica
+Estimate <|-- UKF
+
+Occupancy *-- OccupancyMethod
+OccupancyMethod <|-- QueueModel
+@enduml
+
+
+Optimization
+@startuml
+class Optimization
+abstract Package
+abstract Problem
+
+Optimization *-- Package
+Optimization *-- Problem
+Package<|-- JModelica
+Problem <|-- ParameterEstimate
+Problem <|-- EnergyMin
+Problem <|-- EnergyCostMin
+@enduml

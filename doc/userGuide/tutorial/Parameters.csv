@@ -1,0 +1,3 @@
+Name,Free,Value,Minimum,Maximum,Covariance,Unit
+heatCapacitor.C,True,40000,1.00E+04,1.00E+06,1000,J/K
+thermalResistor.R,True,0.002,0.001,0.1,0.0001,K/W

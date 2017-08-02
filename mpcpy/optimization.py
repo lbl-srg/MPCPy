@@ -11,7 +11,9 @@ Classes
 =======
 
 .. autoclass:: mpcpy.optimization.Optimization
-    :members: optimize, set_problem_type, set_package_type
+    :members: optimize, set_problem_type, set_package_type, 
+              get_optimization_options, set_optimization_options, 
+              get_optimization_statistics, 
 
 Problem Types
 =============
@@ -38,7 +40,6 @@ from mpcpy import units
 from pymodelica import compile_fmu
 from pyjmi import transfer_optimization_problem;
 from pyjmi.optimization.casadi_collocation import ExternalData
-import os
 
 #%% Optimization Class
 class Optimization(object):
@@ -48,7 +49,7 @@ class Optimization(object):
     ----------
     Model :  mpcpy.model object
         Model with which to perform the optimization.
-    problem_type ; mpcpy.optimization.problem_type
+    problem_type : mpcpy.optimization.problem_type
         The type of poptimization problem to solve.  See specific documentation
         on available problem types.
     package_type : mpcpy.optimization.package_type
@@ -194,16 +195,30 @@ class _Problem(object):
         pass;
         
     @abstractmethod
-    def _optimize(self):
-        '''Solve the problem.
+    def _optimize():
+        '''Optimization-problem specific call to solve the problem.
+        
+        Parameters
+        ----------
+        Optimization : mpcpy.optimization.Optimization object
+            The optimization object containing the Model and solver package
+            attributes.
         
         ''' 
         
         pass;    
         
     @abstractmethod
-    def _setup_jmodelica(self):
-        '''Setup problem with JModelica.
+    def _setup_jmodelica():
+        '''Setup the problem with JModelica.
+
+        Parameters
+        ----------
+        JModelica : mpcpy.optimization.JModelica object
+            The JModelica solver package object.
+        Optimization : mpcpy.optimization.Optimization object
+            The optimization object containing the Model and solver package
+            attributes.
         
         ''' 
         
@@ -219,8 +234,16 @@ class _Package(object):
     
     @abstractmethod
     def _energymin(self):
-        '''Minimize the integral of the objective variable over the time 
-        horizon.
+        '''Optimization package-specific call to minimize the integral of the 
+        objective variable over the time horizon.
+        
+        Yields
+        ------
+        Upon solving the optimization problem, this method updates the
+        ``Optimization.Model.control_data`` dictionary with the optimal control 
+        timeseries for each control variable and the 
+        Optimization.Model.measurements dictionary with the optimal 
+        measurements under the ``'Simulated'`` key.
         
         '''
     
@@ -228,8 +251,16 @@ class _Package(object):
         
     @abstractmethod
     def _energycostmin(self):
-        '''Minimize the integral of the objective variable times a time-varying
-        weight over the time horizon.
+        '''Optimization package-specific call to minimize the integral of the 
+        objective variable times a time-varying weight over the time horizon.
+        
+        Yields
+        ------
+        Upon solving the optimization problem, this method updates the
+        ``Optimization.Model.control_data`` dictionary with the optimal control 
+        timeseries for each control variable and the 
+        Optimization.Model.measurements dictionary with the optimal 
+        measurements under the ``'Simulated'`` key.
         
         '''
         
@@ -237,8 +268,14 @@ class _Package(object):
         
     @abstractmethod
     def _parameterestimate(self):
-        '''Minimize the error between simulated and measured data by tuning 
-        model parameters.
+        '''Optimization package-specific call to minimize the error between 
+        simulated and measured data by tuning model parameters.
+        
+        Yields
+        ------
+        Upon solving the optimization problem, this method updates the
+        ``Optimization.Model.parameter_data`` dictionary ``'Value`'' key
+        for each parameter with the estimated value.
         
         '''
         
@@ -246,7 +283,7 @@ class _Package(object):
         
     @abstractmethod
     def _get_optimization_options(self):
-        '''Get the optimization options of the solver in a dictionary.
+        '''Get the optimization options of the solver package in a dictionary.
         
         '''
         
@@ -254,7 +291,7 @@ class _Package(object):
         
     @abstractmethod
     def _set_optimization_options(self):
-        '''Set the optimization options of the solver from a dictionary.
+        '''Set the optimization options of the solver package from a dictionary.
         
         '''
         

@@ -2,15 +2,16 @@
 """
 Run the unit tests for mpcpy.
 
-by David Blum
 """
 import unittest
+import doctest
 import argparse
 import inspect
 import importlib
 import tempfile
 import os
 import shutil
+from doc.userGuide.tutorial import introductory
 
 # Change working directory to temporary
 cwd = os.getcwd(); 
@@ -41,35 +42,51 @@ else:
                 'test_exodata', \
                 'test_systems', \
                 'test_models', \
-                'test_optimization'];
+                'test_optimization', \
+                'test_tutorial'];
     classes = [];
 
 # Load Tests
 print('Loading tests...'); 
 suite = unittest.TestSuite();
 for module in modules:
-    module_name = 'unittests.' + module;
-    test_module = importlib.import_module(module_name);
-    # Find all test classes in module, select if test class is specified
-    module_classes = [];
-    if not classes:
-        for name, obj in inspect.getmembers(test_module):       
-            if inspect.isclass(obj):
-                module_classes.append(obj);             
-    else:
-        for name, obj in inspect.getmembers(test_module):       
-            if inspect.isclass(obj) and name in classes:
-                module_classes.append(obj);        
-    # Add test classes to suite
-    for obj in module_classes:
-        suite.addTests(unittest.TestLoader().loadTestsFromTestCase(obj));
+    if module != 'test_tutorial':
+        module_name = 'unittests.' + module;
+        test_module = importlib.import_module(module_name);
+        # Find all test classes in module, select if test class is specified
+        module_classes = [];
+        if not classes:
+            for name, obj in inspect.getmembers(test_module):       
+                if inspect.isclass(obj):
+                    module_classes.append(obj);             
+        else:
+            for name, obj in inspect.getmembers(test_module):       
+                if inspect.isclass(obj) and name in classes:
+                    module_classes.append(obj);        
+        # Add test classes to suite
+        for obj in module_classes:
+            suite.addTests(unittest.TestLoader().loadTestsFromTestCase(obj));
 
 # Report number of tests found
-print('{} tests found.'.format(suite.countTestCases()));
-# Run test suite
-print('Running tests...'); 
-unittest.TextTestRunner(verbosity = 1).run(suite);
+n_tests = suite.countTestCases();
+print('{} unit tests found.'.format(n_tests));
+if n_tests:
+    # Run test suite
+    print('Running unit tests...'); 
+    unittest.TextTestRunner(verbosity = 1).run(suite);
 
 # Delete temporary directory and change working directory back to original
 shutil.rmtree(tempdir, ignore_errors=True)
 os.chdir(cwd);
+
+# Run tutorial doctest
+#---------------------
+
+if 'test_tutorial' in modules:
+    print('\n\nRunning tutorial doctests...')
+    doctest.ELLIPSIS_MARKER = '-etc-'
+    os.chdir(os.path.dirname(introductory.__file__))
+    suite_tut = unittest.TestSuite();
+    suite_tut.addTests(doctest.DocTestSuite(introductory))
+    unittest.TextTestRunner(verbosity = 1).run(suite_tut);
+    os.chdir(cwd)
