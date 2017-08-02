@@ -15,8 +15,8 @@ Classes
 =======
 
 .. autoclass:: mpcpy.models.Modelica
-    :members: estimate, validate, simulate, set_estimation_method, 
-              set_validation_method, display_measurements, 
+    :members: estimate, validate, simulate, set_estimate_method, 
+              set_validate_method, display_measurements, 
               get_base_measurements
 
 Estimate Methods
