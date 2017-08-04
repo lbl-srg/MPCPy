@@ -6,7 +6,7 @@ This is the development site for MPCPy, the python-based open-source platform fo
 MPCPy is a python package that facilitates the testing and implementation of occupant-integrated model predictive control (MPC) for building systems.  The package focuses on the use of data-driven, simplified physical or statistical models to predict building performance and optimize control.  Four main modules contain object classes to import data, interact with real or emulated systems, estimate and validate data-driven models, and optimize control input.
 
 ## Third Party Software
-While MPCPy provides an integration platform, it relies on free, open-source, third-party software packages for model implementation, simulators, parameter estimation algorithms, and optimization solvers.  This includes python packages for scripting and data manipulation as well as other more comprehensive software packages for specific purposes.  In particular, modeling and optimization for physical systems rely heavily on the Modelica language specification (https://www.modelica.org/) and FMI standard (http://fmi-standard.org/) in order to leverage model library and tool development on these standards occurring elsewhere within the building and other industries.
+While MPCPy provides an integration platform, it relies on free, open-source, third-party software packages for model implementation, simulators, parameter estimation algorithms, and optimization solvers.  This includes python packages for scripting and data manipulation as well as other more comprehensive software packages for specific purposes.  In particular, modeling and optimization for physical systems rely on the Modelica language specification (https://www.modelica.org/) and FMI standard (http://fmi-standard.org/) in order to leverage model library and tool development on these standards occurring elsewhere within the building and other industries.
 
 ## Getting Started
 For installation instructions and an introductory tutorial, see Section 2 of the [User Guide](https://github.com/lbl-srg/MPCPy/tree/master/doc/userGuide).
@@ -25,4 +25,4 @@ MPCPy is available under the following open-source [license](https://github.com/
 ## Cite
 To cite MPCPy, please use:
 
-Blum, D. H. and Wetter, M. “MPCPy: An Open-Source Software Platform for Model Predictive Control in Buildings.” Proceedings of the 15th Conference of International Building Performance Simulation, Aug 7 – 9, 2017. San Francisco, CA, Accepted.
+Blum, D. H. and Wetter, M. “MPCPy: An Open-Source Software Platform for Model Predictive Control in Buildings.” Proceedings of the 15th Conference of International Building Performance Simulation, Aug 7 – 9, 2017. San Francisco, CA.
