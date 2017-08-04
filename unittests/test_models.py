@@ -242,7 +242,7 @@ class EstimateFromJModelica(TestCaseMPCPy):
         self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
         self.model.measurements = self.building.measurements;
         self.model.validate(self.start_time_validation, self.final_time_validation, \
-                            os.path.join(self.MPCPyPath, 'unittests', 'resources', 'model_validation'));
+                            os.path.join(self.MPCPyPath, 'unittests', 'outputs', 'model_validation'));
         # Check references
         RMSE = {};
         for key in self.model.RMSE.keys():
@@ -401,7 +401,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         self.occupancy.set_simulate_options(simulate_options);
         np.random.seed(1);
         self.occupancy.validate(self.start_time, self.final_time, \
-                                os.path.join(self.MPCPyPath, 'unittests', 'resources', \
+                                os.path.join(self.MPCPyPath, 'unittests', 'outputs', \
                                              'occupancy_model_validate'));
         # Check references
         RMSE = {};
