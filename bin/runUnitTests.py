@@ -11,8 +11,18 @@ import importlib
 import tempfile
 import os
 import shutil
+import sys
+from mpcpy import utility
 from doc.userGuide.tutorial import introductory
 
+
+def check_result(results):
+    sys.stdout = sys.__stdout__
+    if result.errors or result.failures:
+        print('{0} errors and {1} failures found in tests.  Please consult outputs/log for more info.'.format(len(result.errors), len(result.failures)));
+    else:
+        print('All tests successful.')
+    
 # Change working directory to temporary
 cwd = os.getcwd(); 
 tempdir = tempfile.mkdtemp();
@@ -72,9 +82,14 @@ n_tests = suite.countTestCases();
 print('{} unit tests found.'.format(n_tests));
 if n_tests:
     # Run test suite
-    print('Running unit tests...'); 
-    unittest.TextTestRunner(verbosity = 1).run(suite);
-
+    print('Running unit tests...');
+    # Configure the log
+    logpath = os.path.join(utility.get_MPCPy_path(), 'unittests', 'outputs', 'unittests.log')
+    sys.stdout = open(logpath, 'w')
+    result = unittest.TextTestRunner(verbosity = 1, stream=sys.stdout).run(suite);
+   
+    check_result(result)
+   
 # Delete temporary directory and change working directory back to original
 shutil.rmtree(tempdir, ignore_errors=True)
 os.chdir(cwd);
@@ -84,9 +99,11 @@ os.chdir(cwd);
 
 if 'test_tutorial' in modules:
     print('\n\nRunning tutorial doctests...')
+    sys.stdout = open(logpath, 'w')
     doctest.ELLIPSIS_MARKER = '-etc-'
     os.chdir(os.path.dirname(introductory.__file__))
     suite_tut = unittest.TestSuite();
     suite_tut.addTests(doctest.DocTestSuite(introductory))
-    unittest.TextTestRunner(verbosity = 1).run(suite_tut);
-    os.chdir(cwd)
+    result = unittest.TextTestRunner(verbosity = 1, stream=sys.stdout).run(suite_tut);
+    
+    check_result(result)
