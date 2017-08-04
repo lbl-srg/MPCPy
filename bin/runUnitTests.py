@@ -11,31 +11,52 @@ import importlib
 import tempfile
 import os
 import shutil
-import sys
 from mpcpy import utility
 from doc.userGuide.tutorial import introductory
 
 
-def check_result(results):
-    sys.stdout = sys.__stdout__
-    if result.errors or result.failures:
-        print('{0} errors and {1} failures found in tests.  Please consult outputs/log for more info.'.format(len(result.errors), len(result.failures)));
-    else:
-        print('All tests successful.')
+def check_result(result, name):
+    '''Check and report results of testing.
     
+    Parameters
+    ----------
+    result : unittest.TextTestRunner result
+        The results of the test.  
+        result.errors and results.failures are lists.
+    name : string
+        Type of test: unit or tutorial
+    
+    '''
+    
+    if result:
+        if result.errors or result.failures:
+            print('{0} errors and {1} failures found in '.format(len(result.errors), len(result.failures)) + name + ' tests.  Please consult terminal output for more info.');
+        else:
+            print(name + ' tests OK.')
+    else:
+        print(name + ' tests not run.')
+    
+    return None
+
+
+# Main program
+# ============
+
+# Setup
+# -----
 # Change working directory to temporary
 cwd = os.getcwd(); 
 tempdir = tempfile.mkdtemp();
 os.chdir(tempdir);
-
+# Configure the log
+logpath = os.path.join(utility.get_MPCPy_path(), 'unittests', 'outputs', 'unittests.log')
 # Configure the argument parser
 parser = argparse.ArgumentParser(description='Run the unit tests for mpcpy.');
 unit_test_group = parser.add_argument_group("arguments to run unit tests");
 unit_test_group.add_argument('-s', '--specify_test', \
                              metavar='module.class', \
                              help='test only the module and class specified');
-args = parser.parse_args();
-               
+args = parser.parse_args();            
 # Define test modules and classes, if any
 modules = [];
 classes = [];
@@ -56,6 +77,8 @@ else:
                 'test_tutorial'];
     classes = [];
 
+# Unit tests
+# ----------
 # Load Tests
 print('Loading tests...'); 
 suite = unittest.TestSuite();
@@ -76,34 +99,39 @@ for module in modules:
         # Add test classes to suite
         for obj in module_classes:
             suite.addTests(unittest.TestLoader().loadTestsFromTestCase(obj));
-
 # Report number of tests found
 n_tests = suite.countTestCases();
-print('{} unit tests found.'.format(n_tests));
+print('\n{} unit tests found.'.format(n_tests));
 if n_tests:
     # Run test suite
-    print('Running unit tests...');
-    # Configure the log
-    logpath = os.path.join(utility.get_MPCPy_path(), 'unittests', 'outputs', 'unittests.log')
-    sys.stdout = open(logpath, 'w')
-    result = unittest.TextTestRunner(verbosity = 1, stream=sys.stdout).run(suite);
-   
-    check_result(result)
-   
+    print('\nRunning unit tests...');
+    result1 = unittest.TextTestRunner(verbosity = 1).run(suite);
+else:
+    result1 = None;
 # Delete temporary directory and change working directory back to original
 shutil.rmtree(tempdir, ignore_errors=True)
 os.chdir(cwd);
 
-# Run tutorial doctest
-#---------------------
-
+# Tutorial tests
+#---------------
 if 'test_tutorial' in modules:
-    print('\n\nRunning tutorial doctests...')
-    sys.stdout = open(logpath, 'w')
-    doctest.ELLIPSIS_MARKER = '-etc-'
-    os.chdir(os.path.dirname(introductory.__file__))
+    # Collect tests
     suite_tut = unittest.TestSuite();
     suite_tut.addTests(doctest.DocTestSuite(introductory))
-    result = unittest.TextTestRunner(verbosity = 1, stream=sys.stdout).run(suite_tut);
-    
-    check_result(result)
+    # Report number of tests found
+    n_tests = suite_tut.countTestCases();
+    print('\n{} tutorials found.'.format(n_tests)); 
+    # Run tests
+    print('\nRunning tutorial doctests...')  
+    doctest.ELLIPSIS_MARKER = '-etc-'
+    os.chdir(os.path.dirname(introductory.__file__))
+    result2 = unittest.TextTestRunner(verbosity = 1).run(suite_tut);
+    os.chdir(cwd);
+else:
+    result2 = None;
+
+# Check and report results
+#-------------------------
+print('\nResults\n-------')
+check_result(result1, 'Unit')
+check_result(result2, 'Tutorial')
