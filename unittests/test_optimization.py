@@ -312,7 +312,7 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);
         self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Parameters
-        self.parameters_path = self.MPCPyPath + os.sep + 'unittests' + os.sep + 'resources' + os.sep + 'model_parameters.txt';
+        self.parameters_path = self.MPCPyPath + os.sep + 'unittests' + os.sep + 'outputs' + os.sep + 'model_parameters.txt';
         self.parameters = exodata.ParameterFromCSV(self.parameters_path);
         self.parameters.collect_data();
         # Constraints
