@@ -11,6 +11,8 @@ While MPCPy provides an integration platform, it relies on free, open-source, th
 ## Getting Started
 For installation instructions and an introductory tutorial, see Section 2 of the [User Guide](https://github.com/lbl-srg/MPCPy/tree/master/doc/userGuide).
 
+MPCPy uses Python 2.7 and has been tested on Ubuntu 16.04.
+
 ## Contributing
 If you are interested in contributing to this project:
 
