@@ -1,1 +1,0 @@
-FMIL: module = Model, log level = 2: [INFO][FMU status:Error] FMU is already initialized: only one initialization is allowed

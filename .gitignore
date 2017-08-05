@@ -7,6 +7,14 @@
 unittests/outputs/*.png
 unittests/outputs/*.log
 
+# Unit testing resources
+#########################
+unittests/resources/**/*.so
+unittests/resources/**/*.h
+unittests/resources/**/*.o
+unittests/resources/**/*.xml
+unittests/resources/**/*.txt
+
 # Ignore Dymola output, log and temporary files (in alphabetical order)
 #######################################################################
 *.bak-mo
