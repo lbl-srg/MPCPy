@@ -24,7 +24,7 @@ Three other modules provide additional, mainly internal, functionality to MPCPy:
 
 Third-Party Software
 --------------------
-While MPCPy provides an integration platform, it relies on free, open-source, third-party software packages for model implementation, simulators, parameter estimation algorithms, and optimization solvers.  This includes python packages for scripting and data manipulation as well as other more comprehensive software packages for specific purposes.  In particular, modeling and optimization for physical systems rely heavily on the Modelica language specification (https://www.modelica.org/) and FMI standard (http://fmi-standard.org/) in order to leverage model library and tool development on these standards occurring elsewhere within the building and other industries.  Two examples of these third-party tools are:
+While MPCPy provides an integration platform, it relies on free, open-source, third-party software packages for model implementation, simulators, parameter estimation algorithms, and optimization solvers.  This includes python packages for scripting and data manipulation as well as other more comprehensive software packages for specific purposes.  In particular, modeling and optimization for physical systems rely on the Modelica language specification (https://www.modelica.org/) and FMI standard (http://fmi-standard.org/) in order to leverage model library and tool development on these standards occurring elsewhere within the building and other industries.  Two examples of these third-party tools are:
 
 - **JModelica.org** (http://jmodelica.org/) is used for simulation of FMUs, compiling FMUs from Modelica models, parameter estimation of Modelica models, and control optimization using Modelica models.
 - **EstimationPy** (http://lbl-srg.github.io/EstimationPy/) is used for implementing the Unscented Kalman Filter for parameter estimation of FMU models.
@@ -39,5 +39,5 @@ Cite
 ----
 To cite MPCPy, please use:
 
-Blum, D. H. and Wetter, M. “MPCPy: An Open-Source Software Platform for Model Predictive Control in Buildings.” Proceedings of the 15th Conference of International Building Performance Simulation, Aug 7 – 9, 2017. San Francisco, CA, Accepted.
+Blum, D. H. and Wetter, M. “MPCPy: An Open-Source Software Platform for Model Predictive Control in Buildings.” Proceedings of the 15th Conference of International Building Performance Simulation, Aug 7 – 9, 2017. San Francisco, CA.
 

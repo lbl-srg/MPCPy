@@ -8,15 +8,15 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
 1. Install Python Packages
 
-    - matplotlib 2.0.2
-    - numpy 1.13.1
-    - pandas 0.20.3
-    - python-dateutil 2.6.1
-    - pytz 2017.2
-    - scikit-learn 0.18.2
-    - tzwhere 2.3
-    - sphinx 1.6.3
-    - numpydoc 0.7.0
+    - matplotlib >= 2.0.2
+    - numpy >= 1.13.1
+    - pandas >= 0.20.3
+    - python-dateutil >= 2.6.1
+    - pytz >= 2017.2
+    - scikit-learn >= 0.18.2
+    - sphinx >= 1.6.3
+    - numpydoc >= 0.7.0
+    - tzwhere **=** 2.3
 
 2. Install libgeos-dev with command:
 

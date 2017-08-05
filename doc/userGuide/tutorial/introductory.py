@@ -3,7 +3,8 @@
 
 This tutorial will introduce the basic concepts and workflow of mpcpy.
 By the end, we will train a simple model based on emulated data, and use 
-the model to optimize the control signal of the system.
+the model to optimize the control signal of the system.  All required data
+files for this tutorial are located in doc/userGuide/tutorial.
 
 The model is a simple RC model of zone thermal response to ambient temperature
 and a singal heat input.  It is written in Modelica:
