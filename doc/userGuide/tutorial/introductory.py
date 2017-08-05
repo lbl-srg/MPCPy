@@ -473,4 +473,8 @@ Time
 if __name__ == "__main__":
     import doctest
     doctest.ELLIPSIS_MARKER = '-etc-'
-    doctest.testmod()
+    (n_fails, n_tests) = doctest.testmod()
+    if n_fails:
+        print('\nTutorial finished with {0} fails.'.format(n_fails));
+    else:
+        print('\nTutorial finished OK.')
