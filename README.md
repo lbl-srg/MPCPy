@@ -9,7 +9,7 @@ MPCPy is a python package that facilitates the testing and implementation of occ
 While MPCPy provides an integration platform, it relies on free, open-source, third-party software packages for model implementation, simulators, parameter estimation algorithms, and optimization solvers.  This includes python packages for scripting and data manipulation as well as other more comprehensive software packages for specific purposes.  In particular, modeling and optimization for physical systems rely on the Modelica language specification (https://www.modelica.org/) and FMI standard (http://fmi-standard.org/) in order to leverage model library and tool development on these standards occurring elsewhere within the building and other industries.
 
 ## Getting Started
-**Users** can download here.
+**Users** can [**download v0.1.0**](https://github.com/lbl-srg/MPCPy/releases/tag/v0.1.0).
 
 **Developers** can ``> git clone https://github.com/lbl-srg/MPCPy.git``.
 
