@@ -438,7 +438,11 @@ Using the ``optimize()`` function optimizes the variables defined in the control
 data of the model object and updates their timeseries data with the optimal 
 solution for the time period specified.  Note that other than the constraints, 
 the exogenous data within the model object is used, and the control interval
-is assumed to be the same as the measurement sampling rate of the model.
+is assumed to be the same as the measurement sampling rate of the model. Use
+the ``get_optimization_options()`` and ``set_optimization_options()`` to see
+and change the options for the optimization solver; for instance number
+of control points, maximum iteration number, tolerance, or maximum CPU time.
+See the documentation for these functions for more information.
 
 >>> opt_problem.optimize('1/2/2017', '1/3/2017') # doctest: +ELLIPSIS
 -etc-
