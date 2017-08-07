@@ -18,6 +18,15 @@ class TestCaseMPCPy(unittest.TestCase):
     
     __metaclass__ = ABCMeta;
     
+    def get_unittest_path(self):
+        '''Returns the path to the unittest directory.
+        
+        '''
+        
+        unittest_path = os.path.join(utility.get_MPCPy_path(), 'unittests');
+        
+        return unittest_path;
+        
     def get_ref_path(self):
         '''Returns the path to the test data reference file.
         
