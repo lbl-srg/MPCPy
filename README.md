@@ -17,6 +17,8 @@ Then, follow the installation instructions and introductory tutorial in Section 
 
 MPCPy uses Python 2.7 and has been tested on Ubuntu 16.04.
 
+**Join**, **follow**, and **participate** in the conversation with the [**google group**](https://groups.google.com/forum/#!forum/mpcpy)!
+
 ## Contributing
 If you are interested in contributing to this project:
 
