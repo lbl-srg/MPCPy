@@ -248,14 +248,24 @@ class _Type(utility._mpcpyPandas):
         final_time : string
             Final time of data collection.
             
-        Yields
-        ------
+        Returns
+        -------
         data : dictionary
-            Data attribute.
+            Exodata dictionary containing mpcpy variables of collected data 
+            to be used with other mpcpy objects, including systems, models, 
+            and optimization.
         
         '''
-        
+
+        # Initialize data attribute
+        self._data = {}
+        # Collect data of specific type
         self._collect_data(start_time, final_time);
+        # Get data
+        data = self._data;
+        
+        return data
+            
     
     def display_data(self):
         '''Get data in display units as pandas dataframe.
@@ -306,9 +316,9 @@ class _Weather(_Type, utility._FMU):
         '''
         
         mpcpy_ts_list = [];
-        for key in self.data.keys():
-            if self.data[key].variability == 'Timeseries':
-                mpcpy_ts_list.append(self.data[key]); 
+        for key in self._data.keys():
+            if self._data[key].variability == 'Timeseries':
+                mpcpy_ts_list.append(self._data[key]); 
                 
         return mpcpy_ts_list;
            
@@ -319,7 +329,7 @@ class _Weather(_Type, utility._FMU):
         
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self._data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);
@@ -331,7 +341,7 @@ class _Weather(_Type, utility._FMU):
         
         '''
         
-        var = self.data['weaCelHei'];
+        var = self._data['weaCelHei'];
         ts_in = var.get_base_data();
         M_in = ts_in.get_values();     
         M_out = [];
@@ -343,7 +353,7 @@ class _Weather(_Type, utility._FMU):
         ts_out = pd.Series(data = M_out, index = ts_in.index);
         var.set_display_unit(var.get_base_unit());
         var.set_data(ts_out);
-        self.data['weaCelHei'] = var;
+        self._data['weaCelHei'] = var;
         
     def _checkPAtm(self):
         '''Check and convert atmospheric pressure data.
@@ -352,14 +362,14 @@ class _Weather(_Type, utility._FMU):
         
         '''
         
-        var = self.data['weaPAtm'];
+        var = self._data['weaPAtm'];
         index = var.get_base_data().index;
         M_in = var.get_base_data().get_values();
         M_out = 101325*np.ones(len(M_in));
         ts = pd.Series(data = M_out, index = index, name = 'weaPAtm');
         var.set_display_unit(var.get_base_unit());
         var.set_data(ts);
-        self.data['weaPAtm'] = var;
+        self._data['weaPAtm'] = var;
         
     def _checkNOpa(self):
         '''Check and convert opaque sky data.
@@ -368,7 +378,7 @@ class _Weather(_Type, utility._FMU):
         
         '''
         
-        var = self.data['weaNOpa'];
+        var = self._data['weaNOpa'];
         ts_in = var.get_base_data();
         M_in = ts_in.get_values();     
         M_out = [];
@@ -384,7 +394,7 @@ class _Weather(_Type, utility._FMU):
         ts_out = pd.Series(data = M_out, index = ts_in.index);
         var.set_display_unit(var.get_base_unit());
         var.set_data(ts_out);                  
-        self.data['weaNOpa'] = var;
+        self._data['weaNOpa'] = var;
         
     def _checkNTot(self):
         '''Check and convert total sky coverage data.
@@ -393,7 +403,7 @@ class _Weather(_Type, utility._FMU):
         
         '''
         
-        var = self.data['weaNTot'];
+        var = self._data['weaNTot'];
         ts_in = var.get_base_data();
         M_in = ts_in.get_values();  
         M_out = [];
@@ -409,7 +419,7 @@ class _Weather(_Type, utility._FMU):
         ts_out = pd.Series(data = M_out, index = ts_in.index);
         var.set_display_unit(var.get_base_unit());
         var.set_data(ts_out);   
-        self.data['weaNTot'] = var;
+        self._data['weaNTot'] = var;
         
     def _checkRelHum(self):
         '''Check and convert relative humidity data.
@@ -418,7 +428,7 @@ class _Weather(_Type, utility._FMU):
         
         '''
         
-        var = self.data['weaRelHum'];
+        var = self._data['weaRelHum'];
         ts_in = var.get_base_data();
         M_in = ts_in.get_values();
         M_out = [];
@@ -434,7 +444,7 @@ class _Weather(_Type, utility._FMU):
         ts_out = pd.Series(data = M_out, index = ts_in.index);
         var.set_display_unit(var.get_base_unit());
         var.set_data(ts_out); 
-        self.data['weaRelHum'] = var;
+        self._data['weaRelHum'] = var;
         
     def _process_weather_data(self):
         '''Use process weather fmu to calculate other necessary weather data.
@@ -466,7 +476,7 @@ class _Weather(_Type, utility._FMU):
         self._simulate_fmu();
         # Add process var data 
         for key in self.process_variables:
-            self.data[key] = self.measurements[key]['Simulated'];
+            self._data[key] = self.measurements[key]['Simulated'];
 
     def _create_input_mpcpy_ts_list_sim(self):
         '''Create the input list to the weather processing FMU.
@@ -474,12 +484,12 @@ class _Weather(_Type, utility._FMU):
         '''
         
         # Set input_object for fmu
-        self._input_mpcpy_ts_list = (self.data['weaPAtm'], self.data['weaTDewPoi'], \
-                                     self.data['weaTDryBul'], self.data['weaRelHum'], \
-                                     self.data['weaNOpa'], self.data['weaCelHei'], \
-                                     self.data['weaNTot'], self.data['weaWinSpe'], \
-                                     self.data['weaWinDir'], self.data['weaHHorIR'], \
-                                     self.data['weaHDirNor'], self.data['weaHGloHor']);        
+        self._input_mpcpy_ts_list = (self._data['weaPAtm'], self._data['weaTDewPoi'], \
+                                     self._data['weaTDryBul'], self._data['weaRelHum'], \
+                                     self._data['weaNOpa'], self._data['weaCelHei'], \
+                                     self._data['weaNTot'], self._data['weaWinSpe'], \
+                                     self._data['weaWinDir'], self._data['weaHHorIR'], \
+                                     self._data['weaHDirNor'], self._data['weaHGloHor']);        
         
 ## Internal       
 class _Internal(_Type):
@@ -498,10 +508,10 @@ class _Internal(_Type):
         '''
         
         mpcpy_ts_list = [];
-        for zone in self.data.keys():
-            for key in self.data[zone].keys():
-                if self.data[zone][key].variability == 'Timeseries':
-                    mpcpy_ts_list.append(self.data[zone][key]);
+        for zone in self._data.keys():
+            for key in self._data[zone].keys():
+                if self._data[zone][key].variability == 'Timeseries':
+                    mpcpy_ts_list.append(self._data[zone][key]);
         
         return mpcpy_ts_list
         
@@ -515,13 +525,13 @@ class _Internal(_Type):
         varname = load + '_' + zone;
         unit = self.variable_map[self._key][2];        
         try:
-            self.data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self._data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);
         except KeyError:
-            self.data[zone] = {};
-            self.data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self._data[zone] = {};
+            self._data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);        
@@ -544,9 +554,9 @@ class _Control(_Type):
         '''
         
         mpcpy_ts_list = [];
-        for key in self.data.keys():
-            if self.data[key].variability == 'Timeseries':
-                mpcpy_ts_list.append(self.data[key]); 
+        for key in self._data.keys():
+            if self._data[key].variability == 'Timeseries':
+                mpcpy_ts_list.append(self._data[key]); 
                 
         return mpcpy_ts_list
            
@@ -557,7 +567,7 @@ class _Control(_Type):
         
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self._data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);   
@@ -579,9 +589,9 @@ class _OtherInput(_Type):
         '''
         
         mpcpy_ts_list = [];
-        for key in self.data.keys():
-            if self.data[key].variability == 'Timeseries':
-                mpcpy_ts_list.append(self.data[key]);
+        for key in self._data.keys():
+            if self._data[key].variability == 'Timeseries':
+                mpcpy_ts_list.append(self._data[key]);
                 
         return mpcpy_ts_list
            
@@ -592,7 +602,7 @@ class _OtherInput(_Type):
         
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self._data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);
@@ -615,12 +625,12 @@ class _Parameter(_Type):
         '''
 
         d = {};
-        for key in self.data.keys():
+        for key in self._data.keys():
             d[key] = {};
-            for subkey in self.data[key].keys():
-                d[key][subkey] = self.data[key][subkey].display_data();
+            for subkey in self._data[key].keys():
+                d[key][subkey] = self._data[key][subkey].display_data();
                 if subkey == 'Value':
-                    d[key]['Unit'] = self.data[key][subkey].get_display_unit_name();
+                    d[key]['Unit'] = self._data[key][subkey].get_display_unit_name();
         df = pd.DataFrame(data = d).transpose();
         df.index.name = 'Name';
         
@@ -638,10 +648,10 @@ class _Parameter(_Type):
         '''
 
         d = {};
-        for key in self.data.keys():
+        for key in self._data.keys():
             d[key] = {};
-            for subkey in self.data[key].keys():
-                d[key][subkey] = self.data[key][subkey].get_base_data();
+            for subkey in self._data[key].keys():
+                d[key][subkey] = self._data[key][subkey].get_base_data();
         df = pd.DataFrame(data = d);
         
         return df;    
@@ -663,10 +673,10 @@ class _Constraint(_Type):
         '''
         
         mpcpy_ts_list = [];
-        for state in self.data.keys():
-            for key in self.data[state].keys():
-                if self.data[state][key].variability == 'Timeseries':
-                    mpcpy_ts_list.append(self.data[state][key]);
+        for state in self._data.keys():
+            for key in self._data[state].keys():
+                if self._data[state][key].variability == 'Timeseries':
+                    mpcpy_ts_list.append(self._data[state][key]);
                     
         return mpcpy_ts_list
         
@@ -680,13 +690,13 @@ class _Constraint(_Type):
         varname = state + '_' + key;
         unit = self.variable_map[self._key][2];        
         try:
-            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self._data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);
         except KeyError:
-            self.data[state] = {};
-            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self._data[state] = {};
+            self._data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);        
@@ -709,9 +719,9 @@ class _Price(_Type):
         '''
         
         mpcpy_ts_list = [];
-        for key in self.data.keys():
-            if self.data[key].variability == 'Timeseries':
-                mpcpy_ts_list.append(self.data[key]);
+        for key in self._data.keys():
+            if self._data[key].variability == 'Timeseries':
+                mpcpy_ts_list.append(self._data[key]);
                 
         return mpcpy_ts_list
            
@@ -722,7 +732,7 @@ class _Price(_Type):
         
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self._data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);        
@@ -738,8 +748,6 @@ class WeatherFromEPW(_Weather):
 
     Attributes
     ----------
-    data : dictionary
-        {"Weather Variable Name" : mpcpy.Variables.Timeseries}.
     lat : numeric
         Latitude in degrees.
     lon : numeric
@@ -760,8 +768,7 @@ class WeatherFromEPW(_Weather):
         self.file_path = epw_file_path;
         self._read_lat_lon_timZon_from_epw();
         self.tz = tzwhere.tzwhere();
-        self.tz_name = self.tz.tzNameAt(self.lat.display_data(), self.lon.display_data());        
-        self.data = {};
+        self.tz_name = self.tz.tzNameAt(self.lat.display_data(), self.lon.display_data());
         self.process_variables = ['weaTBlaSky', \
                                   'weaTWetBul', \
                                   'weaHDifHor', \
@@ -781,7 +788,7 @@ class WeatherFromEPW(_Weather):
         # Process weather data
         self._process_weather_data();
         
-        return self.data
+        return self._data
         
     def _read_lat_lon_timZon_from_epw(self):
         '''Get Latitude, Longitude, and Time Zone from epw file.
@@ -857,70 +864,70 @@ class WeatherFromEPW(_Weather):
             # Convert to mpcpy standard
             if key == 'Atmospheric station pressure':
                 varname = 'weaPAtm';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.Pa, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.Pa, start_time = self.start_time, final_time = self.final_time);
                 self._checkPAtm();
             elif key == 'Dew point temperature':
                 varname = 'weaTDewPoi';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.degC, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.degC, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Dry bulb temperature':
                 varname = 'weaTDryBul';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.degC, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.degC, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Relative humidity':
                 varname = 'weaRelHum';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.percent, start_time = self.start_time, final_time = self.final_time);                
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.percent, start_time = self.start_time, final_time = self.final_time);                
                 self._checkRelHum();
             elif key == 'Opaque sky cover':
                 varname = 'weaNOpa';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.unit10, start_time = self.start_time, final_time = self.final_time);                
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.unit10, start_time = self.start_time, final_time = self.final_time);                
                 self._checkNOpa();
             elif key == 'Ceiling':
                 varname = 'weaCelHei';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.m, start_time = self.start_time, final_time = self.final_time);                
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.m, start_time = self.start_time, final_time = self.final_time);                
                 self._checkCelHei();
             elif key == 'Total sky cover':
                 varname = 'weaNTot';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.unit10, start_time = self.start_time, final_time = self.final_time);                 
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.unit10, start_time = self.start_time, final_time = self.final_time);                 
                 self._checkNTot();
             elif key == 'Wind speed':
                 varname = 'weaWinSpe';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.m_s, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.m_s, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Wind direction':
                 varname = 'weaWinDir';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.deg, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.deg, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Horizontal infrared radiation':
                 varname = 'weaHHorIR';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Direct normal radiation':
                 varname = 'weaHDirNor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time); 
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time); 
             elif key == 'Global horizontal radiation':
                 varname = 'weaHGloHor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Diffuse horizontal radiation':
                 varname = 'weaHDifHor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Averaged global horizontal illuminance':
                 varname = 'weaIAveHor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Direct normal illuminance':
                 varname = 'weaIDirNor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Diffuse horizontal illuminance':
                 varname = 'weaIDifHor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Zenith luminance':
                 varname = 'weaZLum';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.cd_m2, start_time = self.start_time, final_time = self.final_time);          
+                self._data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.cd_m2, start_time = self.start_time, final_time = self.final_time);          
         # Time shift the solar data back 30 minutes by linear interpolation (see Buildings.BoundaryConditions.WeatherData.ReaderTMY3 info)
-        for key in self.data.keys():
+        for key in self._data.keys():
             if key in ['weaHHorIR', 'weaHGloHor', 'weaHDirNor', 'weaHDifHor', \
                      'weaIAveHor', 'weaIDirNor', 'weaIDifHor', 'weaZLum']:
-                ts_old = self.data[key].display_data();
+                ts_old = self._data[key].display_data();
                 ts = ts_old.resample('30T').interpolate(method='time');
                 ts = ts.shift(freq = '-30T');
                 ts = ts.resample(rule='H').first();
                 ts = ts.ix[1:].append(ts_old.tail(n=1));
-                self.data[key].set_data(ts);
+                self._data[key].set_data(ts);
                      
 class WeatherFromCSV(_Weather, utility._DAQ):
     '''Collects weather data from a csv file.
@@ -934,8 +941,6 @@ class WeatherFromCSV(_Weather, utility._DAQ):
 
     Attributes
     ----------
-    data : dictionary
-        {"Weather Variable Name" : mpcpy.Variables.Timeseries}.
     lat : numeric
         Latitude in degrees.
     lon : numeric
@@ -954,7 +959,6 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         
         self.name = 'weather_from_csv';
         self.file_path = csv_file_path;  
-        self.data = {};   
         # Dictionary of format {'csvHeader' : ('weaVarName', mpcpyUnit)}
         self.variable_map = variable_map;          
         # Process Variables
@@ -995,8 +999,6 @@ class InternalFromCSV(_Internal, utility._DAQ):
 
     Attributes
     ----------
-    data : dictionary
-        {"Zone Name" : {"Internal Variable Name" : mpcpy.Variables.Timeseries}}.
     lat : numeric
         Latitude in degrees.  For timezone.
     lon : numeric
@@ -1015,7 +1017,6 @@ class InternalFromCSV(_Internal, utility._DAQ):
         
         self.name = 'internal_from_csv';
         self.file_path = csv_file_path;
-        self.data = {};   
         # Dictionary of format {'csvHeader' : ('zone', 'RadConLatOcc', mpcpyUnit)}
         self.variable_map = variable_map;
         # Common kwargs
@@ -1049,8 +1050,6 @@ class InternalFromOccupancyModel(_Internal):
 
     Attributes
     ----------
-    data : dictionary
-        {"Zone Name" : {"Internal Variable Name" : mpcpy.Variables.Timeseries}}.
     lat : numeric
         Latitude in degrees.  For timezone.
     lon : numeric
@@ -1070,7 +1069,6 @@ class InternalFromOccupancyModel(_Internal):
         self.load_list = load_list;
         self.unit = unit;        
         self.occupancy_model_list = occupancy_model_list;
-        self.data = {};
         # Common kwargs    
         self._parse_time_zone_kwargs(kwargs);
         
@@ -1083,10 +1081,10 @@ class InternalFromOccupancyModel(_Internal):
         self._set_time_interval(start_time, final_time);
         # Get bulk time series
         for zone, loads, occupancy_model in zip(self.zone_list, self.load_list, self.occupancy_model_list):
-            self.data[zone] = {};
+            self._data[zone] = {};
             for varname, load in zip(['intCon', 'intRad', 'intLat'], loads):
                 ts = occupancy_model.get_load(load);
-                self.data[zone][varname] = variables.Timeseries(varname+'_'+zone, ts[self.start_time:self.final_time], self.unit);
+                self._data[zone][varname] = variables.Timeseries(varname+'_'+zone, ts[self.start_time:self.final_time], self.unit);
 
 class InternalFromTable(_Internal):
     '''An internal source interface for a table file data source.
@@ -1098,7 +1096,6 @@ class InternalFromTable(_Internal):
         self.name = 'internal_from_table';
         self.file_path = table_file_path;
         self.internalkeys = ['intCon', 'intRad', 'intLat'];
-        self.data = {};
 
     def get_internal_data(self, final_time, sample_time):
         '''Read internal data from table file into internal index.'''        
@@ -1183,8 +1180,6 @@ class ControlFromCSV(_Control, utility._DAQ):
 
     Attributes
     ----------
-    data : dictionary
-        {"Control Variable Name" : mpcpy.Variables.Timeseries}.
     lat : numeric
         Latitude in degrees.  For timezone.
     lon : numeric
@@ -1203,7 +1198,6 @@ class ControlFromCSV(_Control, utility._DAQ):
 
         self.name = 'control_from_csv';
         self.file_path = csv_file_path;
-        self.data = {};   
         # Dictionary of format {'csvHeader' : ('conVarName', mpcpyUnit)}
         self.variable_map = variable_map;
         # Common kwargs
@@ -1233,8 +1227,6 @@ class OtherInputFromCSV(_OtherInput, utility._DAQ):
 
     Attributes
     ----------
-    data : dictionary
-        {"Other Input Variable Name" : mpcpy.Variables.Timeseries}.
     lat : numeric
         Latitude in degrees.  For timezone.
     lon : numeric
@@ -1253,7 +1245,6 @@ class OtherInputFromCSV(_OtherInput, utility._DAQ):
 
         self.name = 'otherinput_from_csv';
         self.file_path = csv_file_path;
-        self.data = {};   
         # Dictionary of format {'csvHeader' : ('otherinputVarName', mpcpyUnit)}
         self.variable_map = variable_map;
         # Common kwargs
@@ -1284,8 +1275,6 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
 
     Attributes
     ----------
-    data : dictionary
-        {"Parameter Name" : {"Parameter Key Name" : mpcpy.Variables.Static}}.
     file_path : string
         Path of csv file.
     
@@ -1298,34 +1287,42 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
 
         self.name = 'parameter_from_csv';
         self.file_path = csv_file_path;
-        self.data = {};
         
     def collect_data(self):
         '''Collect parameter data from csv file into data dictionary.
-        
-        Yields
-        ------
-        
+                 
+        Returns
+        -------
         data : dictionary
-            Data attribute.
-
+            Exodata dictionary containing mpcpy variables of collected data 
+            to be used with other mpcpy objects, including systems, models, 
+            and optimization.
+        
         '''
         
+        # Initialize data
+        self._data = {};
         # Read coefficients file
         df = pd.read_csv(self.file_path, index_col='Name', dtype={'Unit':str});
         # Create coefficient dictionary
         for key in df.index.values:
-            self.data[key] = {};
+            self._data[key] = {};
             unit = utility.get_unit_class_from_unit_string(df.loc[key, 'Unit']);
             if df.loc[key, 'Free']:  
-                self.data[key]['Free'] = variables.Static(key+'_free', True, units.boolean);
-                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);
-                self.data[key]['Minimum'] = variables.Static(key+'_min', df.loc[key, 'Minimum'], unit);
-                self.data[key]['Maximum'] = variables.Static(key+'_max', df.loc[key, 'Maximum'], unit);
-                self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
+                self._data[key]['Free'] = variables.Static(key+'_free', True, units.boolean);
+                self._data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);
+                self._data[key]['Minimum'] = variables.Static(key+'_min', df.loc[key, 'Minimum'], unit);
+                self._data[key]['Maximum'] = variables.Static(key+'_max', df.loc[key, 'Maximum'], unit);
+                self._data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
             else: 
-                self.data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
-                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
+                self._data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
+                self._data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);
+                
+        # Get data
+        data = self._data;
+        
+        return data
+                
             
 #%% Constraint source implementations
 class ConstraintFromCSV(_Constraint, utility._DAQ):
@@ -1340,8 +1337,6 @@ class ConstraintFromCSV(_Constraint, utility._DAQ):
 
     Attributes
     ----------
-    data : dictionary
-        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}.
     lat : numeric
         Latitude in degrees.  For timezone.
     lon : numeric
@@ -1360,7 +1355,6 @@ class ConstraintFromCSV(_Constraint, utility._DAQ):
 
         self.name = 'constraint_from_csv';
         self.file_path = csv_file_path;
-        self.data = {};   
         # Dictionary of format {'csvHeader' : (stateVarName, 'key', mpcpyUnit)}
         self.variable_map = variable_map;
         # Common kwargs
@@ -1396,8 +1390,6 @@ class ConstraintFromOccupancyModel(_Constraint):
 
     Attributes
     ----------
-    data : dictionary
-        {"State or Control Variable Name" : {"Constraint Variable Type" : mpcpy.Variables.Timeseries/Static}}.
     lat : numeric
         Latitude in degrees.  For timezone.
     lon : numeric
@@ -1418,7 +1410,6 @@ class ConstraintFromOccupancyModel(_Constraint):
         self.constraint_type_list = constraint_type_list;
         self.unit_list = unit_list;
         self.occupancy_model = occupancy_model;
-        self.data = {};        
         # Common kwargs
         self._parse_time_zone_kwargs(kwargs);
         
@@ -1431,10 +1422,10 @@ class ConstraintFromOccupancyModel(_Constraint):
         self._set_time_interval(start_time, final_time);
         # Get bulk time series
         for state_variable, values, constraint_type, unit in zip(self.state_variable_list, self.values_list, self.constraint_type_list, self.unit_list):
-            if state_variable not in self.data:
-                self.data[state_variable] = {};
+            if state_variable not in self._data:
+                self._data[state_variable] = {};
             ts = self.occupancy_model.get_constraint(values[0], values[1]);
-            self.data[state_variable][constraint_type] = variables.Timeseries(state_variable+'_'+constraint_type, ts[self.start_time:self.final_time], unit);
+            self._data[state_variable][constraint_type] = variables.Timeseries(state_variable+'_'+constraint_type, ts[self.start_time:self.final_time], unit);
 
 #%% Price source implementations
 class PriceFromCSV(_Price, utility._DAQ):
@@ -1449,8 +1440,6 @@ class PriceFromCSV(_Price, utility._DAQ):
 
     Attributes
     ----------
-    data : dictionary
-        {"Price Variable Name" : mpcpy.Variables.Timeseries}.
     lat : numeric
         Latitude in degrees.  For timezone.
     lon : numeric
@@ -1469,7 +1458,6 @@ class PriceFromCSV(_Price, utility._DAQ):
 
         self.name = 'constraint_from_csv';
         self.file_path = csv_file_path;
-        self.data = {};   
         # Dictionary of format {'csvHeader' : (priceVarName, 'key', mpcpyUnit)}
         self.variable_map = variable_map;
         # Common kwargs
