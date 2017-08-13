@@ -36,10 +36,11 @@ class WeatherFromEPW(TestCaseMPCPy):
     def test_collect_data(self):
         start_time = '1/1/2015';
         final_time = '1/1/2016';
-        self.weather.collect_data(start_time, final_time);
+        data = self.weather.collect_data(start_time, final_time);
         # Check reference
         df_test = self.weather.display_data();
         self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.assertIs(type(data),type({}))
         
     def test_collect_data_partial(self):
         start_time = '10/2/2015 06:00:00';

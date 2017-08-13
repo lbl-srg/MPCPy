@@ -29,7 +29,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
-        self.controls.collect_data(self.start_time, self.final_time);
+        self.control_data = self.controls.collect_data(self.start_time, self.final_time);
         # Set measurements
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
@@ -40,8 +40,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                    'T_db_min' : ('T_db', 'GTE', units.K), \
                                    'T_db_max' : ('T_db', 'LTE', units.K)};
         self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
-        self.constraints.collect_data(self.start_time, self.final_time);
-        self.constraints.data['T_db']['Initial'] = variables.Static('T_db_start', 295, units.K);
+        self.constraint_data = self.constraints.collect_data(self.start_time, self.final_time);
+        self.constraint_data['T_db']['Initial'] = variables.Static('T_db_start', 295, units.K);
 
     def test_optimize(self):
         '''Test the optimization of a model.
@@ -54,13 +54,13 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
-                                control_data = self.controls.data);
+                                control_data = self.control_data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
                                                 optimization.EnergyMin, \
                                                 optimization.JModelica, \
                                                 'q_flow', \
-                                                constraint_data = self.constraints.data);
+                                                constraint_data = self.constraint_data);
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
         # Update model
@@ -84,14 +84,14 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
-                                control_data = self.controls.data, \
+                                control_data = self.control_data, \
                                 parameter_data = parameter_data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
                                                 optimization.EnergyMin, \
                                                 optimization.JModelica, \
                                                 'q_flow', \
-                                                constraint_data = self.constraints.data);
+                                                constraint_data = self.constraint_data);
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
         # Update model
@@ -105,8 +105,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
         price_variable_map = {'energy' : ('pi_e', units.unit1)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
-        price.collect_data(self.start_time, self.final_time);
-        opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
+        price_data = price.collect_data(self.start_time, self.final_time);
+        opt_problem.optimize(self.start_time, self.final_time, price_data = price_data)
         # Update model
         model = opt_problem.Model;
         # Check references
@@ -124,13 +124,13 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
-                                control_data = self.controls.data);
+                                control_data = self.control_data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
                                                 optimization.EnergyMin, \
                                                 optimization.JModelica, \
                                                 'q_flow', \
-                                                constraint_data = self.constraints.data);
+                                                constraint_data = self.constraint_data);
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
         # Update model
@@ -150,13 +150,13 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
-                                control_data = self.controls.data);
+                                control_data = self.control_data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
                                                 optimization.EnergyMin, \
                                                 optimization.JModelica, \
                                                 'q_flow', \
-                                                constraint_data = self.constraints.data);
+                                                constraint_data = self.constraint_data);
         # Get options
         opt_options = opt_problem.get_optimization_options();
         # Check references
@@ -174,13 +174,13 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
-                                control_data = self.controls.data);
+                                control_data = self.control_data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
                                                 optimization.EnergyMin, \
                                                 optimization.JModelica, \
                                                 'q_flow', \
-                                                constraint_data = self.constraints.data);
+                                                constraint_data = self.constraint_data);
         # Get initial options
         opt_options = opt_problem.get_optimization_options();
         # Set new options
@@ -210,13 +210,13 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
-                                control_data = self.controls.data);
+                                control_data = self.control_data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
                                                 optimization.EnergyMin, \
                                                 optimization.JModelica, \
                                                 'q_flow', \
-                                                constraint_data = self.constraints.data);
+                                                constraint_data = self.constraint_data);
         # Get initial options
         opt_options = opt_problem.get_optimization_options();
         # Set new options
@@ -240,13 +240,13 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
-                                control_data = self.controls.data);
+                                control_data = self.control_data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
                                                 optimization.EnergyMin, \
                                                 optimization.JModelica, \
                                                 'q_flow', \
-                                                constraint_data = self.constraints.data);
+                                                constraint_data = self.constraint_data);
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
         # Get statistics
@@ -289,7 +289,7 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         # Weather
         self.weather_path = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
         self.weather = exodata.WeatherFromEPW(self.weather_path);
-        self.weather.collect_data(self.start_time_exodata, self.final_time_exodata);
+        self.weather_data = self.weather.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Internal
         self.internal_path = os.path.join(self.get_unittest_path(), 'resources', 'internal', 'sampleCSV.csv');
         self.internal_variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
@@ -302,18 +302,21 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
                                       'intCon_eas' : ('eas', 'intCon', units.W_m2), \
                                       'intLat_eas' : ('eas', 'intLat', units.W_m2)};           
         self.internal = exodata.InternalFromCSV(self.internal_path, self.internal_variable_map, tz_name = self.weather.tz_name);
-        self.internal.collect_data(self.start_time_exodata, self.final_time_exodata);
+        self.internal_data = self.internal.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Control (as initialization)
         self.control_path = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'ControlCSV.csv');
         self.control_variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                                      'conHeat_hal' : ('conHeat_hal', units.unit1), \
                                      'conHeat_eas' : ('conHeat_eas', units.unit1)};        
         self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);
-        self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
+        self.control_data = self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Parameters
         self.parameters_path = os.path.join(self.get_unittest_path(), 'outputs', 'model_parameters.txt');
         self.parameters = exodata.ParameterFromCSV(self.parameters_path);
-        self.parameters.collect_data();
+        self.parameter_data = self.parameters.collect_data();
+        self.parameter_data['lat'] = {};
+        self.parameter_data['lat']['Value'] = self.weather.lat;
+        
         # Constraints
         self.constraints_path = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'sampleConstraintCSV_Constant.csv');   
         self.constraints_variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
@@ -335,35 +338,31 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
                                          'conHeat_eas_min' : ('conHeat_eas', 'GTE', units.unit1), \
                                          'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
         self.constraints = exodata.ConstraintFromCSV(self.constraints_path, self.constraints_variable_map, tz_name = self.weather.tz_name);
-        self.constraints.collect_data(self.start_time_exodata, self.final_time_exodata);
-        self.constraints.data['wesTdb']['Cyclic'] = variables.Static('wesTdb_cyclic', 1, units.boolean_integer);
-        self.constraints.data['easTdb']['Cyclic'] = variables.Static('easTdb_cyclic', 1, units.boolean_integer);
-        self.constraints.data['halTdb']['Cyclic'] = variables.Static('halTdb_cyclic', 1, units.boolean_integer);
+        self.constraint_data = self.constraints.collect_data(self.start_time_exodata, self.final_time_exodata);
+        self.constraint_data['wesTdb']['Cyclic'] = variables.Static('wesTdb_cyclic', 1, units.boolean_integer);
+        self.constraint_data['easTdb']['Cyclic'] = variables.Static('easTdb_cyclic', 1, units.boolean_integer);
+        self.constraint_data['halTdb']['Cyclic'] = variables.Static('halTdb_cyclic', 1, units.boolean_integer);
         # Prices
         self.prices_path = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'PriceCSV.csv');
         self.price_variable_map = {'pi_e' : ('pi_e', units.unit1)};        
         self.prices = exodata.PriceFromCSV(self.prices_path, self.price_variable_map, tz_name = self.weather.tz_name);
-        self.prices.collect_data(self.start_time_exodata, self.final_time_exodata);        
-        
-        ## Parameters
-        self.parameters.data['lat'] = {};
-        self.parameters.data['lat']['Value'] = self.weather.lat;     
+        self.price_data = self.prices.collect_data(self.start_time_exodata, self.final_time_exodata);        
         ## Instantiate model
         self.model = models.Modelica(self.estimate_method, \
                                      self.validation_method, \
                                      self.measurements, \
                                      moinfo = (self.mopath, self.modelpath, self.libraries), \
                                      zone_names = self.zone_names, \
-                                     weather_data = self.weather.data, \
-                                     internal_data = self.internal.data, \
-                                     control_data = self.control.data, \
-                                     parameter_data = self.parameters.data, \
+                                     weather_data = self.weather_data, \
+                                     internal_data = self.internal_data, \
+                                     control_data = self.control_data, \
+                                     parameter_data = self.parameter_data, \
                                      tz_name = self.weather.tz_name);                                     
     def test_energymin(self):
         '''Test energy minimization of a model.'''
         plt.close('all');        
         # Instanatiate optimization problem
-        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyMin, optimization.JModelica, 'Ptot', constraint_data = self.constraints.data)
+        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyMin, optimization.JModelica, 'Ptot', constraint_data = self.constraint_data)
         # Optimize
         self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization);
         # Update model
@@ -376,9 +375,9 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         '''Test energy cost minimization of a model.'''
         plt.close('all');
         # Instanatiate optimization problem
-        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyCostMin, optimization.JModelica, 'Ptot', constraint_data = self.constraints.data)
+        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyCostMin, optimization.JModelica, 'Ptot', constraint_data = self.constraint_data)
         # Optimize
-        self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization, price_data = self.prices.data);
+        self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization, price_data = self.price_data);
         # Update model
         self.model = self.opt_problem.Model;
         # Check references

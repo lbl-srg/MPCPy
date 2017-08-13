@@ -39,13 +39,13 @@ class SimpleRC(TestCaseMPCPy):
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
-        controls.collect_data(self.start_time, self.final_time);
+        controls_data = controls.collect_data(self.start_time, self.final_time);
         # Instantiate model
         self.model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
-                                     control_data = controls.data);
+                                     control_data = controls_data);
         # Simulate model
         self.model.simulate(self.start_time, self.final_time);
         # Check references
@@ -146,9 +146,9 @@ class EstimateFromJModelica(TestCaseMPCPy):
         self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);   
         # Parameters
         self.parameters = exodata.ParameterFromCSV(os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv'));
-        self.parameters.collect_data();
-        self.parameters.data['lat'] = {};
-        self.parameters.data['lat']['Value'] = self.weather.lat;    
+        self.parameter_data = self.parameters.collect_data();
+        self.parameter_data['lat'] = {};
+        self.parameter_data['lat']['Value'] = self.weather.lat;    
         # Instantiate building
         building_parameters_data = {};
         building_parameters_data['lat'] = {};
@@ -165,13 +165,13 @@ class EstimateFromJModelica(TestCaseMPCPy):
         self.start_time = '1/1/2015';
         self.final_time = '1/4/2015';
         # Exodata
-        self.weather.collect_data(self.start_time, self.final_time);
-        self.internal.collect_data(self.start_time, self.final_time);
-        self.control.collect_data(self.start_time, self.final_time);       
+        weather_data = self.weather.collect_data(self.start_time, self.final_time);
+        internal_data = self.internal.collect_data(self.start_time, self.final_time);
+        control_data = self.control.collect_data(self.start_time, self.final_time);       
         # Collect emulation measurements for comparison
-        self.building.weather_data = self.weather.data;
-        self.building.internal_data = self.internal.data;
-        self.building.control_data = self.control.data;
+        self.building.weather_data = weather_data;
+        self.building.internal_data = internal_data;
+        self.building.control_data = control_data;
         self.building.tz_name = self.weather.tz_name;
         self.building.collect_measurements(self.start_time, self.final_time);
         # Instantiate model
@@ -180,10 +180,10 @@ class EstimateFromJModelica(TestCaseMPCPy):
                                      self.building.measurements, \
                                      moinfo = (self.mopath, self.modelpath, self.libraries), \
                                      zone_names = self.zone_names, \
-                                     weather_data = self.weather.data, \
-                                     internal_data = self.internal.data, \
-                                     control_data = self.control.data, \
-                                     parameter_data = self.parameters.data, \
+                                     weather_data = weather_data, \
+                                     internal_data = internal_data, \
+                                     control_data = control_data, \
+                                     parameter_data = self.parameter_data, \
                                      tz_name = self.weather.tz_name);                    
         # Simulate model with current guess of parameters
         self.model.simulate(self.start_time, self.final_time);
@@ -209,13 +209,13 @@ class EstimateFromJModelica(TestCaseMPCPy):
         # Measurement variables for estimate
         self.measurement_variable_list = ['wesTdb', 'easTdb', 'halTdb'];
         # Exodata
-        self.weather.collect_data(self.start_time_exodata, self.final_time_exodata);
-        self.internal.collect_data(self.start_time_exodata, self.final_time_exodata);
-        self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
+        weather_data = self.weather.collect_data(self.start_time_exodata, self.final_time_exodata);
+        internal_data = self.internal.collect_data(self.start_time_exodata, self.final_time_exodata);
+        control_data = self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Set exodata to building emulation
-        self.building.weather_data = self.weather.data;
-        self.building.internal_data = self.internal.data;
-        self.building.control_data = self.control.data;
+        self.building.weather_data = weather_data;
+        self.building.internal_data = internal_data;
+        self.building.control_data = control_data;
         self.building.tz_name = self.weather.tz_name;       
         # Collect measurement data
         self.building.collect_measurements(self.start_time_emulation, self.final_time_emulation);
@@ -226,10 +226,10 @@ class EstimateFromJModelica(TestCaseMPCPy):
                                      self.building.measurements, \
                                      moinfo = (self.mopath, self.modelpath, self.libraries), \
                                      zone_names = self.zone_names, \
-                                     weather_data = self.weather.data, \
-                                     internal_data = self.internal.data, \
-                                     control_data = self.control.data, \
-                                     parameter_data = self.parameters.data, \
+                                     weather_data = weather_data, \
+                                     internal_data = internal_data, \
+                                     control_data = control_data, \
+                                     parameter_data = self.parameter_data, \
                                      tz_name = self.weather.tz_name);                 
         # Estimate model based on emulated data
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
@@ -268,16 +268,16 @@ class EstimateFromUKF(TestCaseMPCPy):
         # Gather parameters
         parameter_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Parameters.csv');
         self.parameters = exodata.ParameterFromCSV(parameter_csv_filepath);
-        self.parameters.collect_data();
+        self.parameter_data = self.parameters.collect_data();
         # Gather control inputs
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
-        self.controls.collect_data(self.start_time, self.final_time);
+        self.control_data = self.controls.collect_data(self.start_time, self.final_time);
         # Instantiate system
         self.system = systems.EmulationFromFMU(self.measurements, \
                                                moinfo = self.moinfo, \
-                                               control_data = self.controls.data);
+                                               control_data = self.control_data);
         # Get measurements
         self.system.collect_measurements(self.start_time, self.final_time);
         
@@ -288,8 +288,8 @@ class EstimateFromUKF(TestCaseMPCPy):
                                      models.RMSE, \
                                      self.system.measurements, \
                                      moinfo = self.moinfo, \
-                                     parameter_data = self.parameters.data, \
-                                     control_data = self.controls.data, \
+                                     parameter_data = self.parameter_data, \
+                                     control_data = self.control_data, \
                                      version = '1.0');                      
         # Estimate
         self.model.estimate(self.start_time, self.final_time, ['T_db']);
@@ -312,8 +312,8 @@ class EstimateFromUKF(TestCaseMPCPy):
                                          models.RMSE, \
                                          self.system.measurements, \
                                          moinfo = self.moinfo, \
-                                         parameter_data = self.parameters.data, \
-                                         control_data = self.controls.data, \
+                                         parameter_data = self.parameter_data, \
+                                         control_data = self.control_data, \
                                          version = '2.0');
             
 #%% Occupancy tests

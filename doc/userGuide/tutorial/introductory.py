@@ -164,9 +164,9 @@ given time period.
 
 >>> start_time = '1/1/2017'
 >>> final_time = '1/3/2017'
->>> weather.collect_data(start_time, final_time) # doctest: +ELLIPSIS
+>>> weather_data = weather.collect_data(start_time, final_time) # doctest: +ELLIPSIS
 -etc-
->>> control.collect_data(start_time, final_time)
+>>> control_data = control.collect_data(start_time, final_time)
 
 Use the ``display_data()`` and ``get_base_data()`` functions for the weather
 and control objects to get the data in the form of a pandas dataframe. Note
@@ -224,8 +224,8 @@ dictionary, model information, collected exogenous data, and time zone:
 
 >>> emulation = systems.EmulationFromFMU(measurements,
 ...                                      moinfo = moinfo,
-...                                      weather_data = weather.data,
-...                                      control_data = control.data,
+...                                      weather_data = weather_data,
+...                                      control_data = control_data,
 ...                                      tz_name = weather.tz_name)
                                          
 Finally, we can collect the measurements from our emulation over a specified
@@ -282,7 +282,7 @@ Unit field specifies the unit of the parameter using the name string of
 MPCPy unit classes.
 
 >>> parameters = exodata.ParameterFromCSV('Parameters.csv')
->>> parameters.collect_data()
+>>> parameter_data = parameters.collect_data()
 >>> parameters.display_data() # doctest: +NORMALIZE_WHITESPACE
                   Covariance  Free Maximum Minimum Unit  Value
 Name                                                          
@@ -300,9 +300,9 @@ model and emulation.
 ...                         models.RMSE,
 ...                         emulation.measurements,
 ...                         moinfo = moinfo,
-...                         parameter_data = parameters.data,
-...                         weather_data = weather.data,
-...                         control_data = control.data,
+...                         parameter_data = parameter_data,
+...                         weather_data = weather_data,
+...                         control_data = control_data,
 ...                         tz_name = weather.tz_name)
 
 Let's simulate the model to see how far off we are with our initial parameter
@@ -409,7 +409,7 @@ greater-than-or-equal-to (GTE) constraint:
 >>> # Instantiate constraint exodata object
 >>> constraints = exodata.ConstraintFromCSV('Constraints.csv', variable_map)
 >>> # Collect data
->>> constraints.collect_data('1/1/2017', '1/3/2017')
+>>> constraint_data = constraints.collect_data('1/1/2017', '1/3/2017')
 >>> # Get data
 >>> constraints.display_data() # doctest: +ELLIPSIS
                        	   Qflow_GTE  Qflow_LTE  Tzone_GTE  Tzone_LTE
@@ -430,7 +430,7 @@ we wish to minimize the integral of over the time horizon.
 ...                                         optimization.EnergyMin,
 ...                                         optimization.JModelica,
 ...                                         'Qflow',
-...                                         constraint_data = constraints.data)
+...                                         constraint_data = constraint_data)
 
 The information provided is used to automatically generate a .mop (optimization
 model file for JModelica) and transfer the optimization problem using JModelica.
