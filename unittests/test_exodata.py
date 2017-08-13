@@ -51,6 +51,12 @@ class WeatherFromEPW(TestCaseMPCPy):
         self.check_df_timeseries(df_test, 'collect_data_partial_display.csv');
         df_test = self.weather.get_base_data();
         self.check_df_timeseries(df_test, 'collect_data_partial_base.csv');
+        
+    def test_error_display_base_data(self):
+        with self.assertRaises(AttributeError):       
+            self.weather.display_data();
+        with self.assertRaises(AttributeError):       
+            self.weather.get_base_data();     
 
 class WeatherFromCSV(TestCaseMPCPy):
     '''Test the collection of weather data from a CSV file.
@@ -277,6 +283,12 @@ class ParameterFromCSV(TestCaseMPCPy):
         # Check reference
         df_test = self.parameters.display_data();
         self.check_df_general(df_test, 'collect_data.csv');
+        
+    def test_error_display_base_data(self):
+        with self.assertRaises(AttributeError):       
+            self.parameters.display_data();
+        with self.assertRaises(AttributeError):       
+            self.parameters.get_base_data();          
 
 #%% Constraint Tests
 class ConstraintFromCSV(TestCaseMPCPy):

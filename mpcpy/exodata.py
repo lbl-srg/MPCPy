@@ -277,9 +277,12 @@ class _Type(utility._mpcpyPandas):
         
         '''
         
-        mpcpy_ts_list = self._make_mpcpy_ts_list();
-        df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = True);
-        
+        try:
+            mpcpy_ts_list = self._make_mpcpy_ts_list();
+            df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = True);
+        except AttributeError:
+            raise(AttributeError, 'Exodata object contains no data. Must use collect_data() first.')
+            
         return df;
         
     def get_base_data(self):
@@ -292,8 +295,11 @@ class _Type(utility._mpcpyPandas):
             
         '''
         
-        mpcpy_ts_list = self._make_mpcpy_ts_list();        
-        df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = False);
+        try:
+            mpcpy_ts_list = self._make_mpcpy_ts_list();        
+            df = self._mpcpy_ts_list_to_dataframe(mpcpy_ts_list, display_data = False);
+        except AttributeError:
+            raise(AttributeError, 'Exodata object contains no data. Must use collect_data() first.')            
         
         return df;
                
@@ -624,15 +630,18 @@ class _Parameter(_Type):
             
         '''
 
-        d = {};
-        for key in self._data.keys():
-            d[key] = {};
-            for subkey in self._data[key].keys():
-                d[key][subkey] = self._data[key][subkey].display_data();
-                if subkey == 'Value':
-                    d[key]['Unit'] = self._data[key][subkey].get_display_unit_name();
-        df = pd.DataFrame(data = d).transpose();
-        df.index.name = 'Name';
+        try:
+            d = {};
+            for key in self._data.keys():
+                d[key] = {};
+                for subkey in self._data[key].keys():
+                    d[key][subkey] = self._data[key][subkey].display_data();
+                    if subkey == 'Value':
+                        d[key]['Unit'] = self._data[key][subkey].get_display_unit_name();
+            df = pd.DataFrame(data = d).transpose();
+            df.index.name = 'Name';
+        except AttributeError:
+            raise(AttributeError, 'Exodata object contains no data. Must use collect_data() first.')
         
         return df
         
@@ -646,13 +655,16 @@ class _Parameter(_Type):
             Dataframe in base units.
             
         '''
-
-        d = {};
-        for key in self._data.keys():
-            d[key] = {};
-            for subkey in self._data[key].keys():
-                d[key][subkey] = self._data[key][subkey].get_base_data();
-        df = pd.DataFrame(data = d);
+        
+        try:
+            d = {};
+            for key in self._data.keys():
+                d[key] = {};
+                for subkey in self._data[key].keys():
+                    d[key][subkey] = self._data[key][subkey].get_base_data();
+            df = pd.DataFrame(data = d);
+        except AttributeError:
+            raise(AttributeError, 'Exodata object contains no data. Must use collect_data() first.')
         
         return df;    
         
