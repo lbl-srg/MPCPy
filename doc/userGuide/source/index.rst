@@ -13,4 +13,7 @@ User Guide
    systems
    models
    optimization
-   occupant
+   acknowledgements
+   disclaimers
+   license
+   

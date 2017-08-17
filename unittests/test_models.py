@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_models.py
-by David Blum
-
 This module contains the classes for testing the model module of mpcpy.
+
 """
 import unittest
 from mpcpy import models
@@ -28,7 +26,6 @@ class SimpleRC(TestCaseMPCPy):
     def setUp(self):
         self.start_time = '1/1/2017';
         self.final_time = '1/2/2017';
-        self.MPCPyPath = utility.get_MPCPy_path();
         # Set measurements
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
@@ -36,10 +33,10 @@ class SimpleRC(TestCaseMPCPy):
     def test_simulate(self):
         '''Test simulation of a model.'''
         # Set model paths
-        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC';
         # Gather control inputs
-        control_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         controls.collect_data(self.start_time, self.final_time);
@@ -60,7 +57,7 @@ class SimpleRC(TestCaseMPCPy):
     def test_simulate_noinputs(self):
         '''Test simulation of a model with no external inputs.'''
         # Set model paths
-        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_noinputs';
         # Instantiate model
         self.model = models.Modelica(models.JModelica, \
@@ -76,7 +73,7 @@ class SimpleRC(TestCaseMPCPy):
     def test_estimate_error_nofreeparameters(self):
         '''Test error raised if no free parameters passed.'''
         # Set model paths
-        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_noinputs';
         # Instantiate model
         self.model_no_params = models.Modelica(models.JModelica, \
@@ -110,12 +107,11 @@ class EstimateFromJModelica(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        self.MPCPyPath = utility.get_MPCPy_path();
         ## Setup building fmu emulation
-        self.building_source_file_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'building' + os.sep + 'LBNL71T_Emulation_JModelica_v2.fmu';
+        self.building_source_file_path = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v2.fmu');
         self.zone_names = ['wes', 'hal', 'eas'];
-        self.weather_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'weather' + os.sep + 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw';
-        self.internal_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'internal' + os.sep + 'sampleCSV.csv';
+        self.weather_path = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
+        self.internal_path = os.path.join(self.get_unittest_path(), 'resources', 'internal', 'sampleCSV.csv');
         self.internal_variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
                                       'intCon_wes' : ('wes', 'intCon', units.W_m2), \
                                       'intLat_wes' : ('wes', 'intLat', units.W_m2), \
@@ -125,7 +121,7 @@ class EstimateFromJModelica(TestCaseMPCPy):
                                       'intRad_eas' : ('eas', 'intRad', units.W_m2), \
                                       'intCon_eas' : ('eas', 'intCon', units.W_m2), \
                                       'intLat_eas' : ('eas', 'intLat', units.W_m2)};        
-        self.control_path = self.MPCPyPath + os.sep + 'resources' + os.sep + 'building' + os.sep + 'ControlCSV_0.csv';
+        self.control_path = os.path.join(self.get_unittest_path(), 'resources', 'building', 'ControlCSV_0.csv');
         self.control_variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                                      'conHeat_hal' : ('conHeat_hal', units.unit1), \
                                      'conHeat_eas' : ('conHeat_eas', units.unit1)};        
@@ -139,7 +135,7 @@ class EstimateFromJModelica(TestCaseMPCPy):
         self.measurements['easPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         self.measurements['Ptot'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         ## Setup model
-        self.mopath = self.MPCPyPath + os.sep + 'resources' + os.sep + 'model' + os.sep + 'LBNL71T_MPC.mo';
+        self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
         self.modelpath = 'LBNL71T_MPC.MPC';
         self.libraries = os.environ.get('MODELICAPATH');
         self.estimate_method = models.JModelica; 
@@ -148,8 +144,8 @@ class EstimateFromJModelica(TestCaseMPCPy):
         self.weather = exodata.WeatherFromEPW(self.weather_path);
         self.internal = exodata.InternalFromCSV(self.internal_path, self.internal_variable_map, tz_name = self.weather.tz_name);
         self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);   
-        # Parameters        
-        self.parameters = exodata.ParameterFromCSV(self.MPCPyPath + os.sep + 'resources' + os.sep + 'model' + os.sep + 'LBNL71T_Parameters.csv');
+        # Parameters
+        self.parameters = exodata.ParameterFromCSV(os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv'));
         self.parameters.collect_data();
         self.parameters.data['lat'] = {};
         self.parameters.data['lat']['Value'] = self.weather.lat;    
@@ -244,7 +240,7 @@ class EstimateFromJModelica(TestCaseMPCPy):
         self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
         self.model.measurements = self.building.measurements;
         self.model.validate(self.start_time_validation, self.final_time_validation, \
-                            os.path.join(self.MPCPyPath, 'unittests', 'resources', 'model_validation'));
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation'));
         # Check references
         RMSE = {};
         for key in self.model.RMSE.keys():
@@ -262,20 +258,19 @@ class EstimateFromUKF(TestCaseMPCPy):
     def setUp(self):
         self.start_time = '1/1/2017';
         self.final_time = '1/10/2017';
-        self.MPCPyPath = utility.get_MPCPy_path();
         # Set measurements
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
         # Set model paths
-        mopath = os.path.join(self.MPCPyPath, 'resources', 'model', 'Simple.mo');
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC';
         self.moinfo = (mopath, modelpath, {})
         # Gather parameters
-        parameter_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Parameters.csv');
+        parameter_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Parameters.csv');
         self.parameters = exodata.ParameterFromCSV(parameter_csv_filepath);
         self.parameters.collect_data();
         # Gather control inputs
-        control_csv_filepath = os.path.join(self.MPCPyPath, 'resources', 'model', 'SimpleRC_Input.csv');
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         self.controls.collect_data(self.start_time, self.final_time);
@@ -331,10 +326,8 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Testing time
         self.start_time = '3/8/2013';
         self.final_time = '3/15/2013 23:59';   
-        # Set path variable(s)
-        self.MPCPyPath = utility.get_MPCPy_path();
         # Setup building measurement collection from csv
-        self.csv_filepath = self.MPCPyPath+os.sep + 'resources' + os.sep + 'building' + os.sep + 'OccData.csv';   
+        self.csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'OccData.csv');   
         # Measurements
         self.measurements = {};
         self.measurements['occupancy'] = {'Sample' : variables.Static('occupancy_sample', 300, units.s)};
@@ -403,7 +396,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         self.occupancy.set_simulate_options(simulate_options);
         np.random.seed(1);
         self.occupancy.validate(self.start_time, self.final_time, \
-                                os.path.join(self.MPCPyPath, 'unittests', 'resources', \
+                                os.path.join(self.get_unittest_path(), 'outputs', \
                                              'occupancy_model_validate'));
         # Check references
         RMSE = {};

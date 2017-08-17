@@ -7,7 +7,6 @@ documentation on ``variables`` for more information.
 
 from abc import ABCMeta, abstractmethod
 import numpy as np
-import os
 
 #%% Display unit abstract interface
 class _DisplayUnit(object):

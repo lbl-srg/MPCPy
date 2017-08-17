@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-test_utility.py
-by David Blum
-
 This module contains the classes for testing the utility functions of mpcpy.
+
 """
 
 import unittest
@@ -12,17 +10,20 @@ from mpcpy import utility
 from mpcpy import units
 from mpcpy import systems
 from mpcpy import models
+from testing import TestCaseMPCPy
 
 #%% General methods test
-class TestEmulationFromFMU(unittest.TestCase):
+class TestEmulationFromFMU(TestCaseMPCPy):
     def setUp(self):
         self.parameter_data = {};
         self.parameter_data['par'] = {};
         self.parameter_data['par']['Value'] = 1;        
         # instantiate building fmu v1.0
-        self.building_1 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'building' + os.sep + 'LBNL71T_Emulation_JModelica_v1.fmu', parameter_data = self.parameter_data);
+        fmupath_1 = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
+        self.building_1 = systems.EmulationFromFMU({}, fmupath = fmupath_1, parameter_data = self.parameter_data);
         # instantiate building fmu v2.0
-        self.building_2 = systems.EmulationFromFMU({}, fmupath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'building' + os.sep + 'LBNL71T_Emulation_JModelica_v2.fmu', parameter_data = self.parameter_data);
+        fmupath_2 = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v2.fmu');
+        self.building_2 = systems.EmulationFromFMU({}, fmupath = fmupath_2, parameter_data = self.parameter_data);
     def test_fmu_version(self):
         # fmu 1.0
         self.assertEqual(self.building_1.fmu_version, '1.0');
@@ -47,9 +48,9 @@ class TestEmulationFromFMU(unittest.TestCase):
     def test_free_parameter_check(self):
         self.assertEqual(self.building_1.parameter_data['par']['Free'].get_base_data(), 0);
 
-class TestFMIVersionDefault(unittest.TestCase):
+class TestFMIVersionDefault(TestCaseMPCPy):
     def setUp(self):
-        self.mopath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'model' + os.sep + 'Simple.mo';
+        self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         self.modelpath = 'Simple.RC';
 
     def test_fmi_default(self):
@@ -58,9 +59,9 @@ class TestFMIVersionDefault(unittest.TestCase):
         model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}));
         self.assertEqual(model.fmu_version, '2.0');
         
-class TestGetInputNames(unittest.TestCase):
+class TestGetInputNames(TestCaseMPCPy):
     def setUp(self):
-        self.mopath = utility.get_MPCPy_path()+os.sep + 'resources' + os.sep + 'model' + os.sep + 'Simple.mo';
+        self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         self.modelpath = 'Simple.RC';
         
     def test_fmi_version(self):

@@ -1,1 +1,0 @@
-#define MODEL_IDENTIFIER RapidMPC_Examples_LBNL71T_0Emulate_Emulation

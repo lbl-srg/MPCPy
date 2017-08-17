@@ -219,7 +219,7 @@ Classes
     
 """
 
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta
 from mpcpy import utility
 import numpy as np
 import pandas as pd
@@ -238,9 +238,8 @@ class _Type(utility._mpcpyPandas):
 
     __metaclass__ = ABCMeta;
     
-    
     def collect_data(self, start_time, final_time):
-        '''Collect data from specified source.
+        '''Collect data from specified source and update data attribute.
         
         Parameters
         ----------
@@ -314,7 +313,10 @@ class _Weather(_Type, utility._FMU):
         return mpcpy_ts_list;
            
     def _translate_variable_map(self):
-        '''Translate csv column to data variable.'''
+        '''Translate csv column to data variable.
+        
+        '''
+        
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
         self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
@@ -328,6 +330,7 @@ class _Weather(_Type, utility._FMU):
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
         '''
+        
         var = self.data['weaCelHei'];
         ts_in = var.get_base_data();
         M_in = ts_in.get_values();     
@@ -348,6 +351,7 @@ class _Weather(_Type, utility._FMU):
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
         '''
+        
         var = self.data['weaPAtm'];
         index = var.get_base_data().index;
         M_in = var.get_base_data().get_values();
@@ -363,6 +367,7 @@ class _Weather(_Type, utility._FMU):
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
         '''
+        
         var = self.data['weaNOpa'];
         ts_in = var.get_base_data();
         M_in = ts_in.get_values();     
@@ -387,6 +392,7 @@ class _Weather(_Type, utility._FMU):
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
         '''
+        
         var = self.data['weaNTot'];
         ts_in = var.get_base_data();
         M_in = ts_in.get_values();  
@@ -411,6 +417,7 @@ class _Weather(_Type, utility._FMU):
         See Buildings.BoundaryConditions.WeatherData.ReaderTMY3.
         
         '''
+        
         var = self.data['weaRelHum'];
         ts_in = var.get_base_data();
         M_in = ts_in.get_values();
@@ -430,7 +437,10 @@ class _Weather(_Type, utility._FMU):
         self.data['weaRelHum'] = var;
         
     def _process_weather_data(self):
-        '''Use process weather fmu to calculate other necessary weather data.'''
+        '''Use process weather fmu to calculate other necessary weather data.
+        
+        '''
+        
         # Set file_path for fmu
         weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
         fmuname = 'WeatherProcessor_JModelica_v2.fmu';
@@ -459,7 +469,10 @@ class _Weather(_Type, utility._FMU):
             self.data[key] = self.measurements[key]['Simulated'];
 
     def _create_input_mpcpy_ts_list_sim(self):
-        '''Create the input list to the weather processing FMU.'''
+        '''Create the input list to the weather processing FMU.
+        
+        '''
+        
         # Set input_object for fmu
         self._input_mpcpy_ts_list = (self.data['weaPAtm'], self.data['weaTDewPoi'], \
                                      self.data['weaTDryBul'], self.data['weaRelHum'], \
@@ -493,7 +506,10 @@ class _Internal(_Type):
         return mpcpy_ts_list
         
     def _translate_variable_map(self):
-        '''Translate csv column to data disctionary.'''
+        '''Translate csv column to data disctionary.
+        
+        '''
+        
         zone = self.variable_map[self._key][0];
         load = self.variable_map[self._key][1];
         varname = load + '_' + zone;
@@ -535,7 +551,10 @@ class _Control(_Type):
         return mpcpy_ts_list
            
     def _translate_variable_map(self):
-        '''Translate csv column to data dictionary.'''
+        '''Translate csv column to data dictionary.
+        
+        '''
+        
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
         self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
@@ -567,7 +586,10 @@ class _OtherInput(_Type):
         return mpcpy_ts_list
            
     def _translate_variable_map(self):
-        '''Translate csv column to data dictionary.'''
+        '''Translate csv column to data dictionary.
+        
+        '''
+        
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
         self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
@@ -631,7 +653,15 @@ class _Constraint(_Type):
     '''
 
     def _make_mpcpy_ts_list(self):
-        '''Make a list of timeseries from a data dictionary.'''
+        '''Make a list of timeseries from a data dictionary.
+
+        Returns
+        -------
+        mpcpy_ts_list : list
+            List of mpcpy timeseries variables.
+            
+        '''
+        
         mpcpy_ts_list = [];
         for state in self.data.keys():
             for key in self.data[state].keys():
@@ -641,7 +671,10 @@ class _Constraint(_Type):
         return mpcpy_ts_list
         
     def _translate_variable_map(self):
-        '''Translate csv column to data dictionary.'''
+        '''Translate csv column to data dictionary.
+        
+        '''
+        
         state = self.variable_map[self._key][0];
         key = self.variable_map[self._key][1];
         varname = state + '_' + key;
@@ -683,7 +716,10 @@ class _Price(_Type):
         return mpcpy_ts_list
            
     def _translate_variable_map(self):
-        '''Translate csv column to data dictionary.'''
+        '''Translate csv column to data dictionary.
+        
+        '''
+        
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
         self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
@@ -882,7 +918,7 @@ class WeatherFromEPW(_Weather):
                 ts_old = self.data[key].display_data();
                 ts = ts_old.resample('30T').interpolate(method='time');
                 ts = ts.shift(freq = '-30T');
-                ts = ts.resample(rule='H', how = 'first');
+                ts = ts.resample(rule='H').first();
                 ts = ts.ix[1:].append(ts_old.tail(n=1));
                 self.data[key].set_data(ts);
                      

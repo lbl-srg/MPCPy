@@ -2,9 +2,18 @@
 #########################
 *.pyc
 
-# Unit testing figures
+# Unit testing outputs
 #########################
-unittests/resources/*.png
+unittests/outputs/*.png
+unittests/outputs/*.log
+
+# Unit testing resources
+#########################
+unittests/resources/**/*.so
+unittests/resources/**/*.h
+unittests/resources/**/*.o
+unittests/resources/**/*.xml
+unittests/resources/**/*.txt
 
 # Ignore Dymola output, log and temporary files (in alphabetical order)
 #######################################################################
@@ -28,6 +37,13 @@ request
 stat
 status
 stop
+
+# Tutorial
+##########
+doc/userGuide/tutorial/*.txt
+doc/userGuide/tutorial/*.fmu
+doc/userGuide/tutorial/*.mop
+doc/userGuide/tutorial/*.png
 
 # UserGuide Build
 #########################
