@@ -47,9 +47,8 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
             export JMODELICA_HOME=".../JModelica"
             export IPOPT_HOME=".../Ipopt-3.12.4-inst"
             export SUNDIALS_HOME="$JMODELICA_HOME/ThirdParty/Sundials"
-            export CPPAD_HOME="$JMODELICA_HOME/ThirdParty/CppAD/"
             export SEPARATE_PROCESS_JVM="/usr/lib/jvm/java-8-openjdk-amd64/"
-            export JAVA_HOME="/usr/lib/cd docdjvm/java-8-openjdk-amd64/"
+            export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64/"
 
 5. Create the MODELICAPATH environmental variable
 
