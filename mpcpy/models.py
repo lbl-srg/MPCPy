@@ -895,6 +895,7 @@ class ModestPy(_Estimate):
         lp_frame = None     # Take entire data set (cannot be changed)
         vp = None           # Validation not needed, because it's performed by MPCPy (cannot be changed)
         ic_param = None     # TODO: Decide with Dave what to do with IC parameters
+        opts = None         # Additional FMI simulation options (e.g. solver tolerance)
 
         # Custom settings from kwargs
         for key in kwargs:
@@ -912,6 +913,8 @@ class ModestPy(_Estimate):
                 lp_n = kwargs[key]
             elif key == 'par_type':
                 par_type = kwargs[key]
+            elif key == 'opts':
+                opts = kwargs[key]
 
         # Get measurements
         # ================
@@ -1004,7 +1007,7 @@ class ModestPy(_Estimate):
                                       lp_n=lp_n, lp_len=lp_len, lp_frame=lp_frame, 
                                       vp=vp, ic_param=ic_param,
                                       ga_iter=ga_iter, ga_tol=ga_tol,
-                                      ps_iter=ps_iter, ps_tol=ps_tol)
+                                      ps_iter=ps_iter, ps_tol=ps_tol, opts=opts)
         estimates = session.estimate(par_type)
 
         # Put estimates into Model.parameter_data
