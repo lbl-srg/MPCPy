@@ -896,6 +896,7 @@ class ModestPy(_Estimate):
         vp = None           # Validation not needed, because it's performed by MPCPy (cannot be changed)
         ic_param = None     # TODO: Decide with Dave what to do with IC parameters
         opts = None         # Additional FMI simulation options (e.g. solver tolerance)
+        seed = None         # Random number seed, can be None
 
         # Custom settings from kwargs
         for key in kwargs:
@@ -915,6 +916,8 @@ class ModestPy(_Estimate):
                 par_type = kwargs[key]
             elif key == 'opts':
                 opts = kwargs[key]
+            elif key == 'seed':
+                seed = kwargs[key]
 
         # Get measurements
         # ================
@@ -977,7 +980,7 @@ class ModestPy(_Estimate):
                 # Known parameter
                 known[par_name] = val
 
-        # Trim dataframes and adust indexes
+        # Trim dataframes and adjust indexes
         # ==================================
         # Learning period
         start = ideal.index[0]
@@ -1007,7 +1010,8 @@ class ModestPy(_Estimate):
                                       lp_n=lp_n, lp_len=lp_len, lp_frame=lp_frame, 
                                       vp=vp, ic_param=ic_param,
                                       ga_iter=ga_iter, ga_tol=ga_tol,
-                                      ps_iter=ps_iter, ps_tol=ps_tol, opts=opts)
+                                      ps_iter=ps_iter, ps_tol=ps_tol, opts=opts,
+                                      seed=seed)
         estimates = session.estimate(par_type)
 
         # Put estimates into Model.parameter_data
