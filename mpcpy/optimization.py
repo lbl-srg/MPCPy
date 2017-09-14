@@ -40,6 +40,8 @@ from mpcpy import units
 from pymodelica import compile_fmu
 from pyjmi import transfer_optimization_problem;
 from pyjmi.optimization.casadi_collocation import ExternalData
+from scipy import optimize
+import nlopt
 
 #%% Optimization Class
 class Optimization(object):
@@ -87,6 +89,17 @@ class Optimization(object):
         self.objective_variable = objective_variable;
         self._problem_type = problem_type();
         self._package_type = package_type(self);
+        
+        if 'opt_package' in kwargs:
+            self.solver_package = kwargs['opt_package'];
+        else:
+           pass
+       
+        if 'algorithm' in kwargs:
+            self.algorithm = kwargs['algorithm'];
+        else:
+           pass 
+        
         
     def optimize(self, start_time, final_time, **kwargs):
         '''Solve the optimization problem over the specified time horizon.
@@ -747,3 +760,278 @@ class JModelica(_Package, utility._FMU):
         '''
         
         return self.res_opt.get_solver_statistics();
+    
+class Python(_Package, utility._FMU):
+    '''Python interface for NLOpt, scipy and JModelica.org Nelder-Mead
+    Please  the  user guides for more information regarding 
+    optimization options and solver statistics.
+    
+    '''
+    
+    
+    def __init__(self, Optimization):
+        '''Constructor of the JModelica solver package class.
+        
+        '''
+        
+        #where to put keywords for (i) package (NLOpt) and (ii) method (nm)
+        
+        # Setup JModelica optimization problem
+        Optimization._problem_type._setup_jmodelica(self, Optimization);
+        # Set default optimization options
+        self._set_optimization_options(self.opt_problem.optimize_options(), init = True)
+    
+    def _energymin(self, Optimization):
+        '''Perform the energy minimization.
+        
+        '''
+        self._simulate_initial(Optimization);
+        self._solve();
+        self._get_control_results(Optimization);           
+        
+    def _energycostmin(self, Optimization, price_data):
+        pass
+    
+    def _parameterestimate(self, Optimization, measurement_variable_list):
+        pass
+        
+    def _get_optimization_options(self):
+        '''Get the JModelica optimization options in a dictionary.
+        
+        '''
+        
+        return self.opt_options;
+        
+    def _set_optimization_options(self, opt_options, init = False):
+        '''Set the JModelica optimization options using a dictionary.
+        
+        '''
+        # Check that automatically set options are not being changed
+        if not init:
+            for key in opt_options:
+                if key in ['external_data', 'init_traj', 'nominal_traj', 'n_e']:
+                    if opt_options[key] != self.opt_options[key]:
+                        raise KeyError('Key {} is set automatically upon solve.'.format(key));
+        # Set options
+        self.opt_options = opt_options;
+        
+    def _get_optimization_statistics(self):
+        '''Get the JModelica optimization result statistics.
+        
+        '''
+        
+        return self.res_opt.get_solver_statistics();
+
+    def _solve(self):
+        '''Solve the optimization problem.
+        
+        '''
+        # Set start and final time
+        self.Model.elapsed_seconds
+        # Create input_mpcpy_ts_list
+        self._create_input_mpcpy_ts_list_opt();
+        # Set inputs
+        self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list_opt);          
+        # Create ExternalData structure
+        self._create_external_data();
+        # Set optimization options
+        self.opt_options['external_data'] = self.external_data;
+        self.opt_options['init_traj'] = self.res_init;
+        self.opt_options['nominal_traj'] = self.res_init;
+        self.opt_options['n_e'] = self._sim_opts['ncp'];
+        # Set parameters if they exist
+        if hasattr(self, 'parameter_data'):
+            for key in self.parameter_data.keys():
+                self.opt_problem.set(key, self.parameter_data[key]['Value'].get_base_data());
+        # Set start and final time
+        self.opt_problem.set('start_time', 0);
+        self.opt_problem.set('final_time', self.Model.elapsed_seconds);
+        # Optimize
+        self.res_opt = self.opt_problem.optimize(options=self.opt_options);
+        print(self.res_opt.get_solver_statistics());
+        
+
+
+#################################################################################
+    
+    def wrapper_sim_opt(self, **kwargs):
+        
+
+        # get updated x_init
+        if 'x_init' in kwargs:
+            x = kwargs['x_init']
+        else:
+            print 'error'
+          
+        # get updated mue
+        if 'mue' in kwargs:
+            mue = kwargs['mue']
+        else:
+            print 'error
+            
+        # get discretization for each optimization variable
+        for key in Optimization.Model.measurements.keys():
+            opt_disc = 666
+         
+        # lower and upper bounds for optimization variables
+        for key in Optimization.Model.measurements.keys():
+            bnds = 666  
+        
+        #total number of opt variables
+        nr_opt_variables = np.sum(opt_disc)
+        
+        # get solver parameter (update for each package)
+        solver_parameter = self.opt_options
+        
+        
+        # check which package and which algorithm
+        if Optimization.solver_package == 'nlopt':
+        
+            
+            if Optimization.algorithm == 'CRS2_LM':
+                opt = nlopt.opt(nlopt.GN_CRS2_LM, nr_opt_variables)
+            
+            if Optimization.algorithm == 'ESCH':
+                opt = nlopt.opt(nlopt.GN_ESCH, nr_opt_variables)
+                
+            if Optimization.algorithm == 'DIRECT_L':
+                opt = nlopt.opt(nlopt.GN_DIRECT_L, nr_opt_variables)
+                 
+            if Optimization.algorithm == 'NEWUOA_BOUND':
+                opt = nlopt.opt(nlopt.LN_NEWUOA_BOUND, nr_opt_variables)
+            
+            if Optimization.algorithm == 'NELDERMEAD':
+                opt = nlopt.opt(nlopt.LN_NELDERMEAD, nr_opt_variables)
+            
+            opt.set_min_objective(run_sim_opt)
+            
+            # check additional solver settings
+            if 'xtol_rel' in solver_parameter:
+                opt.set_xtol_rel(solver_parameter['xtol_rel'])
+            else:
+                pass
+            #add addiontonal mix, max iter, func eval...
+            
+            try: 
+                lower = [i[0] for i in bnds]
+                upper = [i[1] for i in bnds]
+                
+                opt.set_lower_bounds(lower)
+                opt.set_upper_bounds(upper)
+            except:
+                print 'no bounds defined'
+                
+ 
+            #perform optimization    
+            xopt = opt.optimize(x)
+            f_opt = opt.last_optimum_value()
+         
+        # Fix..neds to be updated    
+        if Optimization.solver_packag == 'scipy':   
+            
+            if Optimization.algorithm == 'TNC':
+                xopt = optimize.minimize(run_sim_opt, x, method='TNC', bounds=bnds, args=args)
+    
+        if Optimization.solver_packag == 'JModelica':   
+            
+            if Optimization.algorithm == 'NELDERMEAD':
+                try: 
+                    lower = [i[0] for i in bnds]
+                    upper = [i[1] for i in bnds]
+                    
+    
+                except:
+                    print 'no bounds defined'
+                
+                x_opt,f_opt,nbr_iters,nbr_fevals,solve_time = dfo.fmin("sim_based_cost.py",
+                xstart=x0,lb=lower,ub=upper,alg=1,nbr_cores=4,x_tol=10,f_tol=10,max_iters=200,plot_conv=True, plot=True)
+                xopt = [x_opt,f_opt,nbr_iters,nbr_fevals,solve_time]
+        return xopt
+    
+        def cost_function(sim_res, x, mue):
+            """
+            Computate cost function
+            sim_res = .fmu result simulation file
+            x = input (not sure if needed)
+            mue = penalty multiplier
+            (1) extract simulation results
+            (2) Computate cost function
+            (3) return cost function
+    
+            """
+            # variables needed
+            t_sim = sim_res['time']
+            
+            #optimization variables (energy)
+            J = sim_res["J"]
+            
+            #constraint violations
+            
+            #how to access names of constraints? where to specifiy
+            # where to specify min, max values.. in model or in framework?
+            t_customer_min = sim_res['O.T_min']
+            t_customer = sim_res['O.idealHeatConsumer.T_in']
+            
+            # open question: Michael computet just the max value of violation,
+            # IMO we whould computate the integral of violations??
+            
+            # Compute error trajectory
+            # distinguish between constant bounds and trajectory bounds
+            # here for constant - where do we get this variable?
+            # if equal constraints (init and end temp) add power term
+            error = np.trapz(np.maximum(0,t_customer_min-t_customer), t_sim)
+            
+            #compute cost function
+            cost = J + mue * (error)
+            
+            return cost
+    
+  
+        def run_sim_opt(x):
+            """
+            Solve the optimization 
+            (1) definie inputs
+            (2) Run the simulation
+            (3) compute the cost function
+            (4) return the value of the cost function 
+            """
+            # input trajectories
+            #fix: hard coded final an starttime
+            #fix: if different length of input 
+            time_vector = np.linspace(0,43200,len(x))
+    
+            #sim_inputs: name based match? distinguish between parameter and variable
+            
+            # Set FMU (parameters, inputs)
+            
+            # run the simulation
+            sim_res = 666
+            
+            # compute the value of the cost function
+            
+            cost = cost_function(sim_res, x, mue)
+            
+            return cost
+    
+    
+    def penalty_opt(self):
+        
+        # get x_init and penalty multiplier mue: first iteration get global, \
+        #then update per iteration
+        x = Optimization.Model.measurements.keys()
+        mue = Optimization.Model.measurements.keys()
+        
+        # number of iterations - increase mue at every iteration
+        nr_of_iterations = Optimization.Model.Exodata()
+        
+        # performe optimization
+        x_opt = wrapper_sim_opt(x_init = x, mue=mue)
+        
+        # iterate and increase mue every time and update x_init
+        for i in range(nr_of_iterations):
+            mue_update = np.power(mue, i+1.0)
+            x_opt = wrapper_sim_opt(x_init = x_opt, mue=mue_update)
+    
+    
+    
+    
