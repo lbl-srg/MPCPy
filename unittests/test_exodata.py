@@ -356,6 +356,29 @@ class OtherInputFromCSV(TestCaseMPCPy):
         # Check reference
         df_test = self.otherinput.display_data();
         self.check_df_timeseries(df_test, 'collect_data.csv');
+        
+class OtherInputFromDF(TestCaseMPCPy):
+    '''Test the collection of other input data from a pandas DataFrame object.
+    
+    '''
+    
+    def setUp(self):
+        self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'weather', 'Tamb.csv'));
+        time = pd.to_datetime(self.df['Time']);
+        self.df.set_index(time, inplace=True);
+        variable_map = {'T' : ('Tamb', units.degC)};
+        # Instantiate control object
+        self.otherinput = exodata.OtherInputFromDF(self.df, \
+                                                   variable_map); 
+
+    def test_collect_data(self):
+        start_time = '1/1/2015 00:00:00';
+        final_time = '1/1/2015 06:00:00';
+        # Get control data
+        self.otherinput.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.otherinput.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Parameter Tests
 class ParameterFromCSV(TestCaseMPCPy):
