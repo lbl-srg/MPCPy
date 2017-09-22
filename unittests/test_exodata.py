@@ -108,9 +108,9 @@ class WeatherFromCSV(TestCaseMPCPy):
         self.check_df_timeseries(df_test, 'collect_data_local_time_from_geography.csv');
 
     def test_collect_data_local_time_from_tz_name(self):
-        time_header = 'TimePDT';
         start_time = '10/19/2016 12:53:00 PM';
         final_time = '10/19/2016 11:53:00 PM';
+        time_header = 'TimePDT';
         # Instantiate weather object
         weather = exodata.WeatherFromCSV(self.csv_filepath, \
                                          self.variable_map, \
