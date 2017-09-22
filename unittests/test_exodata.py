@@ -14,6 +14,7 @@ import numpy as np
 import pickle
 import copy
 import os
+import pandas as pd
 
 #%% Weather Tests
 class WeatherFromEPW(TestCaseMPCPy):
@@ -146,6 +147,78 @@ class WeatherFromCSV(TestCaseMPCPy):
         df_test = weather.display_data();
         self.check_df_timeseries(df_test, 'collect_data_clean_data.csv');
 
+class WeatherFromDF(TestCaseMPCPy):
+    '''Test the collection of weather data from a pandas DataFrame object.
+    
+    '''
+    
+    def setUp(self):
+        self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'weather', 'BerkeleyCSV.csv'));     
+        self.geography = [37.8716, -122.2727];
+        self.variable_map = {'TemperatureF' : ('weaTDryBul', units.degF), \
+                             'Dew PointF' : ('weaTDewPoi', units.degF), \
+                             'Humidity' : ('weaRelHum', units.percent), \
+                             'Sea Level PressureIn' : ('weaPAtm', units.inHg), \
+                             'WindDirDegrees' : ('weaWinDir', units.deg)};
+                             
+    def test_instantiate(self):
+        time = pd.to_datetime(self.df['DateUTC']);
+        self.df.set_index(time, inplace=True);
+        weather = exodata.WeatherFromDF(self.df, \
+                                        self.variable_map, \
+                                        geography = self.geography);
+        self.assertEqual(weather.name, 'weather_from_df');
+        self.assertAlmostEqual(weather.lat.display_data(), 37.8716, places=4);
+        self.assertAlmostEqual(weather.lon.display_data(), -122.2727, places=4);
+        self.assertEqual(weather.tz_name, 'UTC');
+        
+    def test_collect_data_default_time(self):
+        start_time = '2016-10-19 19:53:00';
+        final_time = '2016-10-20 06:53:00';
+        time = pd.to_datetime(self.df['DateUTC']);
+        self.df.set_index(time, inplace=True); 
+        # Instantiate weather object
+        weather = exodata.WeatherFromDF(self.df, \
+                                        self.variable_map, \
+                                        geography = self.geography);
+        # Get weather data
+        weather.collect_data(start_time, final_time);
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df_timeseries(df_test, 'collect_data_default_time.csv');
+        
+    def test_collect_data_local_time_from_geography(self):
+        start_time = '10/19/2016 12:53:00 PM';
+        final_time = '10/19/2016 11:53:00 PM';
+        time = pd.to_datetime(self.df['TimePDT']);
+        self.df.set_index(time, inplace=True); 
+        # Instantiate weather object
+        weather = exodata.WeatherFromDF(self.df, \
+                                        self.variable_map, \
+                                        geography = self.geography,
+                                        tz_name = 'from_geography');
+        # Get weather data
+        weather.collect_data(start_time, final_time);
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df_timeseries(df_test, 'collect_data_local_time_from_geography.csv');
+
+    def test_collect_data_local_time_from_tz_name(self):
+        start_time = '10/19/2016 12:53:00 PM';
+        final_time = '10/19/2016 11:53:00 PM';
+        time = pd.to_datetime(self.df['TimePDT']);
+        self.df.set_index(time, inplace=True); 
+        # Instantiate weather object
+        weather = exodata.WeatherFromDF(self.df, \
+                                        self.variable_map, \
+                                        geography = self.geography,
+                                        tz_name = 'America/Los_Angeles');
+        # Get weather data
+        weather.collect_data(start_time, final_time);
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df_timeseries(df_test, 'collect_data_local_time_from_tz_name.csv');
+        
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):
     '''Test the collection of internal data from a CSV file.
