@@ -1278,6 +1278,53 @@ class ControlFromCSV(_Control, utility._DAQ):
         # Get bulk time series        
         self._read_timeseries_from_csv();
         
+class ControlFromDF(_Control, utility._DAQ):
+    '''Collects control data from a pandas DataFrame object.
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+        DataFrame of data.  The index must be a datetime object.
+    variable_map : dictionary
+        {"Column Header Name" : ("Control Variable Name", mpcpy.Units.unit)}.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Control Variable Name" : mpcpy.Variables.Timeseries}.
+    lat : numeric
+        Latitude in degrees.
+    lon : numeric
+        Longitude in degrees.
+    tz_name : string
+        Timezone name.  
+
+    '''
+
+    def __init__(self, df, variable_map, **kwargs):
+        '''Constructor of df control exodata object.
+        
+        '''
+
+        self.name = 'control_from_df';
+        self._df = df;
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('conVarName', mpcpyUnit)}
+        self.variable_map = variable_map;
+        # Common kwargs
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);             
+                   
+    def _collect_data(self, start_time, final_time):
+        '''Collect data from the csv file into data dictionary.
+        
+        '''
+        
+        # Set time interval
+        self._set_time_interval(start_time, final_time);
+        # Get bulk time series        
+        self._read_timeseries_from_df();
+        
 #%% Other input source implementations        
 class OtherInputFromCSV(_OtherInput, utility._DAQ):
     '''Collects other input data from a CSV file.
