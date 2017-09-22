@@ -980,6 +980,64 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         self._read_timeseries_from_csv();
         # Process weather data
         if self.process_variables is not None:
+            self._process_weather_data();
+            
+class WeatherFromDF(_Weather, utility._DAQ):
+    '''Collects weather data from a pandas DataFrame object.
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+        DataFrame of data.  The index must be a datetime object.
+    variable_map : dictionary
+        {"Column Header Name" : ("Weather Variable Name", mpcpy.Units.unit)}.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Weather Variable Name" : mpcpy.Variables.Timeseries}.
+    lat : numeric
+        Latitude in degrees.
+    lon : numeric
+        Longitude in degrees.
+    tz_name : string
+        Timezone name.  
+
+    '''
+    
+    def __init__(self, df, variable_map, **kwargs):
+        '''Constructor of DataFrame weather exodata object.
+        
+        '''
+        print(df.index.get_values()[0].__class__)
+        self.name = 'weather_from_df';
+        self._df = df;  
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('weaVarName', mpcpyUnit)}
+        self.variable_map = variable_map;          
+        # Process Variables
+        if 'process_variables' in kwargs:
+            self.process_variables = kwargs['process_variables'];
+        else:
+            self.process_variables = None;
+        # Common kwargs
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);
+        # Assert geography
+        assert(bool(self.lat) == True);
+        assert(bool(self.lon) == True);
+           
+    def _collect_data(self, start_time, final_time):
+        '''Collect data from DataFrame into data dictionary.
+        
+        '''
+        
+        # Set time interval
+        self._set_time_interval(start_time, final_time);
+        # Get bulk time series        
+        self._read_timeseries_from_df();
+        # Process weather data
+        if self.process_variables is not None:
             self._process_weather_data();   
                                              
 #%% Internal source implementations
