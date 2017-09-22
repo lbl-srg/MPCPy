@@ -309,6 +309,31 @@ class ControlFromCSV(TestCaseMPCPy):
         # Check reference
         df_test = self.control.display_data();
         self.check_df_timeseries(df_test, 'collect_data.csv');
+        
+class ControlFromDF(TestCaseMPCPy):
+    '''Test the collection of control data from a pandas DataFrame object.
+    
+    '''
+    
+    def setUp(self):
+        self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'building', 'ControlCSV_0.csv'));
+        time = pd.to_datetime(self.df['Time']);
+        self.df.set_index(time, inplace=True);
+        variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
+                        'conHeat_hal' : ('conHeat_hal', units.unit1), \
+                        'conHeat_eas' : ('conHeat_eas', units.unit1)};
+        # Instantiate control object
+        self.control = exodata.ControlFromDF(self.df, \
+                                              variable_map); 
+
+    def test_collect_data(self):
+        start_time = '1/1/2015 13:00:00';
+        final_time = '1/2/2015';
+        # Get control data
+        self.control.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.control.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');
 
 #%% Other Input Tests
 class OtherInputFromCSV(TestCaseMPCPy):
