@@ -520,7 +520,30 @@ class PriceFromCSV(TestCaseMPCPy):
         self.prices.collect_data(start_time, final_time);
         # Check reference
         df_test = self.prices.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');        
+        self.check_df_timeseries(df_test, 'collect_data.csv');
+        
+class PriceFromDF(TestCaseMPCPy):
+    '''Test the collection of price data from a df.
+
+    '''
+    
+    def setUp(self):
+        self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'PriceCSV.csv'));
+        time = pd.to_datetime(self.df['Time']);
+        self.df.set_index(time, inplace=True);
+        variable_map = {'pi_e' : ('pi_e', units.unit1)};
+        # Instantiate weather object
+        self.prices = exodata.PriceFromDF(self.df, \
+                                          variable_map);
+
+    def test_print(self):
+        start_time = '1/1/2015 13:00:00';
+        final_time = '1/2/2015';
+        # Get price data
+        self.prices.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.prices.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv');  
 
 #%% Source Tests
 class Type(TestCaseMPCPy):
