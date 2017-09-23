@@ -407,17 +407,17 @@ class ConstraintFromCSV(TestCaseMPCPy):
     def setUp(self):
         csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'sampleConstraintCSV_Setback.csv');
         variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
-                             'wesTdb_max' : ('wesTdb', 'LTE', units.degC), \
-                             'easTdb_min' : ('easTdb', 'GTE', units.degC), \
-                             'easTdb_max' : ('easTdb', 'LTE', units.degC), \
-                             'halTdb_min' : ('halTdb', 'GTE', units.degC), \
-                             'halTdb_max' : ('halTdb', 'LTE', units.degC), \
-                             'conHeat_wes_min' : ('conHeat_wes', 'GTE', units.unit1), \
-                             'conHeat_wes_max' : ('conHeat_wes', 'LTE', units.unit1), \
-                             'conHeat_hal_min' : ('conHeat_hal', 'GTE', units.unit1), \
-                             'conHeat_hal_max' : ('conHeat_hal', 'LTE', units.unit1), \
-                             'conHeat_eas_min' : ('conHeat_eas', 'GTE', units.unit1), \
-                             'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
+                        'wesTdb_max' : ('wesTdb', 'LTE', units.degC), \
+                        'easTdb_min' : ('easTdb', 'GTE', units.degC), \
+                        'easTdb_max' : ('easTdb', 'LTE', units.degC), \
+                        'halTdb_min' : ('halTdb', 'GTE', units.degC), \
+                        'halTdb_max' : ('halTdb', 'LTE', units.degC), \
+                        'conHeat_wes_min' : ('conHeat_wes', 'GTE', units.unit1), \
+                        'conHeat_wes_max' : ('conHeat_wes', 'LTE', units.unit1), \
+                        'conHeat_hal_min' : ('conHeat_hal', 'GTE', units.unit1), \
+                        'conHeat_hal_max' : ('conHeat_hal', 'LTE', units.unit1), \
+                        'conHeat_eas_min' : ('conHeat_eas', 'GTE', units.unit1), \
+                        'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
         # Instantiate weather object
         self.constraints = exodata.ConstraintFromCSV(csv_filepath, \
                                                      variable_map);
@@ -429,7 +429,41 @@ class ConstraintFromCSV(TestCaseMPCPy):
         self.constraints.collect_data(start_time, final_time);
         # Check reference
         df_test = self.constraints.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');        
+        self.check_df_timeseries(df_test, 'collect_data.csv');
+        
+class ConstraintFromDF(TestCaseMPCPy):
+    '''Test the collection of constraint data from a df.
+    
+    '''
+    
+    def setUp(self):
+        self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'sampleConstraintCSV_Setback.csv'));
+        time = pd.to_datetime(self.df['Time']);
+        self.df.set_index(time, inplace=True);
+        variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
+                        'wesTdb_max' : ('wesTdb', 'LTE', units.degC), \
+                        'easTdb_min' : ('easTdb', 'GTE', units.degC), \
+                        'easTdb_max' : ('easTdb', 'LTE', units.degC), \
+                        'halTdb_min' : ('halTdb', 'GTE', units.degC), \
+                        'halTdb_max' : ('halTdb', 'LTE', units.degC), \
+                        'conHeat_wes_min' : ('conHeat_wes', 'GTE', units.unit1), \
+                        'conHeat_wes_max' : ('conHeat_wes', 'LTE', units.unit1), \
+                        'conHeat_hal_min' : ('conHeat_hal', 'GTE', units.unit1), \
+                        'conHeat_hal_max' : ('conHeat_hal', 'LTE', units.unit1), \
+                        'conHeat_eas_min' : ('conHeat_eas', 'GTE', units.unit1), \
+                        'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
+        # Instantiate weather object
+        self.constraints = exodata.ConstraintFromDF(self.df, \
+                                                    variable_map);
+
+    def test_collect_data(self):
+        start_time = '1/1/2015 13:00:00';
+        final_time = '1/2/2015';
+        # Get constraint data
+        self.constraints.collect_data(start_time, final_time);
+        # Check reference
+        df_test = self.constraints.display_data();
+        self.check_df_timeseries(df_test, 'collect_data.csv'); 
 
 class ConstraintFromOccupancyModel(TestCaseMPCPy):
     '''Test the collection of constraint data from an occupancy model.
