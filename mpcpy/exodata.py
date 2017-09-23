@@ -1316,7 +1316,7 @@ class ControlFromDF(_Control, utility._DAQ):
         self._parse_time_zone_kwargs(kwargs);             
                    
     def _collect_data(self, start_time, final_time):
-        '''Collect data from the df file into data dictionary.
+        '''Collect data from the df into data dictionary.
         
         '''
         
@@ -1413,7 +1413,7 @@ class OtherInputFromDF(_OtherInput, utility._DAQ):
         self._parse_time_zone_kwargs(kwargs);             
                    
     def _collect_data(self, start_time, final_time):
-        '''Collect data from the df file into data dictionary.
+        '''Collect data from the df into data dictionary.
         
         '''
         
@@ -1555,7 +1555,7 @@ class ConstraintFromDF(_Constraint, utility._DAQ):
     '''
 
     def __init__(self, df, variable_map, **kwargs):
-        '''Constructor of df other input exodata object.
+        '''Constructor of df constraint exodata object.
         
         '''
 
@@ -1569,7 +1569,7 @@ class ConstraintFromDF(_Constraint, utility._DAQ):
         self._parse_time_zone_kwargs(kwargs);             
                    
     def _collect_data(self, start_time, final_time):
-        '''Collect data from the df file into data dictionary.
+        '''Collect data from the df into data dictionary.
         
         '''
         
@@ -1686,3 +1686,52 @@ class PriceFromCSV(_Price, utility._DAQ):
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
         self._read_timeseries_from_csv();                
+
+class PriceFromDF(_Price, utility._DAQ):
+    '''Collects price data from a pandas DataFrame object.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        DataFrame of data.  The index must be a datetime object.
+    variable_map : dictionary
+        {"Column Header Name" : ("Price Variable Name", mpcpy.Units.unit)}.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Price Variable Name" : mpcpy.Variables.Timeseries}.
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
+    tz_name : string
+        Timezone name.
+    file_path : string
+        Path of csv file.
+
+    '''
+
+    def __init__(self, df, variable_map, **kwargs):
+        '''Constructor of df price exodata object.
+        
+        '''
+
+        self.name = 'price_from_df';
+        self._df = df;
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('otherinputVarName', mpcpyUnit)}
+        self.variable_map = variable_map;
+        # Common kwargs
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);             
+                   
+    def _collect_data(self, start_time, final_time):
+        '''Collect data from the df into data dictionary.
+        
+        '''
+        
+        # Set time interval
+        self._set_time_interval(start_time, final_time);
+        # Get bulk time series        
+        self._read_timeseries_from_df();
