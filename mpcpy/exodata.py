@@ -1529,6 +1529,55 @@ class ConstraintFromCSV(_Constraint, utility._DAQ):
         # Get bulk time series        
         self._read_timeseries_from_csv();
         
+class ConstraintFromDF(_Constraint, utility._DAQ):
+    '''Collects constraint data from a pandas DataFrame object.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        DataFrame of data.  The index must be a datetime object.
+    variable_map : dictionary
+        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}.
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
+    tz_name : string
+        Timezone name.
+    file_path : string
+        Path of csv file.
+
+    '''
+
+    def __init__(self, df, variable_map, **kwargs):
+        '''Constructor of df other input exodata object.
+        
+        '''
+
+        self.name = 'otherinput_from_df';
+        self._df = df;
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('otherinputVarName', mpcpyUnit)}
+        self.variable_map = variable_map;
+        # Common kwargs
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);             
+                   
+    def _collect_data(self, start_time, final_time):
+        '''Collect data from the df file into data dictionary.
+        
+        '''
+        
+        # Set time interval
+        self._set_time_interval(start_time, final_time);
+        # Get bulk time series        
+        self._read_timeseries_from_df();
+        
 class ConstraintFromOccupancyModel(_Constraint):
     '''Collects constraint data from an occupancy model.
 
