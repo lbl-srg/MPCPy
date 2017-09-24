@@ -885,6 +885,7 @@ class ModestPy(_Estimate):
         # Default
         workdir = os.getcwd() # Directory to save outputs of modestpy (can be changed by the user)
         fmu_path = Model.fmupath
+        ga_pop = None       # Size of GA population, if None, ModestPy chooses automatically based on free parameters
         ga_iter = 30        # Maximum number of genetic algorithm iterations (generations) (can be changed by the user)
         ga_tol = 0.001      # GA tolerance (accepted error)
         ps_iter = 150       # Maximum number of pattern search iterations (can be changed by the user)
@@ -897,11 +898,15 @@ class ModestPy(_Estimate):
         ic_param = None     # TODO: Decide with Dave what to do with IC parameters
         opts = None         # Additional FMI simulation options (e.g. solver tolerance)
         seed = None         # Random number seed, can be None
+        lhs = False         # Latin Hypercube Initilization
+        ftype = 'RMSE'      # Cost function type, 'RMSE' or 'NRMSE'
 
         # Custom settings from kwargs
         for key in kwargs:
             if key == 'workdir':
                 workdir = kwargs[key]
+            elif key == 'ga_pop':
+                ga_pop = kwargs[key]
             elif key == 'ga_iter':
                 ga_iter = kwargs[key]
             elif key == 'ga_tol':
@@ -918,6 +923,10 @@ class ModestPy(_Estimate):
                 opts = kwargs[key]
             elif key == 'seed':
                 seed = kwargs[key]
+            elif key == 'lhs':
+                lhs = kwargs[key]
+            elif key == 'ftype':
+                ftype = kwargs[key]
 
         # Get measurements
         # ================
@@ -1011,7 +1020,7 @@ class ModestPy(_Estimate):
                                       vp=vp, ic_param=ic_param,
                                       ga_iter=ga_iter, ga_tol=ga_tol,
                                       ps_iter=ps_iter, ps_tol=ps_tol, opts=opts,
-                                      seed=seed)
+                                      seed=seed, ga_pop=ga_pop, lhs=lhs, ftype=ftype)
         estimates = session.estimate(par_type)
 
         # Put estimates into Model.parameter_data
