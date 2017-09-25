@@ -74,6 +74,8 @@ from occupant.occupancy.queueing.parameter_inference_given_segments import param
 from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
+import os
+import modestpy
 
 #%% Model Class
 class _Model(utility._mpcpyPandas, utility._Measurements):
@@ -84,7 +86,7 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
     __metaclass__ = ABCMeta;
 
     @abstractmethod
-    def estimate(self):
+    def estimate(self, **kwargs):
         '''Estimate parameters of the model using the measurement and 
         parameter_data dictionary attributes.
 
@@ -185,7 +187,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self.set_estimate_method(estimate_method);
         self.set_validate_method(validate_method);
         
-    def estimate(self, start_time, final_time, measurement_variable_list):
+    def estimate(self, start_time, final_time, measurement_variable_list, **kwargs):
         '''Estimate the parameters of the model.
         
         The estimation of the parameters is based on the data in the 
@@ -202,6 +204,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
             List of strings defining for which variables defined in the 
             measurements dictionary attirubute the estimation will 
             try to minimize the error.
+        kwargs: Optional parameters
+            Additional parameters that can be passed to the estimation method.
 
         Yields
         ------
@@ -225,7 +229,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
             # Otherwise, continue with parameter estimation
             self._set_time_interval(start_time, final_time);
             self.measurement_variable_list = measurement_variable_list;
-            self._estimate_method._estimate(self);
+            self._estimate_method._estimate(self, **kwargs);
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
         '''Validate the estimated parameters of the model.
@@ -809,7 +813,7 @@ class UKF(_Estimate, utility._FMU):
         '''Update the parameter data dictionary in the model with ukf results.
         
         '''
-        
+
         i = 0;
         for key in Model.parameter_data.keys():
             if Model.parameter_data[key]['Free'].get_base_data():
@@ -821,7 +825,210 @@ class UKF(_Estimate, utility._FMU):
                 Model.parameter_data[key]['Value'].set_display_unit(unit);
                 Model.parameter_data[key]['Value'].set_data(data);
                 i = i + 1;
-       
+                
+
+class ModestPy(_Estimate):
+    """
+    ModestPy estimation method using combined genetic algorithm
+    and pattern search (also known as Hooke-Jeeves).
+
+    The method accepts optional arguments described below. The arguments
+    control error tolerance, number of iterations and number of learning periods.
+
+    Either method can be switched off by setting the respective maximum
+    number of iterations to zero (*ga_iter*, *ps_iter*). It is advised however
+    not to switch off the pattern search, as it helps to achieve the local optimum.
+
+    If the number of learning periods is more than 1, the user can choose the
+    type of parameters to be calculated by the method: average from all runs or
+    best from all runs (i.e. with the lowest error). If the are concerns about
+    overfitting the model, the average parameters are advised. On the other hand,
+    if the cost function is highly non-convex, it might be better to use multiple
+    learning periods and pick the best parameters with the lowest error.
+
+    The method saves additional output files: 
+
+    * all_estimates.csv - estimates and errors from all runs (run per row),
+    * all_estimates.png - scatter matrix plot of all estimates vs. errors,
+    * err_evo.csv - error evolution (run per column),
+    * err_evo.png - error evolution plot,
+    * ga_N.png and ps_N.png - parameter evolution plots for N run of GA and PS.
+
+    By default the files are saved in the current working directory. A custom
+    directory can be chosen with the *workdir* argument.
+
+    Optional parameters
+    -------------------
+    workdir: string
+        Working directory
+    ga_iter: int
+        Maximum number of genetic algorithm iterations (generations), default 30
+    ga_tol: float
+        GA tolerance (accepted error), default 1e-3
+    ps_iter: int
+        Maximum number of pattern search iterations, default 150
+    ps_tol: float
+        PS tolerance (accepted error), default 1e-4
+    lp_n: int
+        Number of learning runs, default 1
+    par_type: str
+        Return parameter type: 'best' (default) or 'avg'
+    """
+
+    def __init__(self, Model):
+        self.name = 'ModestPy'
+
+    def _estimate(self, Model, **kwargs):
+
+        # Settings
+        # ========
+        # Default
+        workdir = os.getcwd() # Directory to save outputs of modestpy (can be changed by the user)
+        fmu_path = Model.fmupath
+        ga_pop = None       # Size of GA population, if None, ModestPy chooses automatically based on free parameters
+        ga_iter = 30        # Maximum number of genetic algorithm iterations (generations) (can be changed by the user)
+        ga_tol = 0.001      # GA tolerance (accepted error)
+        ps_iter = 150       # Maximum number of pattern search iterations (can be changed by the user)
+        ps_tol = 0.0001     # PS tolerance (accepted error)
+        lp_n = 1            # One learning period (can be changed by the user)
+        par_type = 'best'   # Parameter type
+        lp_len = None       # Take entire data set (cannot be changed)
+        lp_frame = None     # Take entire data set (cannot be changed)
+        vp = None           # Validation not needed, because it's performed by MPCPy (cannot be changed)
+        ic_param = None     # TODO: Decide with Dave what to do with IC parameters
+        opts = None         # Additional FMI simulation options (e.g. solver tolerance)
+        seed = None         # Random number seed, can be None
+        lhs = False         # Latin Hypercube Initilization
+        ftype = 'RMSE'      # Cost function type, 'RMSE' or 'NRMSE'
+
+        # Custom settings from kwargs
+        for key in kwargs:
+            if key == 'workdir':
+                workdir = kwargs[key]
+            elif key == 'ga_pop':
+                ga_pop = kwargs[key]
+            elif key == 'ga_iter':
+                ga_iter = kwargs[key]
+            elif key == 'ga_tol':
+                ga_tol = kwargs[key]
+            elif key == 'ps_iter':
+                ps_iter = kwargs[key]
+            elif key == 'ps_tol':
+                ps_tol = kwargs[key]
+            elif key == 'lp_n':
+                lp_n = kwargs[key]
+            elif key == 'par_type':
+                par_type = kwargs[key]
+            elif key == 'opts':
+                opts = kwargs[key]
+            elif key == 'seed':
+                seed = kwargs[key]
+            elif key == 'lhs':
+                lhs = kwargs[key]
+            elif key == 'ftype':
+                ftype = kwargs[key]
+
+        # Get measurements
+        # ================
+        ideal = pd.DataFrame()
+        meas_vars = Model.measurements.keys()
+        for v in meas_vars:
+            if 'Measured' in Model.measurements[v]:
+                ideal[v] = Model.measurements[v]['Measured'].get_base_data()
+
+        # Get inputs
+        # ==========
+        input_names = Model.input_names
+        inp = pd.DataFrame(columns=input_names)
+
+        # Add weather variables (but only those used in the model)
+        weather_vars = Model.weather_data.keys()
+        for v in weather_vars:
+            if v in input_names:
+                inp[v] = Model.weather_data[v].get_base_data()
+
+        # Add internal heat gain variables (only those used in the model)
+        zones = Model.internal_data.keys()
+        for zone in zones:
+            internal_vars = Model.internal_data[zone].keys()
+            for v in internal_vars:
+                v_zone = v + '_' + zone
+                if v_zone in input_names:
+                    inp[v_zone] = Model.internal_data[zone][v].get_base_data()
+
+        # Add control variables (only those used in the model)
+        control_vars = Model.control_data.keys()
+        for v in control_vars:
+            if v in input_names:
+                inp[v] = Model.control_data[v].get_base_data()
+
+        # Add other input variables (only those used in the model)
+        other_vars = Model.other_inputs.keys()
+        for v in other_vars:
+            if v in input_names:
+                inp[v] = Model.other_inputs[v].get_base_data()
+
+        # Get parameters
+        # ==============
+        est = dict()
+        known = dict()
+
+        for par_name in Model.parameter_data:
+
+            # Initial value
+            val = Model.parameter_data[par_name]['Value'].get_base_data()
+            # Variability
+            is_free = Model.parameter_data[par_name]['Free'].display_data()
+
+            if (is_free is True) or (is_free is 1):
+                # Estimated parameter
+                lo = Model.parameter_data[par_name]['Minimum'].get_base_data()
+                hi = Model.parameter_data[par_name]['Maximum'].get_base_data()
+                est[par_name] = (val, lo, hi)
+            else:
+                # Known parameter
+                known[par_name] = val
+
+        # Trim dataframes and adjust indexes
+        # ==================================
+        # Learning period
+        start = ideal.index[0]
+        end = ideal.index[-1]
+        inp = inp[start:end]
+
+        # Adjust index to the smallest step
+        inp_step = inp.index[1] - inp.index[0]
+        ideal_step = ideal.index[1] - ideal.index[1]
+
+        if ideal_step <= inp_step:
+            inp = inp.reindex(ideal.index, method='ffill')
+        else:
+            ideal = ideal.reindex(inp.index, method='ffill')
+
+        # Indexes to seconds
+        inp.index = inp.index.astype(np.int64) // 10**9
+        ideal.index = ideal.index.astype(np.int64) // 10**9
+
+        # Rename indexes
+        inp.index.name = 'time'
+        ideal.index.name = 'time'
+
+        # Estimation using ModestPy
+        # =========================
+        session = modestpy.Estimation(workdir, fmu_path, inp, known, est, ideal,
+                                      lp_n=lp_n, lp_len=lp_len, lp_frame=lp_frame, 
+                                      vp=vp, ic_param=ic_param,
+                                      ga_iter=ga_iter, ga_tol=ga_tol,
+                                      ps_iter=ps_iter, ps_tol=ps_tol, opts=opts,
+                                      seed=seed, ga_pop=ga_pop, lhs=lhs, ftype=ftype)
+        estimates = session.estimate(par_type)
+
+        # Put estimates into Model.parameter_data
+        for par_name in estimates:
+            Model.parameter_data[par_name]['Value'].set_data(estimates[par_name])
+
+        return None
+        
 #%% Validate Method Interfaces
 class RMSE(_Validate):
     '''Validation method that computes the RMSE between estimated and measured data.
