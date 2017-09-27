@@ -127,8 +127,7 @@ package Simple "A package containing simple examples"
   end SubPackage;
 
   model RC_initialize
-    RC mpc_model(
-     heatCapacitor.C=3000000);
+    RC mpc_model();
     input Real q_flow= mpc_model.q_flow;
     input Real pi_e;
     Real J(start = 0, fixed=true);

@@ -3383,35 +3383,7 @@ First implementation.
   end Units;
 
   model MPC_initialize
-    MPC mpc_model(
-     exteas.r_out=0.3,
-     exteas.r_zon=2.99999863004,
-     eas.r_int=0.104288735058,
-     eas.c_zon=2999.99933775,
-     wes.c_zon=2999.99943887,
-     winwes.g=0.15684379921,
-     extwes.abs=0.999997445163,
-     hal.c_zon=2000.00039662,
-     hal.c_int=50000.0,
-     wineas.g=0.333611340388,
-     extwes.r_zon=2.99999970483,
-     extwes.r_out=0.299999999913,
-     adjeas.r_adj=0.180944874275,
-     adjwes.c_bou=8707.05430515,
-     wes.r_int=0.115356613889,
-     wes.c_int=93704.3606751,
-     exteas.c_bou=40000.0,
-     exteas.abs=0.999999921006,
-     adjeas.r_zon=0.05,
-     extwes.c_bou=40000.0,
-     eas.c_int=104280.645348,
-     hal.r_int=0.0500000041872,
-     wineas.r_win=0.494813454981,
-     lat=0.732689219987,
-     adjeas.c_bou=24999.9937606,
-     adjwes.r_adj=0.899999980905,
-     adjwes.r_zon=0.899999975367,
-     winwes.r_win=0.666672546176);
+    MPC mpc_model();
     input Real conHeat_eas= mpc_model.conHeat_eas;
     input Real conHeat_hal= mpc_model.conHeat_hal;
     input Real conHeat_wes= mpc_model.conHeat_wes;
