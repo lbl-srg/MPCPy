@@ -862,20 +862,74 @@ class Python(_Package, utility._FMU):
             x = kwargs['x_init']
         else:
             print 'error'
+
+        if 'x_list' in kwargs:
+            x_list = kwargs['x_list']
+        else:
+            print 'error'
           
         # get updated mue
         if 'mue' in kwargs:
             mue = kwargs['mue']
         else:
-            print 'error
+            print 'error'
             
-        # get discretization for each optimization variable
-        for key in Optimization.Model.measurements.keys():
-            opt_disc = 666
-         
-        # lower and upper bounds for optimization variables
-        for key in Optimization.Model.measurements.keys():
-            bnds = 666  
+        # how many opt variables = size of input x array
+        opt_disc = x.size       
+        
+        #lower and upper bounds for optimization variables
+        lower =[]
+        upper =[]
+        initial = []
+        final = []
+        cyclic = []
+        for key in Optimization.constraint_data.keys():
+            # Dave check Synthax: Check if key is in contro..i dont want bounds of state variables
+            if key in Optimization.Model.control_data:
+                for field in Optimization.constraint_data[key]:
+                    if field == 'GTE':
+                       # Dave check synthax - this are always static variables
+                        lw = Optimization.constraint_data[key][field].get_base_data()
+                        lower.append(lw)
+                    else:
+                        lower.append(None)  
+                   
+                    if field == 'LTE':
+                        # Dave check synthax - this are always static variables
+                        up = Optimization.constraint_data[key][field].get_base_data()
+                        upper.append(up)
+                    else:
+                        upper.append(None)                
+                    
+                    if field == 'Initial':
+                        # Dave check synthax - this are always static variables
+                        ini = Optimization.constraint_data[key][field].get_base_data()
+                        initial.append(ini)
+                    else:
+                        initial.append(None)                                  
+                    
+                    if field == 'Final':
+                        # Dave check synthax - this are always static variables
+                        fi = Optimization.constraint_data[key][field].get_base_data()
+                        final.append(fi)
+                    else:
+                        final.append(None) 
+                       
+                    if field == 'Cyclic':
+                        # Dave check synthax - this are always static variables
+                        cyc = Optimization.constraint_data[key][field].get_base_data()
+                        cyclic.append(cyc)
+                    else:
+                        cyclic.append(None) 
+            else:
+                    pass
+                   
+        # upper and lower bound          
+        bnds_list = zip(upper,lower)
+
+        # convert it into touple
+        bnds = tuple(bnds_list)          
+ 
         
         #total number of opt variables
         nr_opt_variables = np.sum(opt_disc)
@@ -886,7 +940,6 @@ class Python(_Package, utility._FMU):
         
         # check which package and which algorithm
         if Optimization.solver_package == 'nlopt':
-        
             
             if Optimization.algorithm == 'CRS2_LM':
                 opt = nlopt.opt(nlopt.GN_CRS2_LM, nr_opt_variables)
@@ -938,7 +991,6 @@ class Python(_Package, utility._FMU):
                 try: 
                     lower = [i[0] for i in bnds]
                     upper = [i[1] for i in bnds]
-                    
     
                 except:
                     print 'no bounds defined'
@@ -960,33 +1012,85 @@ class Python(_Package, utility._FMU):
     
             """
             # variables needed
+            #Dave change for not Modelica based FMI?
             t_sim = sim_res['time']
             
             #optimization variables (energy)
-            J = sim_res["J"]
+            J = sim_res[optimization.objective_variable]
             
             #constraint violations
             
             #how to access names of constraints? where to specifiy
             # where to specify min, max values.. in model or in framework?
-            t_customer_min = sim_res['O.T_min']
-            t_customer = sim_res['O.idealHeatConsumer.T_in']
+            # Dave constraint violation - tricky to generalize
             
-            # open question: Michael computet just the max value of violation,
-            # IMO we whould computate the integral of violations??
+            # get state constraints:
+            error_lower =[]
+            error_upper = []
             
-            # Compute error trajectory
+            for key in Optimization.constraint_data.keys():
+                # check just state constraints
+                if key not in Optimization.Model.control_data:
+                    # here we (can) have constraint trajectories
+                    for field in Optimization.constraint_data[key]:
+                        
+                        # Dave: check Synthax + make sure that time stamps are equal    
+                        if field == 'GTE':
+                            lw = Optimization.constraint_data[key][field].get_base_data()
+                            error_l = np.trapz(np.maximum(0,sim_res[key]- lw), t_sim)
+                            error_lower.append(error_l)
+                        else:
+                            pass  
+                       
+                        if field == 'LTE':
+                            up = Optimization.constraint_data[key][field].get_base_data()
+                            error_u = np.trapz(np.maximum(0, up - sim_res[key]), t_sim)
+                            error_upper.append(error_u)
+                        else:
+                            pass
+
+  
+            # Compute error 
             # distinguish between constant bounds and trajectory bounds
-            # here for constant - where do we get this variable?
             # if equal constraints (init and end temp) add power term
-            error = np.trapz(np.maximum(0,t_customer_min-t_customer), t_sim)
+            
+            # Dave: tricky to generalze: there could be point constraints (init temp) and path constraints
+            # compute total error based on lower and upper violations
+            total_error = sum(error_lower) + sum(error_upper)
             
             #compute cost function
-            cost = J + mue * (error)
+            cost = J + mue * (total_error)
             
             return cost
     
-  
+    
+    
+        def update_input(x, x_list, key):
+            indices = []
+            # check indices of variables
+            for i, item in enumerate(x[1]):
+                if key in item:
+                    indices.append(i)    
+    
+ 
+            # create new mpcpy variable
+            mpcpy_var = Optimization.Model.control_data[key]
+            
+            # make sure that units fit
+            mpcpy_var.set_display_unit(mpcpy_var.get_base_unit())
+            
+            # control variable update based on inupt x[0] and indices
+            control_update = x[0][indices]
+            
+            #create pandas time series
+            ts = pd.Series(index = mpcpy_var.get_base_data().index, data = control_update)
+            mpcpy_var.set_data(ts)
+            
+            # finally, set updated control variable
+            Optimization.Model.control_data[key] = mpcpy_var    
+    
+    
+    
         def run_sim_opt(x):
             """
             Solve the optimization 
@@ -998,39 +1102,104 @@ class Python(_Package, utility._FMU):
             # input trajectories
             #fix: hard coded final an starttime
             #fix: if different length of input 
-            time_vector = np.linspace(0,43200,len(x))
-    
-            #sim_inputs: name based match? distinguish between parameter and variable
+            #update contro ldata object with new inputs overwriting data dict
+            input_list = []
             
-            # Set FMU (parameters, inputs)
+            for key in Optimization.Model.control_data.keys():
+                # call function update_inpute() to update control inputs
+                update_input(x=x, x_list=x_list, key=key)
+                
+                # create input list based on names
+                input_list.append(Optimization.Model.control_data[key])
+
+            #create input_object
+            self._create_input_object_from_input_mpcpy_ts_list(input_list);
             
-            # run the simulation
-            sim_res = 666
-            
+            # Dave: would like to create a fmu object here: sim_res = ... possible?
+            self._res = simulate_model.simulate(start_time = 0, \
+                                           final_time = self.elapsed_seconds, \
+                                           input = self._input_object, \
+                                           options = self._sim_opts);
+        
+
             # compute the value of the cost function
-            
             cost = cost_function(sim_res, x, mue)
             
             return cost
     
     
-    def penalty_opt(self):
+    def penalty_opt(self, muefun):
         
         # get x_init and penalty multiplier mue: first iteration get global, \
-        #then update per iteration
-        x = Optimization.Model.measurements.keys()
-        mue = Optimization.Model.measurements.keys()
+        # then update per iteration
         
-        # number of iterations - increase mue at every iteration
-        nr_of_iterations = Optimization.Model.Exodata()
+        # Dave: x = discretized opt. variables: e.g.: T_s = [300,300,300,300...]
+        # For first tests - discretize based on pandas time steps
+        xx = []
+        xx_inf =[]
+        # second idea: two lists
+        for key in Optimization.Model.control_data.keys():
+            var_pandas = Optimization.Model.control_data[key].get_base_data()
+            var = var_pandas.values
+            #list with size of control variales.. every entry = np.array
+            xx.append(var)
+            # add var.size times the name of the variable to the list
+            xx_inf.extend([key]*var.size)
+            
+        # original
+        input_list = [];
+        for key in Optimization.Model.control_data.keys():
+            var_pandas = Optimization.Model.control_data[key].get_base_data()
+            var = var_pandas.values
+            #list with size of control variales.. every entry = np.array
+            xx.append(var)
+            input_list.append(Optimization.Model.control_data[key])
+          
+            
+        #third idea = enumerate also same variable (temp1, temp2, temp3)            
+            
+        for key in Optimization.Model.control_data.keys():
+            var_pandas = Optimization.Model.control_data[key].get_base_data()
+            var = var_pandas.values
+            for i, item in enumerate(var):
+                #creates TSupply1, TSupply2....
+                xx_inf.append(key+'{}'.format(i))
+            xx.append(var)
+
         
-        # performe optimization
-        x_opt = wrapper_sim_opt(x_init = x, mue=mue)
+        # open - how to link names: free variables to inputs?????
+        xxx = np.vastak(xx)
+        
+        # array collapsed into one dimension and ready to use within optimization
+        x = xxx.flatten()
+        
+        # x_init list with two entries: first = flat np array with init values
+        # second = corresponding list with variable names
+        x_list = [x,xx_inf]
+        
+        # muefun is the function that returns the updated mue value.. input to the function is iteration counter
+        # counter is here 1
+        mue = muefun(1)
+        
+        nr_of_iterations = 666
+        
+        # performe first optimization
+        x_opt = wrapper_sim_opt(x_init = x, x_list = x_list, mue=mue)
+        
+        #store result values in lists
+        mue_result = []
+        x_opt_result = []
         
         # iterate and increase mue every time and update x_init
-        for i in range(nr_of_iterations):
-            mue_update = np.power(mue, i+1.0)
-            x_opt = wrapper_sim_opt(x_init = x_opt, mue=mue_update)
+        for i in range(nr_of_iterations-2):
+            # start with second iteration
+            mue_update = muefun(i+2)
+            #update x_list based on new x_opt while x_list should stay the same?!
+            x_list = [x_opt, x_list]
+            x_opt = wrapper_sim_opt(x_init = x_opt, x_list = x_list, mue=mue_update)
+            
+            x_opt_result.append(x_opt)
+            mue_result.append(mue_update)
     
     
     
