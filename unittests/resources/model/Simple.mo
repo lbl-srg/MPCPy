@@ -1,6 +1,7 @@
 within ;
 package Simple "A package containing simple examples"
   model RC "A simple RC network for example purposes"
+    parameter Modelica.SIunits.Temperature To = 295 "Starting temperature";
     Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature
       prescribedTemperature
       annotation (Placement(transformation(extent={{-40,0},{-20,20}})));
@@ -18,7 +19,8 @@ package Simple "A package containing simple examples"
       annotation (Placement(transformation(extent={{100,0},{120,20}})));
     Modelica.Blocks.Interfaces.RealInput q_flow(unit="W")
       annotation (Placement(transformation(extent={{-140,-50},{-100,-10}})));
-    Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor(C=1e5)
+    Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor(C=1e5, T(start=
+            To, fixed=true))
       annotation (Placement(transformation(extent={{20,10},{40,30}})));
     Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor(R=
           0.01) annotation (Placement(transformation(extent={{-10,0},{10,20}})));
@@ -86,6 +88,7 @@ package Simple "A package containing simple examples"
 
   package SubPackage
     model RC "A simple RC network for example purposes"
+      parameter Modelica.SIunits.Temperature To = 295 "Starting temperature";
       Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature
         prescribedTemperature
         annotation (Placement(transformation(extent={{-40,0},{-20,20}})));
@@ -103,7 +106,8 @@ package Simple "A package containing simple examples"
         annotation (Placement(transformation(extent={{100,0},{120,20}})));
       Modelica.Blocks.Interfaces.RealInput q_flow(unit="W")
         annotation (Placement(transformation(extent={{-140,-50},{-100,-10}})));
-      Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor(C=1e5)
+      Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor(C=1e5, T(start=
+              To, fixed=true))
         annotation (Placement(transformation(extent={{20,10},{40,30}})));
       Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor(R=
             0.01) annotation (Placement(transformation(extent={{-10,0},{10,20}})));
