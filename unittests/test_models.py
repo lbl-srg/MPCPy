@@ -34,7 +34,7 @@ class SimpleRC(TestCaseMPCPy):
         '''Test simulation of a model.'''
         # Set model paths
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
-        modelpath = 'Simple.RC';
+        modelpath = 'Simple.RC_nostart';
         # Gather control inputs
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
@@ -263,7 +263,7 @@ class EstimateFromUKF(TestCaseMPCPy):
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
         # Set model paths
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
-        modelpath = 'Simple.RC';
+        modelpath = 'Simple.RC_nostart';
         self.moinfo = (mopath, modelpath, {})
         # Gather parameters
         parameter_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Parameters.csv');
