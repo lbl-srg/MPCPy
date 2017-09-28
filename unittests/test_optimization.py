@@ -294,7 +294,40 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'optimize_set_parameters_2.csv');        
+        self.check_df_timeseries(df_test, 'optimize_set_parameters_2.csv');
+        
+    def test_initial_constraint(self):
+        '''Test the optimization of a model with an initial constraint.
+        
+        '''
+        
+        modelpath = 'Simple.RC_nostart';        
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Add initial constraint
+        self.constraints.data['T_db']['Initial'] = variables.Static('T_db_initial', 21, units.degC);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Solve optimization problem                     
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Update model
+        model = opt_problem.Model;
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df_timeseries(df_test, 'optimize_initial_constraint.csv');
+        opt_statistics = opt_problem.get_optimization_statistics();
+        # Check references (except execution time)
+        json_test = opt_statistics[:-1];
+        self.check_json(json_test, 'statistics_initial_constraint.txt');
+        
         
 
 #%% Temperature tests
