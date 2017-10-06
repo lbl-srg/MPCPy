@@ -261,9 +261,9 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.RC';        
         # Instantiate model
-        parameter_data = {'heatCapacitor.C' : {'Free' : False, \
+        parameter_data = {'heatCapacitor.C' : {'Free' : variables.Static('C_free', False, units.boolean), \
                                                'Value' : variables.Static('C_new', 1e5, units.J_K)}, \
-                          'To' : {'Free' : False, \
+                          'To' : {'Free' : variables.Static('To_free', False, units.boolean), \
                                   'Value' : variables.Static('To', 24, units.degC)}};
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
