@@ -107,14 +107,16 @@ class _mpcpyPandas(object):
             final_time = kwargs['final_time'];
         else:
             final_time = df.index.values[-1];
+        ts = df.loc[start_time:final_time, key];
+        ts.name = varname;
         if 'cleaning_type' in kwargs:
             cleaning_type = kwargs['cleaning_type'];
             cleaning_args = kwargs['cleaning_args'];
-            var = variables.Timeseries(varname, df.loc[start_time:final_time, key], unit, tz_name = self.tz_name, \
+            var = variables.Timeseries(varname, ts, unit, tz_name = self.tz_name, \
                                        cleaning_type = cleaning_type, \
                                        cleaning_args = cleaning_args);
         else:
-            var = variables.Timeseries(varname, df.loc[start_time:final_time, key], unit, tz_name = self.tz_name);
+            var = variables.Timeseries(varname, ts, unit, tz_name = self.tz_name);
         
         return var
      
