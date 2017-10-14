@@ -227,7 +227,7 @@ key names should be chosen from the following list:
 - Minimum - minimum value of the parameter for model learning algorithms
 - Maximum - maximum value of the parameter for model learning algorithms
 - Covariance - covariance of the parameter for model learning algorithms
-
+- Unit - unit string of parameter
 Classes
 =======
 
