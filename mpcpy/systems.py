@@ -258,7 +258,7 @@ class RealFromCSV(_Real, utility._DAQ):
 
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];
-        self.measurements[varname]['Measured'] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self.measurements[varname]['Measured'] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                                       start_time=self.start_time, final_time=self.final_time, \
                                                                                       cleaning_type = self._cleaning_type, \
                                                                                       cleaning_args = self._cleaning_args);             
