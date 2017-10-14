@@ -64,6 +64,9 @@ Classes
 
 .. autoclass:: mpcpy.exodata.WeatherFromCSV
     :members: collect_data, display_data, get_base_data
+    
+.. autoclass:: mpcpy.exodata.WeatherFromDF
+    :members: collect_data, display_data, get_base_data
 
 
 ========   
@@ -93,6 +96,9 @@ Classes
 .. autoclass:: mpcpy.exodata.InternalFromCSV
     :members: collect_data, display_data, get_base_data
     
+.. autoclass:: mpcpy.exodata.InternalFromDF
+    :members: collect_data, display_data, get_base_data
+    
 .. autoclass:: mpcpy.exodata.InternalFromOccupancyModel
     :members: collect_data, display_data, get_base_data
     
@@ -115,6 +121,9 @@ Classes
 
 .. autoclass:: mpcpy.exodata.ControlFromCSV
     :members: collect_data, display_data, get_base_data
+    
+.. autoclass:: mpcpy.exodata.ControlFromDF
+    :members: collect_data, display_data, get_base_data
 
 
 ===========
@@ -133,6 +142,9 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.OtherInputFromCSV
+    :members: collect_data, display_data, get_base_data
+    
+.. autoclass:: mpcpy.exodata.OtherInputFromDF
     :members: collect_data, display_data, get_base_data
   
   
@@ -156,6 +168,8 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.PriceFromCSV
+    :members: collect_data, display_data, get_base_data
+.. autoclass:: mpcpy.exodata.PriceFromDF
     :members: collect_data, display_data, get_base_data
 
 
@@ -184,6 +198,9 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.ConstraintFromCSV
+    :members: collect_data, display_data, get_base_data 
+    
+.. autoclass:: mpcpy.exodata.ConstraintFromDF
     :members: collect_data, display_data, get_base_data 
     
 .. autoclass:: mpcpy.exodata.ConstraintFromOccupancyModel
@@ -215,6 +232,9 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.ParameterFromCSV
+    :members: collect_data, display_data, get_base_data 
+    
+.. autoclass:: mpcpy.exodata.ParameterFromDF
     :members: collect_data, display_data, get_base_data 
     
 """
@@ -1425,14 +1445,12 @@ class OtherInputFromDF(_OtherInput, utility._DAQ):
 #%% Parameter source implementations 
 class ParameterFromCSV(_Parameter, utility._DAQ):
     '''Collects parameter data from a csv file. 
-    
-    The csv file rows must be named as the parameter names and the columns 
-    must be named as the parameter key names.
 
     Parameters
     ----------
     csv_file_path : string
-        Path of csv file.
+        Path of csv file. The csv file rows must be named as the parameter 
+        names and the columns must be named as the parameter key names.
 
     Attributes
     ----------
@@ -1465,6 +1483,59 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
         
         # Read coefficients file
         df = pd.read_csv(self.file_path, index_col='Name', dtype={'Unit':str});
+        # Create coefficient dictionary
+        for key in df.index.values:
+            self.data[key] = {};
+            unit = utility.get_unit_class_from_unit_string(df.loc[key, 'Unit']);
+            if df.loc[key, 'Free']:  
+                self.data[key]['Free'] = variables.Static(key+'_free', True, units.boolean);
+                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);
+                self.data[key]['Minimum'] = variables.Static(key+'_min', df.loc[key, 'Minimum'], unit);
+                self.data[key]['Maximum'] = variables.Static(key+'_max', df.loc[key, 'Maximum'], unit);
+                self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
+            else: 
+                self.data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
+                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
+
+class ParameterFromDF(_Parameter, utility._DAQ):
+    '''Collects parameter data from a pandas DataFrame object. 
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        DataFrame of data.  The DataFrame index values must be named as the 
+        parameter names and the columns must be named as the parameter key 
+        names.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Parameter Name" : {"Parameter Key Name" : mpcpy.Variables.Static}}.
+    
+    '''
+
+    def __init__(self, df):
+        '''Constructor of df parameter source.
+        
+        '''
+
+        self.name = 'parameter_from_df';
+        self._df = df;
+        self.data = {};
+        
+    def collect_data(self):
+        '''Collect parameter data from DataFrame into data dictionary.
+        
+        Yields
+        ------
+        
+        data : dictionary
+            Data attribute.
+
+        '''
+        
+        # Read coefficients file
+        df = self._df
         # Create coefficient dictionary
         for key in df.index.values:
             self.data[key] = {};
