@@ -64,6 +64,9 @@ Classes
 
 .. autoclass:: mpcpy.exodata.WeatherFromCSV
     :members: collect_data, display_data, get_base_data
+    
+.. autoclass:: mpcpy.exodata.WeatherFromDF
+    :members: collect_data, display_data, get_base_data
 
 
 ========   
@@ -93,6 +96,9 @@ Classes
 .. autoclass:: mpcpy.exodata.InternalFromCSV
     :members: collect_data, display_data, get_base_data
     
+.. autoclass:: mpcpy.exodata.InternalFromDF
+    :members: collect_data, display_data, get_base_data
+    
 .. autoclass:: mpcpy.exodata.InternalFromOccupancyModel
     :members: collect_data, display_data, get_base_data
     
@@ -115,6 +121,9 @@ Classes
 
 .. autoclass:: mpcpy.exodata.ControlFromCSV
     :members: collect_data, display_data, get_base_data
+    
+.. autoclass:: mpcpy.exodata.ControlFromDF
+    :members: collect_data, display_data, get_base_data
 
 
 ===========
@@ -133,6 +142,9 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.OtherInputFromCSV
+    :members: collect_data, display_data, get_base_data
+    
+.. autoclass:: mpcpy.exodata.OtherInputFromDF
     :members: collect_data, display_data, get_base_data
   
   
@@ -156,6 +168,8 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.PriceFromCSV
+    :members: collect_data, display_data, get_base_data
+.. autoclass:: mpcpy.exodata.PriceFromDF
     :members: collect_data, display_data, get_base_data
 
 
@@ -186,6 +200,9 @@ Classes
 .. autoclass:: mpcpy.exodata.ConstraintFromCSV
     :members: collect_data, display_data, get_base_data 
     
+.. autoclass:: mpcpy.exodata.ConstraintFromDF
+    :members: collect_data, display_data, get_base_data 
+    
 .. autoclass:: mpcpy.exodata.ConstraintFromOccupancyModel
     :members: collect_data, display_data, get_base_data     
 
@@ -210,11 +227,15 @@ key names should be chosen from the following list:
 - Minimum - minimum value of the parameter for model learning algorithms
 - Maximum - maximum value of the parameter for model learning algorithms
 - Covariance - covariance of the parameter for model learning algorithms
+- Unit - unit string of parameter
 
 Classes
 =======
 
 .. autoclass:: mpcpy.exodata.ParameterFromCSV
+    :members: collect_data, display_data, get_base_data 
+    
+.. autoclass:: mpcpy.exodata.ParameterFromDF
     :members: collect_data, display_data, get_base_data 
     
 """
@@ -318,8 +339,8 @@ class _Weather(_Type, utility._FMU):
         '''
         
         varname = self.variable_map[self._key][0];
-        unit = self.variable_map[self._key][1];        
-        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        unit = self.variable_map[self._key][1];
+        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);
@@ -515,13 +536,13 @@ class _Internal(_Type):
         varname = load + '_' + zone;
         unit = self.variable_map[self._key][2];        
         try:
-            self.data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self.data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);
         except KeyError:
             self.data[zone] = {};
-            self.data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self.data[zone][load] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);        
@@ -557,7 +578,7 @@ class _Control(_Type):
         
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);   
@@ -592,7 +613,7 @@ class _OtherInput(_Type):
         
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);
@@ -680,13 +701,13 @@ class _Constraint(_Type):
         varname = state + '_' + key;
         unit = self.variable_map[self._key][2];        
         try:
-            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);
         except KeyError:
             self.data[state] = {};
-            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
                                                                        cleaning_args = self._cleaning_args);        
@@ -722,7 +743,7 @@ class _Price(_Type):
         
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df_csv, self._key, varname, unit, \
+        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);        
@@ -980,6 +1001,64 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         self._read_timeseries_from_csv();
         # Process weather data
         if self.process_variables is not None:
+            self._process_weather_data();
+            
+class WeatherFromDF(_Weather, utility._DAQ):
+    '''Collects weather data from a pandas DataFrame object.
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+        DataFrame of data.  The index must be a datetime object.
+    variable_map : dictionary
+        {"Column Header Name" : ("Weather Variable Name", mpcpy.Units.unit)}.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Weather Variable Name" : mpcpy.Variables.Timeseries}.
+    lat : numeric
+        Latitude in degrees.
+    lon : numeric
+        Longitude in degrees.
+    tz_name : string
+        Timezone name.  
+
+    '''
+    
+    def __init__(self, df, variable_map, **kwargs):
+        '''Constructor of DataFrame weather exodata object.
+        
+        '''
+        print(df.index.get_values()[0].__class__)
+        self.name = 'weather_from_df';
+        self._df = df;  
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('weaVarName', mpcpyUnit)}
+        self.variable_map = variable_map;          
+        # Process Variables
+        if 'process_variables' in kwargs:
+            self.process_variables = kwargs['process_variables'];
+        else:
+            self.process_variables = None;
+        # Common kwargs
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);
+        # Assert geography
+        assert(bool(self.lat) == True);
+        assert(bool(self.lon) == True);
+           
+    def _collect_data(self, start_time, final_time):
+        '''Collect data from DataFrame into data dictionary.
+        
+        '''
+        
+        # Set time interval
+        self._set_time_interval(start_time, final_time);
+        # Get bulk time series        
+        self._read_timeseries_from_df();
+        # Process weather data
+        if self.process_variables is not None:
             self._process_weather_data();   
                                              
 #%% Internal source implementations
@@ -1220,6 +1299,53 @@ class ControlFromCSV(_Control, utility._DAQ):
         # Get bulk time series        
         self._read_timeseries_from_csv();
         
+class ControlFromDF(_Control, utility._DAQ):
+    '''Collects control data from a pandas DataFrame object.
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+        DataFrame of data.  The index must be a datetime object.
+    variable_map : dictionary
+        {"Column Header Name" : ("Control Variable Name", mpcpy.Units.unit)}.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Control Variable Name" : mpcpy.Variables.Timeseries}.
+    lat : numeric
+        Latitude in degrees.
+    lon : numeric
+        Longitude in degrees.
+    tz_name : string
+        Timezone name.  
+
+    '''
+
+    def __init__(self, df, variable_map, **kwargs):
+        '''Constructor of df control exodata object.
+        
+        '''
+
+        self.name = 'control_from_df';
+        self._df = df;
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('conVarName', mpcpyUnit)}
+        self.variable_map = variable_map;
+        # Common kwargs
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);             
+                   
+    def _collect_data(self, start_time, final_time):
+        '''Collect data from the df into data dictionary.
+        
+        '''
+        
+        # Set time interval
+        self._set_time_interval(start_time, final_time);
+        # Get bulk time series        
+        self._read_timeseries_from_df();
+        
 #%% Other input source implementations        
 class OtherInputFromCSV(_OtherInput, utility._DAQ):
     '''Collects other input data from a CSV file.
@@ -1268,19 +1394,64 @@ class OtherInputFromCSV(_OtherInput, utility._DAQ):
         # Set time interval
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
-        self._read_timeseries_from_csv();        
+        self._read_timeseries_from_csv();
+        
+class OtherInputFromDF(_OtherInput, utility._DAQ):
+    '''Collects other input data from a pandas DataFrame object.
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+        DataFrame of data.  The index must be a datetime object.
+    variable_map : dictionary
+        {"Column Header Name" : ("Other Input Variable Name", mpcpy.Units.unit)}.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Other Input Variable Name" : mpcpy.Variables.Timeseries}.
+    lat : numeric
+        Latitude in degrees.
+    lon : numeric
+        Longitude in degrees.
+    tz_name : string
+        Timezone name.  
+
+    '''
+
+    def __init__(self, df, variable_map, **kwargs):
+        '''Constructor of df other input exodata object.
+        
+        '''
+
+        self.name = 'otherinput_from_df';
+        self._df = df;
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('otherinputVarName', mpcpyUnit)}
+        self.variable_map = variable_map;
+        # Common kwargs
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);             
+                   
+    def _collect_data(self, start_time, final_time):
+        '''Collect data from the df into data dictionary.
+        
+        '''
+        
+        # Set time interval
+        self._set_time_interval(start_time, final_time);
+        # Get bulk time series        
+        self._read_timeseries_from_df();
         
 #%% Parameter source implementations 
 class ParameterFromCSV(_Parameter, utility._DAQ):
     '''Collects parameter data from a csv file. 
-    
-    The csv file rows must be named as the parameter names and the columns 
-    must be named as the parameter key names.
 
     Parameters
     ----------
     csv_file_path : string
-        Path of csv file.
+        Path of csv file. The csv file rows must be named as the parameter 
+        names and the columns must be named as the parameter key names.
 
     Attributes
     ----------
@@ -1313,6 +1484,59 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
         
         # Read coefficients file
         df = pd.read_csv(self.file_path, index_col='Name', dtype={'Unit':str});
+        # Create coefficient dictionary
+        for key in df.index.values:
+            self.data[key] = {};
+            unit = utility.get_unit_class_from_unit_string(df.loc[key, 'Unit']);
+            if df.loc[key, 'Free']:  
+                self.data[key]['Free'] = variables.Static(key+'_free', True, units.boolean);
+                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);
+                self.data[key]['Minimum'] = variables.Static(key+'_min', df.loc[key, 'Minimum'], unit);
+                self.data[key]['Maximum'] = variables.Static(key+'_max', df.loc[key, 'Maximum'], unit);
+                self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
+            else: 
+                self.data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
+                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
+
+class ParameterFromDF(_Parameter, utility._DAQ):
+    '''Collects parameter data from a pandas DataFrame object. 
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        DataFrame of data.  The DataFrame index values must be named as the 
+        parameter names and the columns must be named as the parameter key 
+        names.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Parameter Name" : {"Parameter Key Name" : mpcpy.Variables.Static}}.
+    
+    '''
+
+    def __init__(self, df):
+        '''Constructor of df parameter source.
+        
+        '''
+
+        self.name = 'parameter_from_df';
+        self._df = df;
+        self.data = {};
+        
+    def collect_data(self):
+        '''Collect parameter data from DataFrame into data dictionary.
+        
+        Yields
+        ------
+        
+        data : dictionary
+            Data attribute.
+
+        '''
+        
+        # Read coefficients file
+        df = self._df
         # Create coefficient dictionary
         for key in df.index.values:
             self.data[key] = {};
@@ -1376,6 +1600,55 @@ class ConstraintFromCSV(_Constraint, utility._DAQ):
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
         self._read_timeseries_from_csv();
+        
+class ConstraintFromDF(_Constraint, utility._DAQ):
+    '''Collects constraint data from a pandas DataFrame object.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        DataFrame of data.  The index must be a datetime object.
+    variable_map : dictionary
+        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}.
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
+    tz_name : string
+        Timezone name.
+    file_path : string
+        Path of csv file.
+
+    '''
+
+    def __init__(self, df, variable_map, **kwargs):
+        '''Constructor of df constraint exodata object.
+        
+        '''
+
+        self.name = 'otherinput_from_df';
+        self._df = df;
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('otherinputVarName', mpcpyUnit)}
+        self.variable_map = variable_map;
+        # Common kwargs
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);             
+                   
+    def _collect_data(self, start_time, final_time):
+        '''Collect data from the df into data dictionary.
+        
+        '''
+        
+        # Set time interval
+        self._set_time_interval(start_time, final_time);
+        # Get bulk time series        
+        self._read_timeseries_from_df();
         
 class ConstraintFromOccupancyModel(_Constraint):
     '''Collects constraint data from an occupancy model.
@@ -1485,3 +1758,52 @@ class PriceFromCSV(_Price, utility._DAQ):
         self._set_time_interval(start_time, final_time);
         # Get bulk time series        
         self._read_timeseries_from_csv();                
+
+class PriceFromDF(_Price, utility._DAQ):
+    '''Collects price data from a pandas DataFrame object.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        DataFrame of data.  The index must be a datetime object.
+    variable_map : dictionary
+        {"Column Header Name" : ("Price Variable Name", mpcpy.Units.unit)}.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Price Variable Name" : mpcpy.Variables.Timeseries}.
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
+    tz_name : string
+        Timezone name.
+    file_path : string
+        Path of csv file.
+
+    '''
+
+    def __init__(self, df, variable_map, **kwargs):
+        '''Constructor of df price exodata object.
+        
+        '''
+
+        self.name = 'price_from_df';
+        self._df = df;
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('otherinputVarName', mpcpyUnit)}
+        self.variable_map = variable_map;
+        # Common kwargs
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);             
+                   
+    def _collect_data(self, start_time, final_time):
+        '''Collect data from the df into data dictionary.
+        
+        '''
+        
+        # Set time interval
+        self._set_time_interval(start_time, final_time);
+        # Get bulk time series        
+        self._read_timeseries_from_df();
