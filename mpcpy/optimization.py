@@ -457,14 +457,7 @@ class JModelica(_Package, utility._FMU):
         self.mopfile.write('\n');
         self.mopfile.write('  model ' + self.Model.modelpath.split('.')[-1] + '_initialize\n');
         package = self.Model.modelpath.split('.')[1:];
-        self.mopfile.write('    ' + '.'.join(package) + ' mpc_model(\n');
-        # Add parameters if they exist
-        if self.Model.parameter_data:
-            for key in self.Model.parameter_data.keys()[:-1]:
-                self.mopfile.write('     ' + key + '=' + str(self.Model.parameter_data[key]['Value'].get_base_data()) + ',\n');
-            self.mopfile.write('     ' + self.Model.parameter_data.keys()[-1] + '=' + str(self.Model.parameter_data[self.Model.parameter_data.keys()[-1]]['Value'].get_base_data()) + ');\n');
-        else:
-            self.mopfile.write(');\n');
+        self.mopfile.write('    ' + '.'.join(package) + ' mpc_model();\n');
         # Instantiate optimization model inputs
         for key in self.Model.input_names:
             self.mopfile.write('    input Real ' + key + '= mpc_model.' + key + ';\n');
@@ -584,6 +577,10 @@ class JModelica(_Package, utility._FMU):
             self.other_inputs = self.Model.other_inputs;
             self.opt_input_names = self._init_input_names;
             # Otherwise inputs set by write control mop
+        # Set parameters
+        self.parameter_data = {};
+        for key in self.Model.parameter_data.keys():
+            self.parameter_data['mpc_model.'+key] = self.Model.parameter_data[key];
         # Set input_names
         self.input_names = self._init_input_names;
         # Set measurements
