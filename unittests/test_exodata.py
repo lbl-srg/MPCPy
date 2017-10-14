@@ -397,6 +397,24 @@ class ParameterFromCSV(TestCaseMPCPy):
         # Check reference
         df_test = self.parameters.display_data();
         self.check_df_general(df_test, 'collect_data.csv');
+        
+class ParameterFromDF(TestCaseMPCPy):
+    '''Test the collection of parameter data from a pandas DataFrame object.
+    
+    '''
+    
+    def setUp(self):
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv');
+        df = pd.read_csv(csv_filepath, index_col = 'Name')
+        # Instantiate weather object
+        self.parameters = exodata.ParameterFromDF(df);
+
+    def test_collect_data(self):
+        # Get parameter data
+        self.parameters.collect_data();
+        # Check reference
+        df_test = self.parameters.display_data();
+        self.check_df_general(df_test, 'collect_data.csv');
 
 #%% Constraint Tests
 class ConstraintFromCSV(TestCaseMPCPy):
