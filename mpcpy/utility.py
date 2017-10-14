@@ -98,7 +98,7 @@ class _mpcpyPandas(object):
             mpcpy timeseries variable resulting from the dataframe column.
         
         '''
-        
+
         if 'start_time' in kwargs:
             start_time = kwargs['start_time'];
         else:
@@ -661,23 +661,23 @@ class _DAQ(object):
             time_headers = self.time_header;
         else:
             time_headers = ['Time', 'time', 'Timestamp', 'timestamp']; 
-        self._df_csv = pd.read_csv(self.file_path);        
-        for key in self._df_csv.columns.values:
+        self._df = pd.read_csv(self.file_path);        
+        for key in self._df.columns.values:
             if key in time_headers:
-                time = pd.to_datetime(self._df_csv[key], format = self.time_format);
-                self._df_csv.set_index(time, inplace=True);
-                self._df_csv.index.name = 'Time';
+                time = pd.to_datetime(self._df[key], format = self.time_format);
+                self._df.set_index(time, inplace=True);
+                self._df.index.name = 'Time';
                 try:
-                    self._df_csv = self._df_csv.tz_localize(self.tz_name);
+                    self._df = self._df.tz_localize(self.tz_name);
                 except pytz_exceptions.AmbiguousTimeError as time_ambiguous:
                     time_ambiguous = pd.to_datetime(time_ambiguous.args[0].split("'")[1])
                     if time_ambiguous.month == 11:
-                        _df_csv_dst = self._df_csv[self._df_csv.index < time_ambiguous].tz_localize(self.tz_name);
-                        _df_csv_st = self._df_csv[(self._df_csv.index > time_ambiguous + relativedelta(hours = 1))].shift(periods = -1, freq = 'H').tz_localize(self.tz_name);
-                        _df_csv_amb = self._df_csv[(self._df_csv.index >= time_ambiguous) & (self._df_csv.index <= time_ambiguous + relativedelta(hours = 1))];
-                        _df_csv_amb_0 = _df_csv_amb.iloc[0:1].tz_localize(self.tz_name, ambiguous = np.array([True]));
-                        _df_csv_amb_1 = _df_csv_amb.iloc[1:2].shift(periods = -1, freq = 'H').tz_localize(self.tz_name, ambiguous = np.array([False]));
-                        self._df_csv = pd.concat([_df_csv_dst, _df_csv_amb_0, _df_csv_amb_1, _df_csv_st], axis = 0);
+                        _df_dst = self._df[self._df.index < time_ambiguous].tz_localize(self.tz_name);
+                        _df_st = self._df[(self._df.index > time_ambiguous + relativedelta(hours = 1))].shift(periods = -1, freq = 'H').tz_localize(self.tz_name);
+                        _df_amb = self._df[(self._df.index >= time_ambiguous) & (self._df.index <= time_ambiguous + relativedelta(hours = 1))];
+                        _df_amb_0 = _df_amb.iloc[0:1].tz_localize(self.tz_name, ambiguous = np.array([True]));
+                        _df_amb_1 = _df_amb.iloc[1:2].shift(periods = -1, freq = 'H').tz_localize(self.tz_name, ambiguous = np.array([False]));
+                        self._df = pd.concat([_df_dst, _df_amb_0, _df_amb_1, _df_st], axis = 0);
                 
         # Get timeseries data according to variable map and cleaning
         for self._key in self.variable_map:
@@ -688,7 +688,27 @@ class _DAQ(object):
                 except (TypeError,KeyError):
                     self._cleaning_type = None;
                     self._cleaning_args = None;   
-                self._translate_variable_map();    
+                self._translate_variable_map();
+                
+    def _read_timeseries_from_df(self):
+        '''Read timeseries data from a pandas DataFrame into mpcpy data.
+        
+        This method assumes the concrete class will define the method
+        ``_translate_variable_map``.
+        
+        '''
+        
+        # Set time index from default or user-specified time header
+        self._df = self._df.tz_localize(self.tz_name);   
+        # Get timeseries data according to variable map and cleaning
+        for self._key in self.variable_map:
+            try:
+                self._cleaning_type = self.clean_data[self._key]['cleaning_type'];
+                self._cleaning_args = self.clean_data[self._key]['cleaning_args'];
+            except (TypeError,KeyError):
+                self._cleaning_type = None;
+                self._cleaning_args = None;   
+            self._translate_variable_map();    
     
 class _Measurements(object):
     '''Mixin class to handle operations on measurement dictionaries.
