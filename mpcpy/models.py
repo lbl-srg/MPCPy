@@ -885,46 +885,47 @@ class ModestPy(_Estimate):
         # Default
         workdir = os.getcwd() # Directory to save outputs of modestpy (can be changed by the user)
         fmu_path = Model.fmupath
-        ga_pop = None       # Size of GA population, if None, ModestPy chooses automatically based on free parameters
-        ga_iter = 30        # Maximum number of genetic algorithm iterations (generations) (can be changed by the user)
-        ga_tol = 0.001      # GA tolerance (accepted error)
-        ps_iter = 150       # Maximum number of pattern search iterations (can be changed by the user)
-        ps_tol = 0.0001     # PS tolerance (accepted error)
+
+        fmi_opts = {}       # Options passed to the model solver via FMI
+        ga_opts = {}        # Genetic Algorithm options
+        ps_opts = {}        # Pattern Search options
+        sqp_opts = {}       # Sequential Quadratic Programming options (SLSQP from SciPy)
+        methods = ('GA', 'PS')
+
         lp_n = 1            # One learning period (can be changed by the user)
-        par_type = 'best'   # Parameter type
         lp_len = None       # Take entire data set (cannot be changed)
         lp_frame = None     # Take entire data set (cannot be changed)
         vp = None           # Validation not needed, because it's performed by MPCPy (cannot be changed)
         ic_param = None     # TODO: Decide with Dave what to do with IC parameters
-        opts = None         # Additional FMI simulation options (e.g. solver tolerance)
         seed = None         # Random number seed, can be None
-        lhs = False         # Latin Hypercube Initilization
         ftype = 'RMSE'      # Cost function type, 'RMSE' or 'NRMSE'
 
         # Custom settings from kwargs
         for key in kwargs:
             if key == 'workdir':
                 workdir = kwargs[key]
-            elif key == 'ga_pop':
-                ga_pop = kwargs[key]
-            elif key == 'ga_iter':
-                ga_iter = kwargs[key]
-            elif key == 'ga_tol':
-                ga_tol = kwargs[key]
-            elif key == 'ps_iter':
-                ps_iter = kwargs[key]
-            elif key == 'ps_tol':
-                ps_tol = kwargs[key]
+            elif key == 'fmi_opts':
+                fmi_opts = kwargs[key]
+            elif key == 'ga_opts':
+                ga_opts = kwargs[key]
+            elif key == 'ps_opts':
+                ps_opts = kwargs[key]
+            elif key == 'sqp_opts':
+                sqp_opts = kwargs[key]
+            elif key == 'methods':
+                methods = kwargs[key]
             elif key == 'lp_n':
                 lp_n = kwargs[key]
-            elif key == 'par_type':
-                par_type = kwargs[key]
-            elif key == 'opts':
-                opts = kwargs[key]
+            elif key == 'lp_len':
+                lp_len = kwargs[key]
+            elif key == 'lp_frame':
+                lp_frame = kwargs[key]
+            elif key == 'vp':
+                vp = kwargs[key]
+            elif key == 'ic_param':
+                ic_param = kwargs[key]
             elif key == 'seed':
                 seed = kwargs[key]
-            elif key == 'lhs':
-                lhs = kwargs[key]
             elif key == 'ftype':
                 ftype = kwargs[key]
 
@@ -1018,10 +1019,9 @@ class ModestPy(_Estimate):
         session = modestpy.Estimation(workdir, fmu_path, inp, known, est, ideal,
                                       lp_n=lp_n, lp_len=lp_len, lp_frame=lp_frame, 
                                       vp=vp, ic_param=ic_param,
-                                      ga_iter=ga_iter, ga_tol=ga_tol,
-                                      ps_iter=ps_iter, ps_tol=ps_tol, opts=opts,
-                                      seed=seed, ga_pop=ga_pop, lhs=lhs, ftype=ftype)
-        estimates = session.estimate(par_type)
+                                      fmi_opts=fmi_opts, ga_opts=ga_opts, ps_opts=ps_opts,
+                                      seed=seed, ftype=ftype)
+        estimates = session.estimate()
 
         # Put estimates into Model.parameter_data
         for par_name in estimates:
