@@ -829,29 +829,17 @@ class UKF(_Estimate, utility._FMU):
 
 class ModestPy(_Estimate):
     """
-    ModestPy estimation method using combined genetic algorithm
-    and pattern search (also known as Hooke-Jeeves).
-
-    The method accepts optional arguments described below. The arguments
-    control error tolerance, number of iterations and number of learning periods.
-
-    Either method can be switched off by setting the respective maximum
-    number of iterations to zero (*ga_iter*, *ps_iter*). It is advised however
-    not to switch off the pattern search, as it helps to achieve the local optimum.
-
-    If the number of learning periods is more than 1, the user can choose the
-    type of parameters to be calculated by the method: average from all runs or
-    best from all runs (i.e. with the lowest error). If the are concerns about
-    overfitting the model, the average parameters are advised. On the other hand,
-    if the cost function is highly non-convex, it might be better to use multiple
-    learning periods and pick the best parameters with the lowest error.
+    ModestPy estimation method using multi-step estimation. Available methods:
+    * genetic algorithm ('GA')
+    * pattern search ('PS')
+    * sequential quadratic programming ('SQP')
 
     The method saves additional output files: 
 
-    * all_estimates.csv - estimates and errors from all runs (run per row),
-    * all_estimates.png - scatter matrix plot of all estimates vs. errors,
-    * err_evo.csv - error evolution (run per column),
-    * err_evo.png - error evolution plot,
+    * best_per_run.csv - estimates and errors from all runs (run per row),
+    * final.csv - final estimated parameters
+    * summary_N.csv - errors, methods, parameters from all iterations
+    * errors.png - plot of errors from all runs
     * ga_N.png and ps_N.png - parameter evolution plots for N run of GA and PS.
 
     By default the files are saved in the current working directory. A custom
@@ -861,18 +849,22 @@ class ModestPy(_Estimate):
     -------------------
     workdir: string
         Working directory
-    ga_iter: int
-        Maximum number of genetic algorithm iterations (generations), default 30
-    ga_tol: float
-        GA tolerance (accepted error), default 1e-3
-    ps_iter: int
-        Maximum number of pattern search iterations, default 150
-    ps_tol: float
-        PS tolerance (accepted error), default 1e-4
+    fmi_opts: dict
+        Optional parameters passed to the solver via FMI
+    ga_opts: dict
+        Optional GA parameters
+    ps_opts: dict
+        Optional PS parameters
+    sqp_opts: dict
+        Optional SQP parameters (passed to SLSQP solver in SciPy)
     lp_n: int
         Number of learning runs, default 1
-    par_type: str
-        Return parameter type: 'best' (default) or 'avg'
+    methods: tuple(str)
+        Method sequence, default ('GA', 'PS')
+    seed: int
+        Random number seed (used in GA)
+    ftype: str
+        Cost function type, 'RMSE' (default) or 'NRMSE' (advised if cost function includes multiple variables)
     """
 
     def __init__(self, Model):
@@ -893,9 +885,6 @@ class ModestPy(_Estimate):
         methods = ('GA', 'PS')
 
         lp_n = 1            # One learning period (can be changed by the user)
-        lp_len = None       # Take entire data set (cannot be changed)
-        lp_frame = None     # Take entire data set (cannot be changed)
-        vp = None           # Validation not needed, because it's performed by MPCPy (cannot be changed)
         ic_param = None     # TODO: Decide with Dave what to do with IC parameters
         seed = None         # Random number seed, can be None
         ftype = 'RMSE'      # Cost function type, 'RMSE' or 'NRMSE'
@@ -916,14 +905,8 @@ class ModestPy(_Estimate):
                 methods = kwargs[key]
             elif key == 'lp_n':
                 lp_n = kwargs[key]
-            elif key == 'lp_len':
-                lp_len = kwargs[key]
-            elif key == 'lp_frame':
-                lp_frame = kwargs[key]
-            elif key == 'vp':
-                vp = kwargs[key]
-            elif key == 'ic_param':
-                ic_param = kwargs[key]
+            # elif key == 'ic_param':
+            #     ic_param = kwargs[key]
             elif key == 'seed':
                 seed = kwargs[key]
             elif key == 'ftype':
@@ -932,7 +915,7 @@ class ModestPy(_Estimate):
         # Get measurements
         # ================
         ideal = pd.DataFrame()
-        meas_vars = Model.measurements.keys()
+        meas_vars = Model.measurement_variable_list
         for v in meas_vars:
             if 'Measured' in Model.measurements[v]:
                 ideal[v] = Model.measurements[v]['Measured'].get_base_data()
@@ -1017,8 +1000,8 @@ class ModestPy(_Estimate):
         # Estimation using ModestPy
         # =========================
         session = modestpy.Estimation(workdir, fmu_path, inp, known, est, ideal,
-                                      lp_n=lp_n, lp_len=lp_len, lp_frame=lp_frame, 
-                                      vp=vp, ic_param=ic_param,
+                                      lp_n=lp_n, lp_len=None, lp_frame=None, 
+                                      vp=None, ic_param=None, methods=methods,
                                       fmi_opts=fmi_opts, ga_opts=ga_opts, ps_opts=ps_opts,
                                       seed=seed, ftype=ftype)
         estimates = session.estimate()
