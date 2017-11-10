@@ -59,6 +59,24 @@ class TestFMIVersionDefault(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}));
         self.assertEqual(model.fmu_version, '2.0');
         
+class TestFMITarget(TestCaseMPCPy):
+    def setUp(self):
+        self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        self.modelpath = 'Simple.RC';
+
+    def test_fmi_target(self):
+        for target in ['default', 'me', 'cs']:
+            if target == 'default':
+                building = systems.EmulationFromFMU({}, moinfo = (self.mopath, self.modelpath, {}));
+                self.assertEqual(building.fmu_target, 'me');
+                model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}));
+                self.assertEqual(model.fmu_target, 'me');
+            else:
+                building = systems.EmulationFromFMU({}, moinfo = (self.mopath, self.modelpath, {}), target=target);
+                self.assertEqual(building.fmu_target, target);
+                model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}), target=target);
+                self.assertEqual(model.fmu_target, target);
+        
 class TestGetInputNames(TestCaseMPCPy):
     def setUp(self):
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
