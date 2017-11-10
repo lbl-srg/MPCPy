@@ -13,6 +13,7 @@ User Guide
    systems
    models
    optimization
+   testing
    acknowledgements
    disclaimers
    license

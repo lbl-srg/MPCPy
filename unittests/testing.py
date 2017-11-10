@@ -1,6 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-This module contains base classes for testing in mpcpy.
+Testing in MPCPy ensures stable software development.  The directory 
+``/unittests`` contains modules for tests and testing functionality, as well as
+directories that hold testing resources and reference results.  Reference
+results are stored for tests that require comparisons of complex data, 
+including DataFrames and json structures.  The ``/unittests/testing.py`` module
+contains functionality for testing of these complex structures.  Other tests on
+more simple data are carried out with reference values hard-coded within the 
+test.  Please consult the classes below for more information about testing 
+complex structures in MPCPy.
+
+The script ``/bin/runUnitTests.py`` is used to manage the running of all of 
+the tests.  Consult the Getting Started section of the user guide for 
+information on how to use this script to run tests. There is a test module for 
+each of the main MPCPy modules named ``test_*``.  Within each test module 
+there are classes for testing the different components of MPCPy, while the 
+specific test functions, ``test_*``, are executed within each test class.
+
+Classes
+=======
+
+.. autoclass:: unittests.testing.TestCaseMPCPy
+    :members: get_unittest_path, get_ref_path, check_df, check_json
 
 """
 
@@ -39,7 +60,17 @@ class TestCaseMPCPy(unittest.TestCase):
         return ref_path;
         
     def check_df(self, df_test, ref_file_name, timeseries=True):
-        '''Compares DataFrame test data to reference data according to tolerance.
+        '''Compares DataFrame test data to reference data with tolerance.
+        
+        If the reference data file does not exist, a reference data file is 
+        using the test DataFrame.
+        
+        If a failure is found, a message is printed indicating if the failure 
+        is from index, key, or value checking.  If the failure is index or key, 
+        the location will be specified.  If the failure is value, a plot will
+        be generated and saved within the reference file folder for inspection.
+        The plot will show the reference and testing values, along with
+        the location of the maximum error between the two.
         
         Parameters
         ----------
