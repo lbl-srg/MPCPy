@@ -5,6 +5,7 @@ This module contains the classes for testing the optimization module of mpcpy.
 """
 import unittest
 import os
+import pandas as pd
 from matplotlib import pyplot as plt
 from mpcpy import models
 from mpcpy import optimization
@@ -251,8 +252,9 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         # Get statistics
         opt_statistics = opt_problem.get_optimization_statistics();
         # Check references (except execution time)
-        json_test = opt_statistics[:-1];
-        self.check_json(json_test, 'statistics.txt');
+        df_test = pd.DataFrame(columns=['message', 'iterations', 'objective'], index = [0])
+        df_test.loc[0] = opt_statistics[:-1]
+        self.check_df(df_test, 'statistics.csv', timeseries=False);
         
     def test_set_parameters(self):
         '''Test the dynamic setting of parameters.
@@ -325,8 +327,9 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         self.check_df(df_test, 'optimize_initial_constraint.csv');
         opt_statistics = opt_problem.get_optimization_statistics();
         # Check references (except execution time)
-        json_test = opt_statistics[:-1];
-        self.check_json(json_test, 'statistics_initial_constraint.txt');
+        df_test = pd.DataFrame(columns=['message', 'iterations', 'objective'], index = [0])
+        df_test.loc[0] = opt_statistics[:-1]
+        self.check_df(df_test, 'statistics_initial_constraint.csv', timeseries=False);
         
         
 
