@@ -66,7 +66,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'optimize.csv');
+        self.check_df(df_test, 'optimize.csv');
         
     def test_set_problem_type(self):
         '''Test the dynamic setting of a problem type.
@@ -97,7 +97,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'optimize_energy.csv');
+        self.check_df(df_test, 'optimize_energy.csv');
         # Set new problem type
         opt_problem.set_problem_type(optimization.EnergyCostMin);
         # Gather prices
@@ -110,7 +110,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'optimize_energycost.csv');
+        self.check_df(df_test, 'optimize_energycost.csv');
         
     def test_optimize_subpackage(self):
         '''Test the optimization of a model within a subpackage.
@@ -136,7 +136,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'optimize_subpackage.csv');
+        self.check_df(df_test, 'optimize_subpackage.csv');
         
     def test_get_options(self):
         '''Test the getting of optimization options.
@@ -196,7 +196,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'optimize_new_options.csv');
+        self.check_df(df_test, 'optimize_new_options.csv');
 
     def test_set_options_error(self):
         '''Test the setting of optimization options cannot occur with auto options.
@@ -283,7 +283,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'optimize_set_parameters_1.csv');
+        self.check_df(df_test, 'optimize_set_parameters_1.csv');
         # Set new parameters of model
         parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_new', 1e7, units.J_K);
         parameter_data['To']['Value'] = variables.Static('To', 22, units.degC);
@@ -294,7 +294,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'optimize_set_parameters_2.csv');
+        self.check_df(df_test, 'optimize_set_parameters_2.csv');
         
     def test_initial_constraint(self):
         '''Test the optimization of a model with an initial constraint.
@@ -322,7 +322,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'optimize_initial_constraint.csv');
+        self.check_df(df_test, 'optimize_initial_constraint.csv');
         opt_statistics = opt_problem.get_optimization_statistics();
         # Check references (except execution time)
         json_test = opt_statistics[:-1];
@@ -445,7 +445,7 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         self.model = self.opt_problem.Model;
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'energymin.csv');
+        self.check_df(df_test, 'energymin.csv');
 
     def test_energycostmin(self):
         '''Test energy cost minimization of a model.'''
@@ -458,7 +458,7 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         self.model = self.opt_problem.Model;
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'energycostmin.csv');
+        self.check_df(df_test, 'energycostmin.csv');
         
 if __name__ == '__main__':
     unittest.main()

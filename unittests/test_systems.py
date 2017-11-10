@@ -71,9 +71,9 @@ class EmulationFromFMU(TestCaseMPCPy):
         building.collect_measurements(start_time, final_time);
         # Check references
         df_test = building.display_measurements('Measured');
-        self.check_df_timeseries(df_test, 'collect_measurements_display.csv');
+        self.check_df(df_test, 'collect_measurements_display.csv');
         df_test = building.get_base_measurements('Measured');
-        self.check_df_timeseries(df_test, 'collect_measurements_base.csv');  
+        self.check_df(df_test, 'collect_measurements_base.csv');  
         
     def test_collect_measurements_dst_start(self):
         # Test simulation through the start of daylight savings time
@@ -95,7 +95,7 @@ class EmulationFromFMU(TestCaseMPCPy):
         building.collect_measurements(start_time, final_time);
         # Check references
         df_test = building.display_measurements('Measured');
-        self.check_df_timeseries(df_test, 'collect_measurements_dst_start.csv');
+        self.check_df(df_test, 'collect_measurements_dst_start.csv');
         
     def test_collect_measurements_dst_end(self):
         # Test simulation through the end of daylight savings time
@@ -117,7 +117,7 @@ class EmulationFromFMU(TestCaseMPCPy):
         building.collect_measurements(start_time, final_time);
         # Check references
         df_test = building.display_measurements('Measured');
-        self.check_df_timeseries(df_test, 'collect_measurements_dst_end.csv');
+        self.check_df(df_test, 'collect_measurements_dst_end.csv');
 
     def plot_measurements(self, name):
         for key in self.building.measurements.keys():
@@ -153,9 +153,9 @@ class RealfromCSV(TestCaseMPCPy):
         self.building.collect_measurements(start_time, final_time);
         # Check references
         df_test = self.building.display_measurements('Measured');
-        self.check_df_timeseries(df_test, 'collect_measurements_display.csv');
+        self.check_df(df_test, 'collect_measurements_display.csv');
         df_test = self.building.get_base_measurements('Measured');
-        self.check_df_timeseries(df_test, 'collect_measurements_base.csv');
+        self.check_df(df_test, 'collect_measurements_base.csv');
         
 #%% Main        
 if __name__ == '__main__':
