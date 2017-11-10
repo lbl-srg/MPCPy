@@ -228,6 +228,7 @@ class TestCaseMPCPy(unittest.TestCase):
                 try:
                     self.assertTrue(err_max <= tol)
                 except AssertionError:
+                    plt.figure()
                     # Plot reference
                     plt.plot(y_ref, '-ob', 
                                     label = 'ref', 
