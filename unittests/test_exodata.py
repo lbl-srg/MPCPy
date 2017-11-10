@@ -40,7 +40,7 @@ class WeatherFromEPW(TestCaseMPCPy):
         self.weather.collect_data(start_time, final_time);
         # Check reference
         df_test = self.weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv');
         
     def test_collect_data_partial(self):
         start_time = '10/2/2015 06:00:00';
@@ -48,9 +48,9 @@ class WeatherFromEPW(TestCaseMPCPy):
         self.weather.collect_data(start_time, final_time);
         # Check references
         df_test = self.weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_partial_display.csv');
+        self.check_df(df_test, 'collect_data_partial_display.csv');
         df_test = self.weather.get_base_data();
-        self.check_df_timeseries(df_test, 'collect_data_partial_base.csv');
+        self.check_df(df_test, 'collect_data_partial_base.csv');
 
 class WeatherFromCSV(TestCaseMPCPy):
     '''Test the collection of weather data from a CSV file.
@@ -89,7 +89,7 @@ class WeatherFromCSV(TestCaseMPCPy):
         weather.collect_data(start_time, final_time);
         # Check reference
         df_test = weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_default_time.csv');
+        self.check_df(df_test, 'collect_data_default_time.csv');
 
     def test_collect_data_local_time_from_geography(self):
         start_time = '10/19/2016 12:53:00 PM';
@@ -105,7 +105,7 @@ class WeatherFromCSV(TestCaseMPCPy):
         weather.collect_data(start_time, final_time);
         # Check reference
         df_test = weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_local_time_from_geography.csv');
+        self.check_df(df_test, 'collect_data_local_time_from_geography.csv');
 
     def test_collect_data_local_time_from_tz_name(self):
         start_time = '10/19/2016 12:53:00 PM';
@@ -121,7 +121,7 @@ class WeatherFromCSV(TestCaseMPCPy):
         weather.collect_data(start_time, final_time);
         # Check reference
         df_test = weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_local_time_from_tz_name.csv');
+        self.check_df(df_test, 'collect_data_local_time_from_tz_name.csv');
 
     def test_collect_data_clean_data(self):
         start_time = '2016-10-19 19:53:00';
@@ -145,7 +145,7 @@ class WeatherFromCSV(TestCaseMPCPy):
         weather.collect_data(start_time, final_time);
         # Check reference
         df_test = weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_clean_data.csv');
+        self.check_df(df_test, 'collect_data_clean_data.csv');
 
 class WeatherFromDF(TestCaseMPCPy):
     '''Test the collection of weather data from a pandas DataFrame object.
@@ -185,7 +185,7 @@ class WeatherFromDF(TestCaseMPCPy):
         weather.collect_data(start_time, final_time);
         # Check reference
         df_test = weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_default_time.csv');
+        self.check_df(df_test, 'collect_data_default_time.csv');
         
     def test_collect_data_local_time_from_geography(self):
         start_time = '10/19/2016 12:53:00 PM';
@@ -201,7 +201,7 @@ class WeatherFromDF(TestCaseMPCPy):
         weather.collect_data(start_time, final_time);
         # Check reference
         df_test = weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_local_time_from_geography.csv');
+        self.check_df(df_test, 'collect_data_local_time_from_geography.csv');
 
     def test_collect_data_local_time_from_tz_name(self):
         start_time = '10/19/2016 12:53:00 PM';
@@ -217,7 +217,7 @@ class WeatherFromDF(TestCaseMPCPy):
         weather.collect_data(start_time, final_time);
         # Check reference
         df_test = weather.display_data();
-        self.check_df_timeseries(df_test, 'collect_data_local_time_from_tz_name.csv');
+        self.check_df(df_test, 'collect_data_local_time_from_tz_name.csv');
         
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):
@@ -247,7 +247,7 @@ class InternalFromCSV(TestCaseMPCPy):
         self.internal.collect_data(start_time, final_time);
         # Check reference
         df_test = self.internal.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv');
 
 class InternalFromOccupancyModel(TestCaseMPCPy):
     '''Test the collection of internal data from an occupancy model.
@@ -284,7 +284,7 @@ class InternalFromOccupancyModel(TestCaseMPCPy):
         self.internal.collect_data(start_time, final_time);
         # Check reference
         df_test = self.internal.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv');
 
 #%% Control Tests
 class ControlFromCSV(TestCaseMPCPy):
@@ -308,7 +308,7 @@ class ControlFromCSV(TestCaseMPCPy):
         self.control.collect_data(start_time, final_time);
         # Check reference
         df_test = self.control.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv');
         
 class ControlFromDF(TestCaseMPCPy):
     '''Test the collection of control data from a pandas DataFrame object.
@@ -333,7 +333,7 @@ class ControlFromDF(TestCaseMPCPy):
         self.control.collect_data(start_time, final_time);
         # Check reference
         df_test = self.control.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv');
 
 #%% Other Input Tests
 class OtherInputFromCSV(TestCaseMPCPy):
@@ -355,7 +355,7 @@ class OtherInputFromCSV(TestCaseMPCPy):
         self.otherinput.collect_data(start_time, final_time);
         # Check reference
         df_test = self.otherinput.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv');
         
 class OtherInputFromDF(TestCaseMPCPy):
     '''Test the collection of other input data from a pandas DataFrame object.
@@ -378,7 +378,7 @@ class OtherInputFromDF(TestCaseMPCPy):
         self.otherinput.collect_data(start_time, final_time);
         # Check reference
         df_test = self.otherinput.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv');
 
 #%% Parameter Tests
 class ParameterFromCSV(TestCaseMPCPy):
@@ -396,7 +396,7 @@ class ParameterFromCSV(TestCaseMPCPy):
         self.parameters.collect_data();
         # Check reference
         df_test = self.parameters.display_data();
-        self.check_df_general(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv', timeseries=False);
         
 class ParameterFromDF(TestCaseMPCPy):
     '''Test the collection of parameter data from a pandas DataFrame object.
@@ -414,7 +414,7 @@ class ParameterFromDF(TestCaseMPCPy):
         self.parameters.collect_data();
         # Check reference
         df_test = self.parameters.display_data();
-        self.check_df_general(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv', timeseries=False);
 
 #%% Constraint Tests
 class ConstraintFromCSV(TestCaseMPCPy):
@@ -447,7 +447,7 @@ class ConstraintFromCSV(TestCaseMPCPy):
         self.constraints.collect_data(start_time, final_time);
         # Check reference
         df_test = self.constraints.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv');
         
 class ConstraintFromDF(TestCaseMPCPy):
     '''Test the collection of constraint data from a df.
@@ -481,7 +481,7 @@ class ConstraintFromDF(TestCaseMPCPy):
         self.constraints.collect_data(start_time, final_time);
         # Check reference
         df_test = self.constraints.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv'); 
+        self.check_df(df_test, 'collect_data.csv'); 
 
 class ConstraintFromOccupancyModel(TestCaseMPCPy):
     '''Test the collection of constraint data from an occupancy model.
@@ -516,7 +516,7 @@ class ConstraintFromOccupancyModel(TestCaseMPCPy):
         self.constraints.collect_data(start_time, final_time);
         # Check reference
         df_test = self.constraints.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');         
+        self.check_df(df_test, 'collect_data.csv');         
 
 #%% Prices Tests
 class PriceFromCSV(TestCaseMPCPy):
@@ -538,7 +538,7 @@ class PriceFromCSV(TestCaseMPCPy):
         self.prices.collect_data(start_time, final_time);
         # Check reference
         df_test = self.prices.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');
+        self.check_df(df_test, 'collect_data.csv');
         
 class PriceFromDF(TestCaseMPCPy):
     '''Test the collection of price data from a df.
@@ -561,7 +561,7 @@ class PriceFromDF(TestCaseMPCPy):
         self.prices.collect_data(start_time, final_time);
         # Check reference
         df_test = self.prices.display_data();
-        self.check_df_timeseries(df_test, 'collect_data.csv');  
+        self.check_df(df_test, 'collect_data.csv');  
 
 #%% Source Tests
 class Type(TestCaseMPCPy):

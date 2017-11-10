@@ -50,9 +50,9 @@ class SimpleRC(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_display.csv');
+        self.check_df(df_test, 'simulate_display.csv');
         df_test = self.model.get_base_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_base.csv');
+        self.check_df(df_test, 'simulate_base.csv');
         
     def test_simulate_noinputs(self):
         '''Test simulation of a model with no external inputs.'''
@@ -68,7 +68,7 @@ class SimpleRC(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_noinputs.csv');
+        self.check_df(df_test, 'simulate_noinputs.csv');
         
     def test_estimate_error_nofreeparameters(self):
         '''Test error raised if no free parameters passed.'''
@@ -189,7 +189,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_initial_parameters.csv');
+        self.check_df(df_test, 'simulate_initial_parameters.csv');
 
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
@@ -235,7 +235,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_estimated_parameters.csv');
+        self.check_df(df_test, 'simulate_estimated_parameters.csv');
         # Validate on validation data
         self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
         self.model.measurements = self.building.measurements;
@@ -247,7 +247,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df_general(df_test, 'validate_RMSE.csv');
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
         
 class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
     '''Test emulation-based parameter estimation of a model using JModelica.
@@ -337,7 +337,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_initial_parameters.csv');
+        self.check_df(df_test, 'simulate_initial_parameters.csv');
         
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
@@ -383,7 +383,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_estimated_parameters.csv');
+        self.check_df(df_test, 'simulate_estimated_parameters.csv');
         # Validate on validation data
         self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
         self.model.measurements = self.building.measurements;
@@ -395,7 +395,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df_general(df_test, 'validate_RMSE.csv');
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
         
 
 #%%
@@ -449,7 +449,7 @@ class EstimateFromUKF(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df_general(df_test, 'validate_RMSE.csv');
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
         
     def test_error_fmu_version(self):
         '''Test error raised if wrong fmu version.'''
@@ -524,9 +524,9 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         self.occupancy.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.occupancy.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_display.csv');
+        self.check_df(df_test, 'simulate_display.csv');
         df_test = self.occupancy.get_base_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_base.csv');
+        self.check_df(df_test, 'simulate_base.csv');
 
     def test_validate(self):
         '''Test occupancy prediction comparison with measured data.'''
@@ -552,7 +552,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.occupancy.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df_general(df_test, 'validate_RMSE.csv');        
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);        
         
     def test_get_load(self):
         '''Test generation of occupancy load data using occupancy prediction.'''
@@ -569,7 +569,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Check references
         df_test = load.to_frame(name='load');
         df_test.index.name = 'Time';
-        self.check_df_timeseries(df_test, 'get_load.csv');
+        self.check_df(df_test, 'get_load.csv');
         
     def test_get_constraint(self):
         '''Test generation of occupancy constraint data using occupancy prediction.'''
@@ -586,7 +586,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Check references
         df_test = constraint.to_frame(name='constraint');
         df_test.index.name = 'Time';
-        self.check_df_timeseries(df_test, 'get_constraint.csv');
+        self.check_df(df_test, 'get_constraint.csv');
         
     def test_error_points_per_day(self):
         '''Test occupancy prediction.'''
