@@ -391,10 +391,15 @@ class _FMU(_mpcpyPandas):
                 version = kwargs['version'];
             else:
                 version = '2.0';
+            if 'target' in kwargs:
+                self.fmu_target = kwargs['target'];
+            else:
+                self.fmu_target = 'me';
             self.fmupath = compile_fmu(self.modelpath, \
                                        self.mopath, \
                                        compiler_options = {'extra_lib_dirs':self.libraries}, 
-                                       version = version);
+                                       version = version,
+                                       target = self.fmu_target);
         self.fmu = load_fmu(self.fmupath);
         self.fmu_version = self.fmu.get_version();
         
@@ -490,7 +495,7 @@ class _FMU(_mpcpyPandas):
                 fmu_variable_units[variable.get('name')] = unit;
             
         return fmu_variable_units
-    
+        
     def _get_unit_class_from_fmu_variable_units(self, variable_name, fmu_variable_units):
         '''Get units.unit class for the given variable.
         
