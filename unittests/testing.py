@@ -179,7 +179,7 @@ class TestCaseMPCPy(unittest.TestCase):
                     try:
                         self.assertTrue(y_ref[i] == y_test[i])
                     except AssertionError:
-                        self.assertTrue(False, 'Value test failed with {0} error for key {1} at index {2}.'.format(type(y_ref[i]), key, df_ref.index.values[i]))
+                        self.assertTrue(False, 'Value test failed with {0} error for key {1} at reference index {2}.'.format(type(y_ref[i]), key, df_ref.index.values[i]))
                 # If numeric comparison
                 else:
                     # Absolute error
@@ -198,20 +198,24 @@ class TestCaseMPCPy(unittest.TestCase):
                     self.assertTrue(err_max <= tol)
                 except AssertionError:
                     # Plot reference
-                    df_ref[key].plot(label='ref', color='b', linewidth=4.0)
+                    plt.plot(y_ref, '-ob', 
+                                    label = 'ref', 
+                                    linewidth = 3,
+                                    markersize = 8)
                     # Plot test
-                    df_test[key].plot(label='test', color='r', linewidth=2.0)
+                    plt.plot(y_test, '-or', 
+                                     label = 'test',
+                                     linewidth = 1.5,
+                                     markersize = 4)
                     # Plot location of max error
-                    y_max = df_test[key].get_values()[i_max]
-                    plt.plot(i_max, y_max, 'o', 
-                             label = 'location of max error', 
-                             markerfacecolor='none', 
-                             markeredgecolor = 'g', 
-                             markersize = 10.0, 
-                             markeredgewidth = 4.0)
+                    plt.plot(i_max, y_test[i_max], 'og', 
+                                                   label = 'location of max error', 
+                                                   markerfacecolor='none',
+                                                   markersize = 12.0, 
+                                                   markeredgewidth = 3)
                     # Save plot
                     plt.legend()
                     fig_path = self.ref_file_path[:-4]+'_'+key+'.png'
                     plt.savefig(fig_path)
                     # Fail test
-                    self.assertTrue(False, 'Value test failed with max error {0}.  Check {1} for plot.'.format(err_max, fig_path))
+                    self.assertTrue(False, 'Value test failed with max error {0} for key {1} and reference index {2}.  Check {3} for plot of all values for key.'.format(err_max, key, df_ref.index.values[i_max], fig_path))
