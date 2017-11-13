@@ -30,29 +30,29 @@ class SimpleRC(TestCaseMPCPy):
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
 
-#    def test_simulate(self):
-#        '''Test simulation of a model.'''
-#        # Set model paths
-#        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
-#        modelpath = 'Simple.RC_nostart';
-#        # Gather control inputs
-#        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
-#        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
-#        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
-#        controls.collect_data(self.start_time, self.final_time);
-#        # Instantiate model
-#        self.model = models.Modelica(models.JModelica, \
-#                                     models.RMSE, \
-#                                     self.measurements, \
-#                                     moinfo = (mopath, modelpath, {}), \
-#                                     control_data = controls.data);
-#        # Simulate model
-#        self.model.simulate(self.start_time, self.final_time);
-#        # Check references
-#        df_test = self.model.display_measurements('Simulated');
-#        self.check_df(df_test, 'simulate_display.csv');
-#        df_test = self.model.get_base_measurements('Simulated');
-#        self.check_df(df_test, 'simulate_base.csv');
+    def test_simulate(self):
+        '''Test simulation of a model.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_nostart';
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(self.start_time, self.final_time);
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}), \
+                                     control_data = controls.data);
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_display.csv');
+        df_test = self.model.get_base_measurements('Simulated');
+        self.check_df(df_test, 'simulate_base.csv');
         
     def test_simulate_continue(self):
         '''Test simulation of a model in steps.'''
@@ -87,51 +87,51 @@ class SimpleRC(TestCaseMPCPy):
             df_test = self.model.display_measurements('Simulated');
             self.check_df(df_test, 'simulate_step{0}.csv'.format(i));
         
-#    def test_simulate_noinputs(self):
-#        '''Test simulation of a model with no external inputs.'''
-#        # Set model paths
-#        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
-#        modelpath = 'Simple.RC_noinputs';
-#        # Instantiate model
-#        self.model = models.Modelica(models.JModelica, \
-#                                     models.RMSE, \
-#                                     self.measurements, \
-#                                     moinfo = (mopath, modelpath, {}));
-#        # Simulate model
-#        self.model.simulate(self.start_time, self.final_time);
-#        # Check references
-#        df_test = self.model.display_measurements('Simulated');
-#        self.check_df(df_test, 'simulate_noinputs.csv');
-#        
-#    def test_estimate_error_nofreeparameters(self):
-#        '''Test error raised if no free parameters passed.'''
-#        # Set model paths
-#        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
-#        modelpath = 'Simple.RC_noinputs';
-#        # Instantiate model
-#        self.model_no_params = models.Modelica(models.JModelica, \
-#                                               models.RMSE, \
-#                                               self.measurements, \
-#                                               moinfo = (mopath, modelpath, {}));
-#        # Check error raised with no parameters
-#        with self.assertRaises(ValueError):
-#            self.model_no_params.estimate(self.start_time, self.final_time, []);
-#        # Set parameters
-#        parameter_data = {};
-#        parameter_data['C'] = {};
-#        parameter_data['C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
-#        parameter_data['C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
-#        parameter_data['C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
-#        parameter_data['C']['Free'] = variables.Static('C_Free', False, units.boolean);
-#        # Instantiate model
-#        self.model_no_free = models.Modelica(models.JModelica, \
-#                                               models.RMSE, \
-#                                               self.measurements, \
-#                                               moinfo = (mopath, modelpath, {}), \
-#                                               parameter_data = parameter_data);
-#        # Check error raised with no free parameters
-#        with self.assertRaises(ValueError):
-#            self.model_no_params.estimate(self.start_time, self.final_time, []);
+    def test_simulate_noinputs(self):
+        '''Test simulation of a model with no external inputs.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}));
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_noinputs.csv');
+        
+    def test_estimate_error_nofreeparameters(self):
+        '''Test error raised if no free parameters passed.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';
+        # Instantiate model
+        self.model_no_params = models.Modelica(models.JModelica, \
+                                               models.RMSE, \
+                                               self.measurements, \
+                                               moinfo = (mopath, modelpath, {}));
+        # Check error raised with no parameters
+        with self.assertRaises(ValueError):
+            self.model_no_params.estimate(self.start_time, self.final_time, []);
+        # Set parameters
+        parameter_data = {};
+        parameter_data['C'] = {};
+        parameter_data['C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
+        parameter_data['C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
+        parameter_data['C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
+        parameter_data['C']['Free'] = variables.Static('C_Free', False, units.boolean);
+        # Instantiate model
+        self.model_no_free = models.Modelica(models.JModelica, \
+                                               models.RMSE, \
+                                               self.measurements, \
+                                               moinfo = (mopath, modelpath, {}), \
+                                               parameter_data = parameter_data);
+        # Check error raised with no free parameters
+        with self.assertRaises(ValueError):
+            self.model_no_params.estimate(self.start_time, self.final_time, []);
 
 #%%    
 class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
