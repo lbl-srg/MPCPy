@@ -12,6 +12,7 @@ from mpcpy import units
 from testing import TestCaseMPCPy
 from matplotlib import pyplot as plt
 import os
+import pandas as pd
 
 # Simulation Tests
 class EmulationFromFMU(TestCaseMPCPy):
@@ -51,7 +52,75 @@ class EmulationFromFMU(TestCaseMPCPy):
         self.parameter_data['lat'] = {};
         self.parameter_data['lat']['Value'] = self.weather.lat;
         
-    def test_collect_measurements(self):
+#    def test_collect_measurements(self):
+#        start_time = '1/1/2015';
+#        final_time = '1/4/2015';
+#        # Collect exodata
+#        self.weather.collect_data(start_time, final_time);
+#        self.internal.collect_data(start_time, final_time);
+#        self.control.collect_data(start_time, final_time);
+#        # Instantiate building source
+#        building = systems.EmulationFromFMU(self.measurements, \
+#                                            fmupath = self.building_source_file_path, \
+#                                            zone_names = self.zone_names, \
+#                                            weather_data = self.weather.data, \
+#                                            internal_data = self.internal.data, \
+#                                            control_data = self.control.data, \
+#                                            parameter_data = self.parameter_data, \
+#                                            tz_name = self.weather.tz_name);
+#        # Collect measurements
+#        building.collect_measurements(start_time, final_time);
+#        # Check references
+#        df_test = building.display_measurements('Measured');
+#        self.check_df(df_test, 'collect_measurements_display.csv');
+#        df_test = building.get_base_measurements('Measured');
+#        self.check_df(df_test, 'collect_measurements_base.csv');  
+#        
+#    def test_collect_measurements_dst_start(self):
+#        # Test simulation through the start of daylight savings time
+#        start_time = '3/6/2015';
+#        final_time = '3/10/2015';
+#        self.weather.collect_data(start_time, final_time);
+#        self.internal.collect_data(start_time, final_time);
+#        self.control.collect_data(start_time, final_time);
+#        # Instantiate building source
+#        building = systems.EmulationFromFMU(self.measurements, \
+#                                            fmupath = self.building_source_file_path, \
+#                                            zone_names = self.zone_names, \
+#                                            weather_data = self.weather.data, \
+#                                            internal_data = self.internal.data, \
+#                                            control_data = self.control.data, \
+#                                            parameter_data = self.parameter_data, \
+#                                            tz_name = self.weather.tz_name);
+#        # Collect measurements
+#        building.collect_measurements(start_time, final_time);
+#        # Check references
+#        df_test = building.display_measurements('Measured');
+#        self.check_df(df_test, 'collect_measurements_dst_start.csv');
+#        
+#    def test_collect_measurements_dst_end(self):
+#        # Test simulation through the end of daylight savings time
+#        start_time = '10/30/2015';
+#        final_time = '11/3/2015';
+#        self.weather.collect_data(start_time, final_time);
+#        self.internal.collect_data(start_time, final_time);
+#        self.control.collect_data(start_time, final_time);
+#        # Instantiate building source
+#        building = systems.EmulationFromFMU(self.measurements, \
+#                                            fmupath = self.building_source_file_path, \
+#                                            zone_names = self.zone_names, \
+#                                            weather_data = self.weather.data, \
+#                                            internal_data = self.internal.data, \
+#                                            control_data = self.control.data, \
+#                                            parameter_data = self.parameter_data, \
+#                                            tz_name = self.weather.tz_name);
+#        # Collect measurements
+#        building.collect_measurements(start_time, final_time);
+#        # Check references
+#        df_test = building.display_measurements('Measured');
+#        self.check_df(df_test, 'collect_measurements_dst_end.csv');
+#        
+    def test_collect_measurements_continue(self):
         start_time = '1/1/2015';
         final_time = '1/4/2015';
         # Collect exodata
@@ -67,58 +136,17 @@ class EmulationFromFMU(TestCaseMPCPy):
                                             control_data = self.control.data, \
                                             parameter_data = self.parameter_data, \
                                             tz_name = self.weather.tz_name);
-        # Collect measurements
-        building.collect_measurements(start_time, final_time);
-        # Check references
-        df_test = building.display_measurements('Measured');
-        self.check_df(df_test, 'collect_measurements_display.csv');
-        df_test = building.get_base_measurements('Measured');
-        self.check_df(df_test, 'collect_measurements_base.csv');  
-        
-    def test_collect_measurements_dst_start(self):
-        # Test simulation through the start of daylight savings time
-        start_time = '3/6/2015';
-        final_time = '3/10/2015';
-        self.weather.collect_data(start_time, final_time);
-        self.internal.collect_data(start_time, final_time);
-        self.control.collect_data(start_time, final_time);
-        # Instantiate building source
-        building = systems.EmulationFromFMU(self.measurements, \
-                                            fmupath = self.building_source_file_path, \
-                                            zone_names = self.zone_names, \
-                                            weather_data = self.weather.data, \
-                                            internal_data = self.internal.data, \
-                                            control_data = self.control.data, \
-                                            parameter_data = self.parameter_data, \
-                                            tz_name = self.weather.tz_name);
-        # Collect measurements
-        building.collect_measurements(start_time, final_time);
-        # Check references
-        df_test = building.display_measurements('Measured');
-        self.check_df(df_test, 'collect_measurements_dst_start.csv');
-        
-    def test_collect_measurements_dst_end(self):
-        # Test simulation through the end of daylight savings time
-        start_time = '10/30/2015';
-        final_time = '11/3/2015';
-        self.weather.collect_data(start_time, final_time);
-        self.internal.collect_data(start_time, final_time);
-        self.control.collect_data(start_time, final_time);
-        # Instantiate building source
-        building = systems.EmulationFromFMU(self.measurements, \
-                                            fmupath = self.building_source_file_path, \
-                                            zone_names = self.zone_names, \
-                                            weather_data = self.weather.data, \
-                                            internal_data = self.internal.data, \
-                                            control_data = self.control.data, \
-                                            parameter_data = self.parameter_data, \
-                                            tz_name = self.weather.tz_name);
-        # Collect measurements
-        building.collect_measurements(start_time, final_time);
-        # Check references
-        df_test = building.display_measurements('Measured');
-        self.check_df(df_test, 'collect_measurements_dst_end.csv');
-
+        # Collect measurements in daily chunks
+        sim_steps = pd.date_range(start_time, final_time, freq=str('1d'))
+        for i in range(len(sim_steps)-1):
+            if i == 0:
+                building.collect_measurements(sim_steps[i], sim_steps[i+1]);
+            else:
+                building.collect_measurements('continue', sim_steps[i+1]);
+            # Check references
+            df_test = building.display_measurements('Measured');
+            self.check_df(df_test, 'collect_measurements_continue_step{0}.csv'.format(i));
+            
     def plot_measurements(self, name):
         for key in self.building.measurements.keys():
             variable = self.building.measurements[key]['Measured'];
