@@ -42,7 +42,7 @@ from pyjmi import transfer_optimization_problem;
 from pyjmi.optimization.casadi_collocation import ExternalData
 
 #%% Optimization Class
-class Optimization(object):
+class Optimization(utility._mpcpyPandas):
     '''Class for representing an optimization problem.    
  
     Parameters
@@ -107,7 +107,7 @@ class Optimization(object):
         
         '''
 
-        self.Model._set_time_interval(start_time, final_time);
+        self._set_time_interval(start_time, final_time);
         self._problem_type._optimize(self, **kwargs);
 
     def set_problem_type(self, problem_type):
@@ -588,12 +588,12 @@ class JModelica(_Package, utility._FMU):
         for key in self.Model.measurements.keys():
             self.measurements['mpc_model.' + key] = self.Model.measurements[key];           
         # Set timing
-        self._continue = False;
-        self.start_time_utc = self.Model.start_time_utc;
-        self.final_time_utc = self.Model.final_time_utc;
-        self._global_start_time_utc = self.Model._global_start_time_utc
-        self.elapsed_seconds = self.Model.elapsed_seconds;  
-        self.total_elapsed_seconds = self.Model.total_elapsed_seconds;        
+        self._continue = Optimization._continue;
+        self.start_time_utc = Optimization.start_time_utc;
+        self.final_time_utc = Optimization.final_time_utc;
+        self._global_start_time_utc = Optimization._global_start_time_utc
+        self.elapsed_seconds = Optimization.elapsed_seconds;  
+        self.total_elapsed_seconds = Optimization.total_elapsed_seconds;        
         # Simulate fmu
         self._simulate_fmu();
         # Store initial simulation
@@ -639,7 +639,7 @@ class JModelica(_Package, utility._FMU):
         if hasattr(self, 'measurement_variable_list'):
             for key in self.measurement_variable_list:
                 df = self.Model.measurements[key]['Measured'].get_base_data().to_frame();
-                df_simtime = self._add_simtime_column(df, self.Model._global_start_time_utc);
+                df_simtime = self._add_simtime_column(df, Optimization._global_start_time_utc);
                 mea_traj = np.vstack((df_simtime['SimTime'].get_values(), \
                                      df_simtime[key].get_values()));
                 quad_pen['mpc_model.' + key] = mea_traj;
@@ -672,7 +672,7 @@ class JModelica(_Package, utility._FMU):
             data = self.res_opt['mpc_model.' + key];
             time = self.res_opt['time'];
             timedelta = pd.to_timedelta(time, 's');
-            timeindex = self.start_time_utc + timedelta;
+            timeindex = self._global_start_time_utc + timedelta;
             ts = pd.Series(data = data, index = timeindex);
             ts.name = key;
             unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
@@ -683,7 +683,7 @@ class JModelica(_Package, utility._FMU):
             data = self.res_opt['mpc_model.' + key];
             time = self.res_opt['time'];
             timedelta = pd.to_timedelta(time, 's');
-            timeindex = self.start_time_utc + timedelta;
+            timeindex = self._global_start_time_utc + timedelta;
             ts = pd.Series(data = data, index = timeindex);
             ts.name = key;
             unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
