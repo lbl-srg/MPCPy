@@ -918,7 +918,10 @@ class ModestPy(_Estimate):
         meas_vars = Model.measurement_variable_list
         for v in meas_vars:
             if 'Measured' in Model.measurements[v]:
-                ideal[v] = Model.measurements[v]['Measured'].get_base_data()
+                base = Model.measurements[v]['Measured'].get_base_data()
+                # Drop duplicates to avoid pandas errors
+                base = base[~base.index.duplicated(keep='first')]
+                ideal[v] = base
 
         # Get inputs
         # ==========
@@ -929,7 +932,10 @@ class ModestPy(_Estimate):
         weather_vars = Model.weather_data.keys()
         for v in weather_vars:
             if v in input_names:
-                inp[v] = Model.weather_data[v].get_base_data()
+                base = Model.weather_data[v].get_base_data()
+                # Drop duplicates to avoid pandas errors
+                base = base[~base.index.duplicated(keep='first')]
+                inp[v] = base
 
         # Add internal heat gain variables (only those used in the model)
         zones = Model.internal_data.keys()
@@ -938,19 +944,28 @@ class ModestPy(_Estimate):
             for v in internal_vars:
                 v_zone = v + '_' + zone
                 if v_zone in input_names:
-                    inp[v_zone] = Model.internal_data[zone][v].get_base_data()
+                    base = Model.internal_data[zone][v].get_base_data()
+                    # Drop duplicates to avoid pandas errors
+                    base = base[~base.index.duplicated(keep='first')]
+                    inp[v_zone] = base
 
         # Add control variables (only those used in the model)
         control_vars = Model.control_data.keys()
         for v in control_vars:
             if v in input_names:
-                inp[v] = Model.control_data[v].get_base_data()
+                base = Model.control_data[v].get_base_data()
+                # Drop duplicates to avoid pandas errors
+                base = base[~base.index.duplicated(keep='first')]
+                inp[v] = base
 
         # Add other input variables (only those used in the model)
         other_vars = Model.other_inputs.keys()
         for v in other_vars:
             if v in input_names:
-                inp[v] = Model.other_inputs[v].get_base_data()
+                base = Model.other_inputs[v].get_base_data()
+                # Drop duplicates to avoid pandas errors
+                base = base[~base.index.duplicated(keep='first')]
+                inp[v] = base
 
         # Get parameters
         # ==============
