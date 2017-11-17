@@ -588,9 +588,12 @@ class JModelica(_Package, utility._FMU):
         for key in self.Model.measurements.keys():
             self.measurements['mpc_model.' + key] = self.Model.measurements[key];           
         # Set timing
+        self._continue = False;
         self.start_time_utc = self.Model.start_time_utc;
-        self.final_time_utc = self.Model.final_time_utc;     
-        self.elapsed_seconds = self.Model.elapsed_seconds;        
+        self.final_time_utc = self.Model.final_time_utc;
+        self._global_start_time_utc = self.Model._global_start_time_utc
+        self.elapsed_seconds = self.Model.elapsed_seconds;  
+        self.total_elapsed_seconds = self.Model.total_elapsed_seconds;        
         # Simulate fmu
         self._simulate_fmu();
         # Store initial simulation
@@ -605,7 +608,7 @@ class JModelica(_Package, utility._FMU):
         # Create input_mpcpy_ts_list
         self._create_input_mpcpy_ts_list_opt();
         # Set inputs
-        self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list_opt);          
+        self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list_opt);
         # Create ExternalData structure
         self._create_external_data();
         # Set optimization options
@@ -618,8 +621,10 @@ class JModelica(_Package, utility._FMU):
             for key in self.parameter_data.keys():
                 self.opt_problem.set(key, self.parameter_data[key]['Value'].get_base_data());
         # Set start and final time
-        self.opt_problem.set('start_time', 0);
-        self.opt_problem.set('final_time', self.Model.elapsed_seconds);
+        start_time = self.total_elapsed_seconds - self.elapsed_seconds;
+        final_time = self.total_elapsed_seconds;
+        self.opt_problem.set('start_time', start_time);
+        self.opt_problem.set('final_time', final_time);
         # Optimize
         self.res_opt = self.opt_problem.optimize(options=self.opt_options);
         print(self.res_opt.get_solver_statistics());
@@ -633,8 +638,8 @@ class JModelica(_Package, utility._FMU):
         N_mea = 0;
         if hasattr(self, 'measurement_variable_list'):
             for key in self.measurement_variable_list:
-                df = self.Model.measurements[key]['Measured'].get_base_data()[self.Model.start_time:self.Model.final_time].to_frame();
-                df_simtime = self._add_simtime_column(df);
+                df = self.Model.measurements[key]['Measured'].get_base_data().to_frame();
+                df_simtime = self._add_simtime_column(df, self.Model._global_start_time_utc);
                 mea_traj = np.vstack((df_simtime['SimTime'].get_values(), \
                                      df_simtime[key].get_values()));
                 quad_pen['mpc_model.' + key] = mea_traj;

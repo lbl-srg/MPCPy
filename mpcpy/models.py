@@ -268,8 +268,15 @@ class Modelica(_Model, utility._FMU, utility._Building):
         ----------
         start_time : string
             Start time of simulation period.
+            Set to 'continue' in order to continue the model simulation
+            from the final time of the previous simulation, estimation, or 
+            validation.  Exodata input objects must contain values for the 
+            continuation timestamp.  The measurements in a continued 
+            simulation replace previous values.  They do not append to a 
+            previous simulation's measurements.
         final_time : string
-            Final time of simulation period.
+            Final time of simulation period.  Must be greater than the
+            start time.
 
         Yields
         ------
@@ -795,7 +802,9 @@ class UKF(_Estimate, utility._FMU):
         # Set timing
         self.start_time_utc = Model.start_time_utc;
         self.final_time_utc = Model.final_time_utc;   
-        self.elapsed_seconds = Model.elapsed_seconds; 
+        self._global_start_time_utc = Model._global_start_time_utc
+        self.elapsed_seconds = Model.elapsed_seconds;  
+        self.total_elapsed_seconds = Model.total_elapsed_seconds;
         self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list)
         # Write to csv
         self.csv_path = 'ukf.csv';                                               

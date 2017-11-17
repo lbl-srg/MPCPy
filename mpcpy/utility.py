@@ -120,15 +120,18 @@ class _mpcpyPandas(object):
         
         return var
      
-    def _add_simtime_column(self, df):
+    def _add_simtime_column(self, df, index_start):
         '''Add a simulation time column to a dataframe from the DateTimeIndex.
         
-        The simulation time is added in seconds starting at 0.
+        The simulation time is added in seconds starting at 0 from a specified 
+        index value.
         
         Parameters
         ----------
         df : ``pandas`` dataframe object
             Dataframe for which to add a simulation time column.
+        index_start : datetime object
+            Index which corresponds to simulation time of 0.
         
         Returns
         -------
@@ -137,6 +140,7 @@ class _mpcpyPandas(object):
 
         '''
         
+        df = df.loc[index_start:]
         t = df.index.to_series();
         dt = t - t[0];
         dt = dt.apply(lambda x: x / np.timedelta64(1, 's'));
@@ -190,8 +194,9 @@ class _mpcpyPandas(object):
                 self.start_time = pd.to_datetime(start_time).tz_localize(self.tz_name);
             except TypeError:
                 self.start_time = start_time;
+            self._global_start_time_utc = self.start_time.tz_convert('UTC');
             self.total_elapsed_seconds = 0
-            self._continue = False;  
+            self._continue = False;
         # Set final time
         try:
             self.final_time = pd.to_datetime(final_time).tz_localize(self.tz_name);
@@ -271,17 +276,16 @@ class _FMU(_mpcpyPandas):
         # Set inputs
         self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list);
         # Get simulation options
-        sim_opts = self.fmu.simulate_options();
+        self._sim_opts = self.fmu.simulate_options();
         # Set simulation fmu with start
         if self._continue:
-            # Set start time in seconds to continue from last
-            start_time = self.total_elapsed_seconds - self.elapsed_seconds;
-            sim_opts['initialize'] = False;
+            # Continue fmu
+            self._sim_opts['initialize'] = False;
         else:
-            # Set start time in seconds to 0 and load fmu
+            # Load fmu
             self.fmu = load_fmu(self.fmupath);
-            start_time = 0
-        # Set final time
+        # Set start/final time
+        start_time = self.total_elapsed_seconds - self.elapsed_seconds;
         final_time = self.total_elapsed_seconds;
         # Set parameters in fmu if they exist
         if hasattr(self, 'parameter_data'):
@@ -294,12 +298,12 @@ class _FMU(_mpcpyPandas):
             if sample < min_sample:
                 min_sample = sample; 
         # Set sample rate for simulation
-        sim_opts['ncp'] = int(self.elapsed_seconds/min_sample);
+        self._sim_opts['ncp'] = int(self.elapsed_seconds/min_sample);
         # Simulate
         self._res = self.fmu.simulate(start_time = start_time, \
                                       final_time = final_time, \
                                       input = self._input_object, \
-                                      options = sim_opts);
+                                      options = self._sim_opts);
         # Retrieve measurements
         fmu_variable_units = self._get_fmu_variable_units();
         for key in self.measurements.keys():
@@ -454,7 +458,7 @@ class _FMU(_mpcpyPandas):
         '''
 
         input_names = tuple(df);
-        df_simtime = self._add_simtime_column(df);
+        df_simtime = self._add_simtime_column(df, self._global_start_time_utc);
         input_df = df_simtime.loc[start_time:final_time]
         input_trajectory = input_df['SimTime'].get_values();
         for header in input_names:
