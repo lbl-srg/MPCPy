@@ -50,9 +50,9 @@ class SimpleRC(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_display.csv');
+        self.check_df(df_test, 'simulate_display.csv');
         df_test = self.model.get_base_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_base.csv');
+        self.check_df(df_test, 'simulate_base.csv');
         
     def test_simulate_noinputs(self):
         '''Test simulation of a model with no external inputs.'''
@@ -68,7 +68,7 @@ class SimpleRC(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_noinputs.csv');
+        self.check_df(df_test, 'simulate_noinputs.csv');
         
     def test_estimate_error_nofreeparameters(self):
         '''Test error raised if no free parameters passed.'''
@@ -108,7 +108,8 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
     
     def setUp(self):
         ## Setup building fmu emulation
-        self.building_source_file_path = os.path.join(self.get_unittest_path(), 'resources', 'building', 'RealMeasurements.csv');
+        self.building_source_file_path_est = os.path.join(self.get_unittest_path(), 'resources', 'building', 'RealMeasurements_est.csv');
+        self.building_source_file_path_val = os.path.join(self.get_unittest_path(), 'resources', 'building', 'RealMeasurements_val.csv');
         self.zone_names = ['wes', 'hal', 'eas'];
         self.weather_path = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
         self.internal_path = os.path.join(self.get_unittest_path(), 'resources', 'internal', 'sampleCSV.csv');
@@ -157,7 +158,12 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.parameters.data['lat'] = {};
         self.parameters.data['lat']['Value'] = self.weather.lat;
         # Instantiate test building
-        self.building = systems.RealFromCSV(self.building_source_file_path,
+        self.building_est = systems.RealFromCSV(self.building_source_file_path_est,
+                                            self.measurements, 
+                                            self.measurement_variable_map, 
+                                            tz_name = self.weather.tz_name);
+        # Instantiate validate building
+        self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
                                             self.measurements, 
                                             self.measurement_variable_map, 
                                             tz_name = self.weather.tz_name);
@@ -173,11 +179,11 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.internal.collect_data(self.start_time, self.final_time);
         self.control.collect_data(self.start_time, self.final_time);       
         # Collect emulation measurements for comparison
-        self.building.collect_measurements(self.start_time, self.final_time);
+        self.building_est.collect_measurements(self.start_time, self.final_time);
         # Instantiate model
         self.model = models.Modelica(self.estimate_method, \
                                      self.validation_method, \
-                                     self.building.measurements, \
+                                     self.building_est.measurements, \
                                      moinfo = (self.mopath, self.modelpath, self.libraries), \
                                      zone_names = self.zone_names, \
                                      weather_data = self.weather.data, \
@@ -189,7 +195,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_initial_parameters.csv');
+        self.check_df(df_test, 'simulate_initial_parameters.csv');
 
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
@@ -213,17 +219,16 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.internal.collect_data(self.start_time_exodata, self.final_time_exodata);
         self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Set exodata to building emulation
-        self.building.weather_data = self.weather.data;
-        self.building.internal_data = self.internal.data;
-        self.building.control_data = self.control.data;
-        self.building.tz_name = self.weather.tz_name;       
+        self.building_est.weather_data = self.weather.data;
+        self.building_est.internal_data = self.internal.data;
+        self.building_est.control_data = self.control.data;
+        self.building_est.tz_name = self.weather.tz_name;       
         # Collect measurement data
-        self.building.collect_measurements(self.start_time_emulation, self.final_time_emulation);
-        
+        self.building_est.collect_measurements(self.start_time_emulation, self.final_time_emulation);
         # Instantiate model
         self.model = models.Modelica(self.estimate_method, \
                                      self.validation_method, \
-                                     self.building.measurements, \
+                                     self.building_est.measurements, \
                                      moinfo = (self.mopath, self.modelpath, self.libraries), \
                                      zone_names = self.zone_names, \
                                      weather_data = self.weather.data, \
@@ -235,10 +240,10 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_estimated_parameters.csv');
+        self.check_df(df_test, 'simulate_estimated_parameters.csv');
         # Validate on validation data
-        self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
-        self.model.measurements = self.building.measurements;
+        self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
+        self.model.measurements = self.building_val.measurements;
         self.model.validate(self.start_time_validation, self.final_time_validation, \
                             os.path.join(self.get_unittest_path(), 'outputs', 'model_validation'));
         # Check references
@@ -247,7 +252,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df_general(df_test, 'validate_RMSE.csv');
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
         
 class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
     '''Test emulation-based parameter estimation of a model using JModelica.
@@ -337,7 +342,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_initial_parameters.csv');
+        self.check_df(df_test, 'simulate_initial_parameters.csv');
         
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
@@ -367,7 +372,6 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         self.building.tz_name = self.weather.tz_name;       
         # Collect measurement data
         self.building.collect_measurements(self.start_time_emulation, self.final_time_emulation);
-        
         # Instantiate model
         self.model = models.Modelica(self.estimate_method, \
                                      self.validation_method, \
@@ -383,7 +387,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_estimated_parameters.csv');
+        self.check_df(df_test, 'simulate_estimated_parameters.csv');
         # Validate on validation data
         self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
         self.model.measurements = self.building.measurements;
@@ -395,7 +399,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df_general(df_test, 'validate_RMSE.csv');
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
         
 
 #%%
@@ -449,7 +453,7 @@ class EstimateFromUKF(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df_general(df_test, 'validate_RMSE.csv');
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
         
     def test_error_fmu_version(self):
         '''Test error raised if wrong fmu version.'''
@@ -524,9 +528,9 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         self.occupancy.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.occupancy.display_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_display.csv');
+        self.check_df(df_test, 'simulate_display.csv');
         df_test = self.occupancy.get_base_measurements('Simulated');
-        self.check_df_timeseries(df_test, 'simulate_base.csv');
+        self.check_df(df_test, 'simulate_base.csv');
 
     def test_validate(self):
         '''Test occupancy prediction comparison with measured data.'''
@@ -552,7 +556,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.occupancy.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df_general(df_test, 'validate_RMSE.csv');        
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);        
         
     def test_get_load(self):
         '''Test generation of occupancy load data using occupancy prediction.'''
@@ -569,7 +573,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Check references
         df_test = load.to_frame(name='load');
         df_test.index.name = 'Time';
-        self.check_df_timeseries(df_test, 'get_load.csv');
+        self.check_df(df_test, 'get_load.csv');
         
     def test_get_constraint(self):
         '''Test generation of occupancy constraint data using occupancy prediction.'''
@@ -586,7 +590,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Check references
         df_test = constraint.to_frame(name='constraint');
         df_test.index.name = 'Time';
-        self.check_df_timeseries(df_test, 'get_constraint.csv');
+        self.check_df(df_test, 'get_constraint.csv');
         
     def test_error_points_per_day(self):
         '''Test occupancy prediction.'''

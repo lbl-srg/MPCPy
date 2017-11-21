@@ -375,6 +375,8 @@ class _FMU(_mpcpyPandas):
             Attribute for fmu object using the load_fmu method of pyfmi.
         fmu_version : string
             Attribute for version of fmu.  ``'1.0'`` or ``'2.0'``.
+        fmu_target : string
+            Attribute for version of fmu.  ``'cs'`` or ``'me'``.
 
         '''
         
@@ -383,20 +385,27 @@ class _FMU(_mpcpyPandas):
             self.mopath = None;
             self.modelpath = None
             self.libraries = None;
+            self.fmu = load_fmu(self.fmupath);
+            self.fmu_version = self.fmu.get_version();
+            self.fmu_target = self._get_fmu_target();
         if 'moinfo' in kwargs:
             self.mopath = kwargs['moinfo'][0];
             self.modelpath = kwargs['moinfo'][1];
             self.libraries = kwargs['moinfo'][2];
             if 'version' in kwargs:
-                version = kwargs['version'];
+                self.fmu_version = kwargs['version'];
             else:
-                version = '2.0';
+                self.fmu_version = '2.0';
+            if 'target' in kwargs:
+                self.fmu_target = kwargs['target'];
+            else:
+                self.fmu_target = 'me';
             self.fmupath = compile_fmu(self.modelpath, \
                                        self.mopath, \
                                        compiler_options = {'extra_lib_dirs':self.libraries}, 
-                                       version = version);
-        self.fmu = load_fmu(self.fmupath);
-        self.fmu_version = self.fmu.get_version();
+                                       version = self.fmu_version,
+                                       target = self.fmu_target);
+            self.fmu = load_fmu(self.fmupath);
         
     def _dataframe_to_input_object(self, df):
         '''Create a fmu input object from dataframe.
@@ -490,7 +499,38 @@ class _FMU(_mpcpyPandas):
                 fmu_variable_units[variable.get('name')] = unit;
             
         return fmu_variable_units
-    
+        
+    def _get_fmu_target(self):
+        '''Get fmu target, either ME or CS.  Only works for fmu version 2.0.
+        
+        Returns
+        -------
+        target : string
+            'me' or 'cs' for model exchange or cosimulation
+        
+        '''
+        
+        if self.fmu_version == '2.0':
+            tmpdir = core.unzip_unit(self.fmupath);
+            element_tree = xmlparser._parse_XML(tmpdir+os.sep + 'modelDescription.xml');
+            root = element_tree.getroot();
+            try:
+                tag = root.find('ModelExchange').tag
+            except:
+                pass
+            try:
+                tag = root.find('CoSimulation').tag
+            except:
+                pass
+            if tag == 'ModelExchange':
+                target = 'me'
+            else:
+                target = 'cs'
+        else:
+            target = None
+            
+        return target
+        
     def _get_unit_class_from_fmu_variable_units(self, variable_name, fmu_variable_units):
         '''Get units.unit class for the given variable.
         
