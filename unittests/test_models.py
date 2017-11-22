@@ -69,7 +69,7 @@ class SimpleRC(TestCaseMPCPy):
         # Check references
         df_test = self.model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_noinputs.csv');
-        
+
     def test_estimate_error_nofreeparameters(self):
         '''Test error raised if no free parameters passed.'''
         # Set model paths
@@ -401,6 +401,134 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
         
+
+class EstimateFromModestPyRealCSV(TestCaseMPCPy):
+    '''Test parameter estimation of a model using ModestPy from real csv data.'''
+
+    def setUp(self):
+        ## Setup building fmu emulation
+        self.building_source_file_path_est = os.path.join(self.get_unittest_path(), 'resources', 'building', 'RealMeasurements_est.csv');
+        self.building_source_file_path_val = os.path.join(self.get_unittest_path(), 'resources', 'building', 'RealMeasurements_val.csv');
+        self.zone_names = ['wes', 'hal', 'eas'];
+        self.weather_path = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
+        self.internal_path = os.path.join(self.get_unittest_path(), 'resources', 'internal', 'sampleCSV.csv');
+        self.internal_variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
+                                      'intCon_wes' : ('wes', 'intCon', units.W_m2), \
+                                      'intLat_wes' : ('wes', 'intLat', units.W_m2), \
+                                      'intRad_hal' : ('hal', 'intRad', units.W_m2), \
+                                      'intCon_hal' : ('hal', 'intCon', units.W_m2), \
+                                      'intLat_hal' : ('hal', 'intLat', units.W_m2), \
+                                      'intRad_eas' : ('eas', 'intRad', units.W_m2), \
+                                      'intCon_eas' : ('eas', 'intCon', units.W_m2), \
+                                      'intLat_eas' : ('eas', 'intLat', units.W_m2)};        
+        self.control_path = os.path.join(self.get_unittest_path(), 'resources', 'building', 'ControlCSV_0.csv');
+        self.control_variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
+                                     'conHeat_hal' : ('conHeat_hal', units.unit1), \
+                                     'conHeat_eas' : ('conHeat_eas', units.unit1)};        
+        # Measurements
+        self.measurements = {};
+        self.measurements['wesTdb'] = {'Sample' : variables.Static('wesTdb_sample', 1800, units.s)};
+        self.measurements['halTdb'] = {'Sample' : variables.Static('halTdb_sample', 1800, units.s)};
+        self.measurements['easTdb'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
+        self.measurements['wesPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
+        self.measurements['halPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};     
+        self.measurements['easPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
+        self.measurements['Ptot'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
+        self.measurement_variable_map = {'wesTdb_mea' : ('wesTdb', units.K), 
+                                         'halTdb_mea' : ('halTdb', units.K),
+                                         'easTdb_mea' : ('easTdb', units.K),
+                                         'wesPhvac_mea' : ('wesPhvac', units.W),
+                                         'halPhvac_mea' : ('halPhvac', units.W),
+                                         'easPhvac_mea' : ('easPhvac', units.W),
+                                         'Ptot_mea' : ('Ptot', units.W)}
+        ## Setup model
+        self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
+        self.modelpath = 'LBNL71T_MPC.MPC';
+        self.libraries = os.environ.get('MODELICAPATH');
+        self.estimate_method = models.ModestPy; 
+        self.validation_method = models.RMSE;
+        # Instantiate exo data sources
+        self.weather = exodata.WeatherFromEPW(self.weather_path);
+        self.internal = exodata.InternalFromCSV(self.internal_path, self.internal_variable_map, tz_name = self.weather.tz_name);
+        self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);   
+        # Parameters
+        self.parameters = exodata.ParameterFromCSV(os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv'));
+        self.parameters.collect_data();
+        self.parameters.data['lat'] = {};
+        self.parameters.data['lat']['Value'] = self.weather.lat;
+        # Instantiate test building
+        self.building_est = systems.RealFromCSV(self.building_source_file_path_est,
+                                            self.measurements, 
+                                            self.measurement_variable_map, 
+                                            tz_name = self.weather.tz_name);
+        # Instantiate validate building
+        self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
+                                            self.measurements, 
+                                            self.measurement_variable_map, 
+                                            tz_name = self.weather.tz_name);
+
+    def test_estimate_and_validate(self):
+        '''Test the estimation of a model's coefficients based on measured data.'''
+        plt.close('all');
+        # Exogenous collection time
+        self.start_time_exodata = '1/1/2015';
+        self.final_time_exodata = '1/30/2015';    
+        # Emulation time
+        self.start_time_emulation = '1/1/2015';
+        self.final_time_emulation = '1/4/2015';
+        # Estimation time
+        self.start_time_estimation = '1/1/2015';
+        self.final_time_estimation = '1/4/2015';
+        # Validation time
+        self.start_time_validation = '1/4/2015';
+        self.final_time_validation = '1/5/2015';
+        # Measurement variables for estimate
+        self.measurement_variable_list = ['wesTdb', 'easTdb', 'halTdb'];
+        # Exodata
+        self.weather.collect_data(self.start_time_exodata, self.final_time_exodata);
+        self.internal.collect_data(self.start_time_exodata, self.final_time_exodata);
+        self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
+        # Set exodata to building emulation
+        self.building_est.weather_data = self.weather.data;
+        self.building_est.internal_data = self.internal.data;
+        self.building_est.control_data = self.control.data;
+        self.building_est.tz_name = self.weather.tz_name;       
+        # Collect measurement data
+        self.building_est.collect_measurements(self.start_time_emulation, self.final_time_emulation);
+        # Instantiate model
+        self.model = models.Modelica(self.estimate_method, \
+                                     self.validation_method, \
+                                     self.building_est.measurements, \
+                                     moinfo = (self.mopath, self.modelpath, self.libraries), \
+                                     zone_names = self.zone_names, \
+                                     weather_data = self.weather.data, \
+                                     internal_data = self.internal.data, \
+                                     control_data = self.control.data, \
+                                     parameter_data = self.parameters.data, \
+                                     tz_name = self.weather.tz_name);
+        # Estimate model based on emulated data
+        ga_opts = {'maxiter': 23, 'lhs': True, 'pop_size': 15}  # Limited number of iterations to speed up
+        ps_opts = {'maxiter': 2}  # Limited number of iterations to speed up
+        methods = ('GA', 'PS')
+        seed = 1  # The above settings work with this seed
+        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list,
+                            seed=seed, methods=methods, ga_opts=ga_opts, ps_opts=ps_opts);
+        # Check references
+        self.model.simulate(self.start_time_emulation, self.final_time_emulation);
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_estimated_parameters.csv');
+        # Validate on validation data
+        self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
+        self.model.measurements = self.building_val.measurements;
+        self.model.validate(self.start_time_validation, self.final_time_validation, \
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation'));
+        # Check references
+        RMSE = {};
+        for key in self.model.RMSE.keys():
+            RMSE[key] = {};
+            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+        df_test = pd.DataFrame(data = RMSE);
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False, tol=1e-3);
 
 #%%
 class EstimateFromUKF(TestCaseMPCPy):
