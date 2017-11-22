@@ -59,7 +59,7 @@ class TestCaseMPCPy(unittest.TestCase):
         
         return ref_path;
         
-    def check_df(self, df_test, ref_file_name, timeseries=True):
+    def check_df(self, df_test, ref_file_name, timeseries=True, tol=1e-3):
         '''Compares DataFrame test data to reference data with tolerance.
         
         If the reference data file does not exist, a reference data file is 
@@ -80,7 +80,9 @@ class TestCaseMPCPy(unittest.TestCase):
             Path to csv file containing reference data
         timeseries : boolean
             True if the index of df_test is timestamps.
-        
+        tol : float
+            Tolerance (default 1e-3)
+
         '''
         
         # Define reference file
@@ -100,7 +102,7 @@ class TestCaseMPCPy(unittest.TestCase):
             k_test = list(df_test);
             self._check_keys(k_test, k_ref)
             # Test values
-            self._check_values(df_test, df_ref)
+            self._check_values(df_test, df_ref, tol)
         # If reference file does not exist, create one
         except IOError:
             ref_file_dir = self.get_ref_path();
@@ -181,7 +183,7 @@ class TestCaseMPCPy(unittest.TestCase):
         for i in range(len(k_ref)):
             self.assertTrue(k_ref[i] in k_test, 'Key test failed at reference key value {0}.'.format(k_ref[i]));
     
-    def _check_values(self, df_test, df_ref):
+    def _check_values(self, df_test, df_ref, tol=1e-3):
         '''Test the values of the test against the reference.
         
         Parameters
@@ -190,11 +192,11 @@ class TestCaseMPCPy(unittest.TestCase):
             Data of test.
         df_ref : pandas DataFrame
             Data of reference.
+        tol : float
+            Tolerance (default 1e-3)
 
         '''
 
-        # Set tolerance
-        tol = 1e-3
         for key in list(df_ref):
             # Get values
             y_ref = df_ref[key].get_values();
