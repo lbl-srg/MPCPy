@@ -464,7 +464,7 @@ class _Weather(_Type, utility._FMU):
         
         # Set file_path for fmu
         weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
-        fmuname = 'WeatherProcessor_JModelica_v2.fmu';
+        fmuname = 'WeatherProcessor_JModelica_v2_{0}.fmu'.format(utility.get_os());
         self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
         # Set parameters for fmu
         self.parameter_data = {};
