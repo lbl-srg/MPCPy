@@ -694,6 +694,9 @@ class UKF(_Estimate, utility._FMU):
             raise ValueError('Compiled fmu version is {0} and needs to be 1.0.'.format(Model.fmu_version));
         else:
             self.fmu_version = Model.fmu_version;
+        # Check correct platform
+        if utility.get_os() != 'Lin':
+            raise OSError('OS platform {0} not supported for UKF algorithm.'.format(utility.get_os()));
         # Instantiate UKF model
         self.model = ukf_model.Model(Model.fmupath);
         
