@@ -15,10 +15,13 @@ Functions
 
 .. automethod:: mpcpy.utility.get_MPCPy_path
 
+.. automethod:: mpcpy.utility.get_os
+
 """
 
 from abc import ABCMeta
 import os
+import sys
 import numpy as np
 import pandas as pd
 from pyfmi.common import core
@@ -838,6 +841,28 @@ def get_MPCPy_path():
     MPCPy_path = os.path.abspath(__file__)[:-len(rel_path)];
     
     return MPCPy_path
+	
+#%% Get the platform
+def get_os():
+    '''Get the OS suffix for file naming conventions.
+
+    Returns
+    -------
+    os : string
+        ``'win'`` if Windows. ``'Lin'`` if Linux.  ``'Mac'`` if OS X.
+
+    '''
+
+    if sys.platform == 'win32':
+		os = 'Win';
+    elif sys.platform == 'linux2':
+		os = 'Lin';
+    elif sys.platform == 'darwin':
+		raise OSError('OS X not supported.');
+    else:
+		raise OSError('{0} platform not supported.'.format(sys.platform));
+
+    return os
     
 #%% Get a unit class from a unit string
 def get_unit_class_from_unit_string(unit_string):
