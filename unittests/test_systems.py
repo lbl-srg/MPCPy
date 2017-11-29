@@ -9,6 +9,7 @@ from mpcpy import exodata
 from mpcpy import systems
 from mpcpy import variables
 from mpcpy import units
+from mpcpy import utility
 from testing import TestCaseMPCPy
 from matplotlib import pyplot as plt
 import os
@@ -19,7 +20,7 @@ class EmulationFromFMU(TestCaseMPCPy):
     def setUp(self):
         # Setup building
         self.building_source_file_path = os.path.join(self.get_unittest_path(), 'resources', 'building', \
-                                                      'LBNL71T_Emulation_JModelica_v2.fmu');   
+                                                      'LBNL71T_Emulation_JModelica_v2_{0}.fmu'.format(utility.get_os()));   
         self.zone_names = ['wes', 'hal', 'eas'];
         weather_path = os.path.join(self.get_unittest_path(), 'resources', 'weather', \
                                     'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');

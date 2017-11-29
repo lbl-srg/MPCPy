@@ -16,6 +16,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import pickle
 import os
+import sys
 
 #%%
 class SimpleRC(TestCaseMPCPy):
@@ -261,7 +262,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
     
     def setUp(self):
         ## Setup building fmu emulation
-        self.building_source_file_path = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v2.fmu');
+        self.building_source_file_path = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v2_{0}.fmu'.format(utility.get_os()));
         self.zone_names = ['wes', 'hal', 'eas'];
         self.weather_path = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
         self.internal_path = os.path.join(self.get_unittest_path(), 'resources', 'internal', 'sampleCSV.csv');
@@ -434,27 +435,44 @@ class EstimateFromUKF(TestCaseMPCPy):
         self.system.collect_measurements(self.start_time, self.final_time);
         
     def test_estimate_and_validate(self):
-        '''Test the estimation of a model's coefficients based on measured data.'''
-        # Instantiate model
-        self.model = models.Modelica(models.UKF, \
-                                     models.RMSE, \
-                                     self.system.measurements, \
-                                     moinfo = self.moinfo, \
-                                     parameter_data = self.parameters.data, \
-                                     control_data = self.controls.data, \
-                                     version = '1.0');                      
-        # Estimate
-        self.model.estimate(self.start_time, self.final_time, ['T_db']);
-        # Validate
-        self.model.validate(self.start_time, self.final_time, 'validate', plot = 0);
-        # Check references
-        RMSE = {};
-        for key in self.model.RMSE.keys():
-            RMSE[key] = {};
-            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
-        df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
-        
+        '''Test the estimation of a model's coefficients based on measured data.
+
+		Not performed on Windows platforms.
+
+		'''
+
+		# Check error raised if not on Linux platform
+        if utility.get_os() != 'Lin':
+			with self.assertRaises(OSError):
+				# Instantiate model
+				self.model = models.Modelica(models.UKF, \
+											 models.RMSE, \
+											 self.system.measurements, \
+											 moinfo = self.moinfo, \
+											 parameter_data = self.parameters.data, \
+											 control_data = self.controls.data, \
+											 version = '1.0');
+        else:
+			# Instantiate model
+			self.model = models.Modelica(models.UKF, \
+										 models.RMSE, \
+										 self.system.measurements, \
+										 moinfo = self.moinfo, \
+										 parameter_data = self.parameters.data, \
+										 control_data = self.controls.data, \
+										 version = '1.0');                      
+			# Estimate
+			self.model.estimate(self.start_time, self.final_time, ['T_db']);
+			# Validate
+			self.model.validate(self.start_time, self.final_time, 'validate', plot = 0);
+			# Check references
+			RMSE = {};
+			for key in self.model.RMSE.keys():
+				RMSE[key] = {};
+				RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+			df_test = pd.DataFrame(data = RMSE);
+			self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
+			
     def test_error_fmu_version(self):
         '''Test error raised if wrong fmu version.'''
         # Check error raised with wrong fmu version (2.0 instead of 1.0)
