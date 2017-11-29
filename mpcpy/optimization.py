@@ -612,6 +612,7 @@ class JModelica(_Package, utility._FMU):
         self.opt_options['external_data'] = self.external_data;
         self.opt_options['init_traj'] = self.res_init;
         self.opt_options['nominal_traj'] = self.res_init;
+        self.opt_options['IPOPT_options']['mumps_mem_percent'] = 5;
         self.opt_options['n_e'] = self._sim_opts['ncp'];
         # Set parameters if they exist
         if hasattr(self, 'parameter_data'):
