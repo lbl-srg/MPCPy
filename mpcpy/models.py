@@ -243,7 +243,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
             Start time of validation period.
             Set to 'continue' in order to continue the model simulation
             from the final time of the previous simulation, estimation, or 
-            validation.  Exodata input objects must contain values for the 
+            validation.  Continuous states from simulation and validation are 
+            saved.  Exodata input objects must contain values for the 
             continuation timestamp.  The measurements in a continued 
             simulation replace previous values.  They do not append to a 
             previous simulation's measurements.
@@ -276,10 +277,11 @@ class Modelica(_Model, utility._FMU, utility._Building):
         Parameters
         ----------
         start_time : string
-            Start time of simulation period.
+            Start time of validation period.
             Set to 'continue' in order to continue the model simulation
             from the final time of the previous simulation, estimation, or 
-            validation.  Exodata input objects must contain values for the 
+            validation.  Continuous states from simulation and validation are 
+            saved.  Exodata input objects must contain values for the 
             continuation timestamp.  The measurements in a continued 
             simulation replace previous values.  They do not append to a 
             previous simulation's measurements.

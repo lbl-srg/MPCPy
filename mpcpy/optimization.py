@@ -97,9 +97,9 @@ class Optimization(utility._mpcpyPandas):
         start_time : string
             Start time of estimation period.
             Set to 'continue' in order to continue the model optimization
-            from the final time of the previous optimization.  
-            Exodata input objects must contain values for the 
-            continuation timestamp.  The measurements in a continued 
+            from the final time of the previous optimization.  The continuous
+            states are not saved.  Exodata input objects must contain values 
+            for the continuation timestamp.  The measurements in a continued 
             simulation replace previous values.  They do not append to a 
             previous simulation's measurements.
         final_time : string
