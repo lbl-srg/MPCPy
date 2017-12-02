@@ -433,7 +433,39 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
+
+    def test_estimate_error_continue(self):
+        '''Test that an error is thrown for estimation start_time of continue.
         
+        '''
+        
+        plt.close('all');
+        # Exogenous collection time
+        start_time_exodata = '1/1/2015';
+        final_time_exodata = '1/30/2015';    
+        # Estimation time
+        start_time_estimation = 'continue';
+        final_time_estimation = '1/4/2015';
+        # Measurement variables for estimate
+        self.measurement_variable_list = ['wesTdb', 'easTdb', 'halTdb'];
+        # Exodata
+        self.weather.collect_data(start_time_exodata, final_time_exodata);
+        self.internal.collect_data(start_time_exodata, final_time_exodata);
+        self.control.collect_data(start_time_exodata, final_time_exodata);
+        # Instantiate model
+        self.model = models.Modelica(self.estimate_method, \
+                                     self.validation_method, \
+                                     self.building.measurements, \
+                                     moinfo = (self.mopath, self.modelpath, self.libraries), \
+                                     zone_names = self.zone_names, \
+                                     weather_data = self.weather.data, \
+                                     internal_data = self.internal.data, \
+                                     control_data = self.control.data, \
+                                     parameter_data = self.parameters.data, \
+                                     tz_name = self.weather.tz_name);                 
+        # Error when estimate model
+        with self.assertRaises(ValueError):
+            self.model.estimate(start_time_estimation, final_time_estimation, self.measurement_variable_list);        
 
 #%%
 class EstimateFromUKF(TestCaseMPCPy):
