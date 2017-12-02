@@ -417,7 +417,7 @@ class JModelica(_Package, utility._FMU):
         '''
         
         self._simulate_initial(Optimization);
-        self._solve();
+        self._solve(Optimization);
         self._get_control_results(Optimization);           
         
     def _energycostmin(self, Optimization, price_data):
@@ -427,7 +427,7 @@ class JModelica(_Package, utility._FMU):
         
         self.other_inputs['pi_e'] = price_data['pi_e'];
         self._simulate_initial(Optimization);
-        self._solve();   
+        self._solve(Optimization);   
         self._get_control_results(Optimization);                                      
         
     def _parameterestimate(self, Optimization, measurement_variable_list):
@@ -437,7 +437,7 @@ class JModelica(_Package, utility._FMU):
 
         self.measurement_variable_list = measurement_variable_list;        
         self._simulate_initial(Optimization);
-        self._solve();
+        self._solve(Optimization);
         self._get_parameter_results(Optimization);
         
     def _initalize_mop(self):
@@ -605,7 +605,7 @@ class JModelica(_Package, utility._FMU):
         # Store initial simulation
         self.res_init = self._res;
                                             
-    def _solve(self):
+    def _solve(self, Optimization):
         '''Solve the optimization problem.
         
         '''
@@ -615,7 +615,7 @@ class JModelica(_Package, utility._FMU):
         # Set inputs
         self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list_opt);
         # Create ExternalData structure
-        self._create_external_data();
+        self._create_external_data(Optimization);
         # Set optimization options
         self.opt_options['external_data'] = self.external_data;
         self.opt_options['init_traj'] = self.res_init;
@@ -634,7 +634,7 @@ class JModelica(_Package, utility._FMU):
         self.res_opt = self.opt_problem.optimize(options=self.opt_options);
         print(self.res_opt.get_solver_statistics());
         
-    def _create_external_data(self):   
+    def _create_external_data(self, Optimization):   
         '''Define external data inputs to optimization problem.
         
         '''

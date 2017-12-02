@@ -221,11 +221,13 @@ class Modelica(_Model, utility._FMU, utility._Building):
         if not free:
             # If none free raise error
             raise ValueError('No parameters set as "Free" in parameter_data dictionary. Cannot run parameter estimation.');
-        else:
-            # Otherwise, continue with parameter estimation
-            self._set_time_interval(start_time, final_time);
-            self.measurement_variable_list = measurement_variable_list;
-            self._estimate_method._estimate(self);
+        # Check for continue
+        if start_time == 'continue':
+            raise ValueError('"continue" is not a valid entry for start_time for parameter estimation problems.')
+        # Perform parameter estimation
+        self._set_time_interval(start_time, final_time);
+        self.measurement_variable_list = measurement_variable_list;
+        self._estimate_method._estimate(self);
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
         '''Validate the estimated parameters of the model.
@@ -673,7 +675,7 @@ class JModelica(_Estimate):
 
         '''
 
-        self.opt_problem = optimization.Optimization(Model, optimization._ParameterEstimate, optimization.JModelica, {});
+        self.opt_problem = optimization.Optimization(Model, optimization._ParameterEstimate, optimization.JModelica, {}, tz_name = Model.tz_name);
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
         
 
