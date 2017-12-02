@@ -64,7 +64,6 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                 constraint_data = self.constraints.data);                              
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
-        print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% \n{0}'.format(model.start_time_utc))
         # Update model
         model = opt_problem.Model;
         # Check references
@@ -441,7 +440,11 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         '''Test energy minimization of a model.'''
         plt.close('all');        
         # Instanatiate optimization problem
-        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyMin, optimization.JModelica, 'Ptot', constraint_data = self.constraints.data)
+        self.opt_problem = optimization.Optimization(self.model, \
+                                                     optimization.EnergyMin, \
+                                                     optimization.JModelica, \
+                                                     'Ptot', \
+                                                     constraint_data = self.constraints.data)
         # Optimize
         self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization);
         # Update model
@@ -454,7 +457,11 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         '''Test energy cost minimization of a model.'''
         plt.close('all');
         # Instanatiate optimization problem
-        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyCostMin, optimization.JModelica, 'Ptot', constraint_data = self.constraints.data)
+        self.opt_problem = optimization.Optimization(self.model, \
+                                                     optimization.EnergyCostMin, \
+                                                     optimization.JModelica, \
+                                                     'Ptot', \
+                                                     constraint_data = self.constraints.data)
         # Optimize
         self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization, price_data = self.prices.data);
         # Update model
@@ -544,8 +551,7 @@ class ModelContinue(TestCaseMPCPy):
                                                 optimization.EnergyMin, \
                                                 optimization.JModelica, \
                                                 'q_flow', \
-                                                constraint_data = self.constraints.data, 
-                                                tz_name = tz_name);
+                                                constraint_data = self.constraints.data);
 
         self.run_test(model, opt_problem, 'tz_name');
         

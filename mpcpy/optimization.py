@@ -60,12 +60,7 @@ class Optimization(utility._mpcpyPandas):
     objective_variable : string
         The name of the model variable to be used in the objective function.
     constraint_data : dictionary, optional
-        ``exodata`` constraint object data attribute. 
-    tz_name : string, optional
-        Name of timezone according to the package ``tzwhere``.  If 
-        ``'from_geography'``, then geography kwarg is required.
-    geography : list or tuple, optional
-        List or tuple with (latitude, longitude) in degrees.
+        ``exodata`` constraint object data attribute.
     
     
     Attributes
@@ -92,7 +87,7 @@ class Optimization(utility._mpcpyPandas):
         self.objective_variable = objective_variable;
         self._problem_type = problem_type();
         self._package_type = package_type(self);
-        self._parse_time_zone_kwargs(kwargs);
+        self.tz_name = Model.tz_name
         
     def optimize(self, start_time, final_time, **kwargs):
         '''Solve the optimization problem over the specified time horizon.
