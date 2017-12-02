@@ -196,6 +196,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         ----------
         start_time : string
             Start time of estimation period.
+            Setting to 'continue' will result in error.
         final_time : string
             Final time of estimation period.
         measurement_variable_list : list
@@ -240,6 +241,12 @@ class Modelica(_Model, utility._FMU, utility._Building):
         ----------
         start_time : string
             Start time of validation period.
+            Set to 'continue' in order to continue the model simulation
+            from the final time of the previous simulation, estimation, or 
+            validation.  Exodata input objects must contain values for the 
+            continuation timestamp.  The measurements in a continued 
+            simulation replace previous values.  They do not append to a 
+            previous simulation's measurements.
         final_time : string
             Final time of validation period.
         validate_filepath : string

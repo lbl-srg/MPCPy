@@ -150,12 +150,12 @@ class _mpcpyPandas(object):
         return df_simtime
         
     def _set_time_interval(self, start_time, final_time):
-        '''Convert start and final time to utc timestamps and other metrics.
+        '''Handle setting of start and final time and other metrics.
 
         Parameters
         ----------
         start_time : string
-            Starting time of period.
+            Starting time of period or 'continue'.
         final_time : string
             Final time of period.
     
