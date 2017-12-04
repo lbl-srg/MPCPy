@@ -96,8 +96,14 @@ class _Emulation(_System):
         ----------
         start_time : string
             Start time of measurements collection.
+            Set to 'continue' in order to continue the emulation simulation
+            from the final time of the previous simulation.  Exodata 
+            input objects must contain values for the continuation timestamp.
+            The measurements in a continued simulation replace previous values.
+            They do not append to a previous simulation's measurements.
         final_time : string
-            Final time of measurements collection.
+            Final time of measurements collection.  Must be greater than the
+            start time.
             
         Yields
         ------

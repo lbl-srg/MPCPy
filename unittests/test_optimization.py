@@ -13,6 +13,7 @@ from mpcpy import exodata
 from mpcpy import utility
 from mpcpy import variables
 from mpcpy import units
+from datetime import timedelta
 from testing import TestCaseMPCPy
 
 #%%
@@ -60,7 +61,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                 optimization.EnergyMin, \
                                                 optimization.JModelica, \
                                                 'q_flow', \
-                                                constraint_data = self.constraints.data);
+                                                constraint_data = self.constraints.data);                              
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
         # Update model
@@ -330,8 +331,6 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         df_test = pd.DataFrame(columns=['message', 'iterations', 'objective'], index = [0])
         df_test.loc[0] = opt_statistics[:-1]
         self.check_df(df_test, 'statistics_initial_constraint.csv', timeseries=False);
-        
-        
 
 #%% Temperature tests
 class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
@@ -441,7 +440,11 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         '''Test energy minimization of a model.'''
         plt.close('all');        
         # Instanatiate optimization problem
-        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyMin, optimization.JModelica, 'Ptot', constraint_data = self.constraints.data)
+        self.opt_problem = optimization.Optimization(self.model, \
+                                                     optimization.EnergyMin, \
+                                                     optimization.JModelica, \
+                                                     'Ptot', \
+                                                     constraint_data = self.constraints.data)
         # Optimize
         self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization);
         # Update model
@@ -454,7 +457,11 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         '''Test energy cost minimization of a model.'''
         plt.close('all');
         # Instanatiate optimization problem
-        self.opt_problem = optimization.Optimization(self.model, optimization.EnergyCostMin, optimization.JModelica, 'Ptot', constraint_data = self.constraints.data)
+        self.opt_problem = optimization.Optimization(self.model, \
+                                                     optimization.EnergyCostMin, \
+                                                     optimization.JModelica, \
+                                                     'Ptot', \
+                                                     constraint_data = self.constraints.data)
         # Optimize
         self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization, price_data = self.prices.data);
         # Update model
@@ -462,6 +469,154 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         # Check references
         df_test = self.model.display_measurements('Simulated');
         self.check_df(df_test, 'energycostmin.csv');
+        
+#%%
+class ModelContinue(TestCaseMPCPy):
+    '''Test model simulation times seperate from optimization.
+    
+    '''
+    
+    def setUp(self):
+        self.start_time = '1/1/2017';
+        self.final_time = '1/2/2017';
+        # Set model
+        self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        self.modelpath = 'Simple.RC'
+        # Set measurements
+        self.measurements = {};
+        self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        self.measurements['q_flow'] = {'Sample' : variables.Static('q_flow_sample', 1800, units.s)};
+        # Set control inputs
+        self.control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        self.control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        # Set constraint inputs
+        self.constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
+        self.constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'GTE', units.K), \
+                                   'T_db_max' : ('T_db', 'LTE', units.K)};
+                                   
+    def test_optimize(self):
+        '''Test the optimization of a model.
+        
+        '''
+        # Gather inputs
+        self.controls = exodata.ControlFromCSV(self.control_csv_filepath, \
+                                               self.control_variable_map);
+        self.controls.collect_data(self.start_time, self.final_time);
+        # Gather constraints
+        self.constraints = exodata.ConstraintFromCSV(self.constraint_csv_filepath, \
+                                                     self.constraint_variable_map);
+        self.constraints.collect_data(self.start_time, self.final_time);
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, self.modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+                                                
+        self.run_test(model, opt_problem, 'default');
+        
+    def test_optimize_tz_name(self):
+        '''Test the optimization of a model with a specific timezone.
+        
+        '''
+        
+        # Set timezone
+        tz_name = 'America/Chicago'
+        # Gather inputs
+        self.controls = exodata.ControlFromCSV(self.control_csv_filepath, \
+                                               self.control_variable_map, \
+                                               tz_name=tz_name);
+        self.controls.collect_data(self.start_time, self.final_time);
+        # Gather constraints
+        self.constraints = exodata.ConstraintFromCSV(self.constraint_csv_filepath, \
+                                                     self.constraint_variable_map, \
+                                                     tz_name=tz_name);
+        self.constraints.collect_data(self.start_time, self.final_time);
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, self.modelpath, {}), \
+                                control_data = self.controls.data, 
+                                tz_name = tz_name);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+
+        self.run_test(model, opt_problem, 'tz_name');
+        
+    def run_test(self, model, opt_problem, test_prefix):
+        '''Common function to run the continue optimization tests.
+        
+        '''
+        
+        # Simulate model for whole period
+        model.simulate('1/1/2017', '1/2/2017')
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_whole_{0}.csv'.format(test_prefix));
+        model.display_measurements('Simulated')['T_db'].plot(label = 'simWhole', linewidth = 4)
+        plt.figure(1)
+        # Simulate model from 00:00:00 to 08:00:00
+        model.simulate('1/1/2017', '1/1/2017 08:00:00')
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_0_8_{0}.csv'.format(test_prefix));
+        model.display_measurements('Simulated')['T_db'].plot(label = 'sim0')
+        # Simulate model from 08:00:00 to 16:00:00
+        model.simulate('continue', '1/1/2017 16:00:00')
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_8_16_{0}.csv'.format(test_prefix));
+        model.display_measurements('Simulated')['T_db'].plot(label = 'sim1')
+        # Solve optimization problem for whole period                 
+        opt_problem.optimize('1/1/2017', '1/2/2017')
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_whole_{0}.csv'.format(test_prefix));
+        model.display_measurements('Simulated')['T_db'].plot(label = 'optWhole', linewidth = 4)
+        # Optimize model from 00:00:00 to 08:00:00
+        opt_problem.optimize('1/1/2017', '1/1/2017 08:00:00');
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_0_8_{0}.csv'.format(test_prefix));
+        model.display_measurements('Simulated')['T_db'].plot(label = 'opt0')
+        # Optimize model from 08:00:00 to 16:00:00
+        opt_problem.optimize('continue', '1/1/2017 16:00:00');
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_8_16_{0}.csv'.format(test_prefix));
+        model.display_measurements('Simulated')['T_db'].plot(label = 'opt1')
+        # Recollect controls from CSV
+        self.controls.collect_data(self.start_time, self.final_time)
+        model.control_data = self.controls.data
+        # Simulate model from 16:00:00 to 24:00:00
+        model.simulate('continue', '1/2/2017')
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_16_24_{0}.csv'.format(test_prefix));
+        model.display_measurements('Simulated')['T_db'].plot(label = 'sim2')
+        plt.figure(2)
+        model.control_data['q_flow'].display_data().plot()
+        opt_problem.constraint_data['q_flow']['GTE'].display_data().plot()
+        plt.figure(1)
+        # Optimize model from 08:00:00 to 24:00:00
+        opt_problem.optimize('continue', '1/2/2017')
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_16_24_{0}.csv'.format(test_prefix));
+        model.display_measurements('Simulated')['T_db'].plot(label = 'opt2')
+        
         
 if __name__ == '__main__':
     unittest.main()

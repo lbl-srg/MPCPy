@@ -54,6 +54,39 @@ class SimpleRC(TestCaseMPCPy):
         df_test = self.model.get_base_measurements('Simulated');
         self.check_df(df_test, 'simulate_base.csv');
         
+    def test_simulate_continue(self):
+        '''Test simulation of a model in steps.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_nostart';
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(self.start_time, self.final_time);
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}), \
+                                     control_data = controls.data);
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_display.csv');
+        
+        # Simulate model in 4-hour chunks
+        sim_steps = pd.date_range(self.start_time, self.final_time, freq=str('8H'))
+        for i in range(len(sim_steps)-1):
+            if i == 0:
+                self.model.simulate(sim_steps[i], sim_steps[i+1]);
+            else:
+                self.model.simulate('continue', sim_steps[i+1]);
+            # Check references
+            df_test = self.model.display_measurements('Simulated');
+            self.check_df(df_test, 'simulate_step{0}.csv'.format(i));
+        
     def test_simulate_noinputs(self):
         '''Test simulation of a model with no external inputs.'''
         # Set model paths
@@ -400,7 +433,39 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
+
+    def test_estimate_error_continue(self):
+        '''Test that an error is thrown for estimation start_time of continue.
         
+        '''
+        
+        plt.close('all');
+        # Exogenous collection time
+        start_time_exodata = '1/1/2015';
+        final_time_exodata = '1/30/2015';    
+        # Estimation time
+        start_time_estimation = 'continue';
+        final_time_estimation = '1/4/2015';
+        # Measurement variables for estimate
+        self.measurement_variable_list = ['wesTdb', 'easTdb', 'halTdb'];
+        # Exodata
+        self.weather.collect_data(start_time_exodata, final_time_exodata);
+        self.internal.collect_data(start_time_exodata, final_time_exodata);
+        self.control.collect_data(start_time_exodata, final_time_exodata);
+        # Instantiate model
+        self.model = models.Modelica(self.estimate_method, \
+                                     self.validation_method, \
+                                     self.building.measurements, \
+                                     moinfo = (self.mopath, self.modelpath, self.libraries), \
+                                     zone_names = self.zone_names, \
+                                     weather_data = self.weather.data, \
+                                     internal_data = self.internal.data, \
+                                     control_data = self.control.data, \
+                                     parameter_data = self.parameters.data, \
+                                     tz_name = self.weather.tz_name);                 
+        # Error when estimate model
+        with self.assertRaises(ValueError):
+            self.model.estimate(start_time_estimation, final_time_estimation, self.measurement_variable_list);        
 
 #%%
 class EstimateFromUKF(TestCaseMPCPy):
