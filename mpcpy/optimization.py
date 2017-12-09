@@ -399,7 +399,12 @@ class JModelica(_Package, utility._FMU):
     
     This package is compatible with ``models.Modelica`` objects.  Please
     consult the JModelica user guide for more information regarding 
-    optimization options and solver statistics.
+    optimization options and solver statistics.  
+    
+    The option 'n_e' is overwritten by default to equal the number of 
+    points as calculated using the model measurements sample rate and 
+    length of optimization horizon (same as if model is simulated).  
+    However, editing this option will overwrite this default.
     
     '''
     
