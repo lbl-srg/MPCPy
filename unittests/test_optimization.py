@@ -186,6 +186,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         opt_options = opt_problem.get_optimization_options();
         # Set new options
         opt_options['IPOPT_options']['max_iter'] = 2;
+        opt_options['n_e'] = 2;
+        opt_options['result_mode'] = 'mesh_points';
         opt_problem.set_optimization_options(opt_options)
         # Get new options
         opt_options = opt_problem.get_optimization_options();
@@ -331,7 +333,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         df_test = pd.DataFrame(columns=['message', 'iterations', 'objective'], index = [0])
         df_test.loc[0] = opt_statistics[:-1]
         self.check_df(df_test, 'statistics_initial_constraint.csv', timeseries=False);
-
+        
 #%% Temperature tests
 class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
     '''Tests for the optimization of a model using JModelica.

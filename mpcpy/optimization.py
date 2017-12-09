@@ -40,6 +40,7 @@ from mpcpy import units
 from pymodelica import compile_fmu
 from pyjmi import transfer_optimization_problem;
 from pyjmi.optimization.casadi_collocation import ExternalData
+import copy
 
 #%% Optimization Class
 class Optimization(utility._mpcpyPandas):
@@ -398,7 +399,12 @@ class JModelica(_Package, utility._FMU):
     
     This package is compatible with ``models.Modelica`` objects.  Please
     consult the JModelica user guide for more information regarding 
-    optimization options and solver statistics.
+    optimization options and solver statistics.  
+    
+    The option 'n_e' is overwritten by default to equal the number of 
+    points as calculated using the model measurements sample rate and 
+    length of optimization horizon (same as if model is simulated).  
+    However, editing this option will overwrite this default.
     
     '''
     
@@ -621,7 +627,8 @@ class JModelica(_Package, utility._FMU):
         self.opt_options['external_data'] = self.external_data;
         self.opt_options['init_traj'] = self.res_init;
         self.opt_options['nominal_traj'] = self.res_init;
-        self.opt_options['n_e'] = self._sim_opts['ncp'];
+        if self._step_from_meas:
+            self.opt_options['n_e'] = self._sim_opts['ncp'];
         # Set parameters if they exist
         if hasattr(self, 'parameter_data'):
             for key in self.parameter_data.keys():
@@ -734,18 +741,29 @@ class JModelica(_Package, utility._FMU):
         
         '''
         
-        return self.opt_options;
+        return copy.deepcopy(self.opt_options);
         
     def _set_optimization_options(self, opt_options, init = False):
         '''Set the JModelica optimization options using a dictionary.
         
         '''
-        # Check that automatically set options are not being changed
-        if not init:
+        
+        # Initialize with specific default options
+        if init:
+            # Optimization control step
+            self._step_from_meas = True;
+            opt_options['n_e'] = 0;
+        # Check on automatically set options
+        else:
             for key in opt_options:
-                if key in ['external_data', 'init_traj', 'nominal_traj', 'n_e']:
+                if key in ['external_data', 'init_traj', 'nominal_traj']:
+                    # These cannot be changed
                     if opt_options[key] != self.opt_options[key]:
                         raise KeyError('Key {} is set automatically upon solve.'.format(key));
+                if key is 'n_e':
+                    # This can be changed but flag needs to be set
+                    if opt_options[key] != self.opt_options[key]:
+                        self._step_from_meas = False;
         # Set options
         self.opt_options = opt_options;
         
