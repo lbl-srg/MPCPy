@@ -28,10 +28,12 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         # Set .mo path
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         # Gather inputs
+        start_time_exo = '1/1/2017';
+        final_time_exo = '1/10/2017';
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
-        self.controls.collect_data(self.start_time, self.final_time);
+        self.controls.collect_data(start_time_exo, final_time_exo);
         # Set measurements
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
@@ -42,7 +44,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                    'T_db_min' : ('T_db', 'GTE', units.K), \
                                    'T_db_max' : ('T_db', 'LTE', units.K)};
         self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
-        self.constraints.collect_data(self.start_time, self.final_time);
+        self.constraints.collect_data(start_time_exo, final_time_exo);
 
     def test_optimize(self):
         '''Test the optimization of a model.
@@ -68,7 +70,9 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = opt_problem.Model;
         # Check references
         df_test = model.display_measurements('Simulated');
-        self.check_df(df_test, 'optimize.csv');
+        self.check_df(df_test, 'optimize_measurements.csv');
+        df_test = model.control_data['q_flow'].display_data();
+        self.check_df(df_test, 'optimize_control.csv');
         
     def test_set_problem_type(self):
         '''Test the dynamic setting of a problem type.
