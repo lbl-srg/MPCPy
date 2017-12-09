@@ -689,13 +689,16 @@ class JModelica(_Package, utility._FMU):
             time = self.res_opt['time'];
             timedelta = pd.to_timedelta(time, 's');
             timeindex = self._global_start_time_utc + timedelta;
-            ts_opt = pd.Series(data = data, index = timeindex);
+            ts_opt = pd.Series(data = data, index = timeindex).tz_localize('UTC');
             # Get old control data
             ts_old = self.Model.control_data[key].get_base_data();
+            # Remove rows with updated data
+            first = (ts_old.index == self.start_time_utc).tolist().index(True)
+            last = (ts_old.index == self.final_time_utc).tolist().index(True)
+            drop_list = ts_old.index[first:last+1]
+            ts_old = ts_old.drop(drop_list);
             # Append opt to old
             ts = ts_old.append(ts_opt)
-            # Remove duplicate indicies
-            ts = ts[~ts.index.duplicated(keep='last')]
             # Sort by index
             ts = ts.sort_index()
             # Update control_data
@@ -710,13 +713,16 @@ class JModelica(_Package, utility._FMU):
             time = self.res_opt['time'];
             timedelta = pd.to_timedelta(time, 's');
             timeindex = self._global_start_time_utc + timedelta;
-            ts_opt = pd.Series(data = data, index = timeindex);
+            ts_opt = pd.Series(data = data, index = timeindex).tz_localize('UTC');
             # Get old measurement data
             ts_old = self.Model.measurements[key]['Simulated'].get_base_data();
+            # Remove rows with updated data
+            first = (ts_old.index == self.start_time_utc).tolist().index(True)
+            last = (ts_old.index == self.final_time_utc).tolist().index(True)
+            drop_list = ts_old.index[first:last+1]
+            ts_old = ts_old.drop(drop_list);
             # Append opt to old
             ts = ts_old.append(ts_opt)
-            # Remove duplicate indicies
-            ts = ts[~ts.index.duplicated(keep='last')]
             # Sort by index
             ts = ts.sort_index()
             # Update control_data
