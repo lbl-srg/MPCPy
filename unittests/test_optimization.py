@@ -13,7 +13,8 @@ from mpcpy import exodata
 from mpcpy import utility
 from mpcpy import variables
 from mpcpy import units
-from datetime import timedelta
+import numpy as np
+
 from testing import TestCaseMPCPy
 
 #%%
@@ -71,8 +72,25 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         # Check references
         df_test = model.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_measurements.csv');
-        df_test = model.control_data['q_flow'].display_data();
+        df_test = model.control_data['q_flow'].display_data().to_frame();
+        df_test.index.name = 'Time'
         self.check_df(df_test, 'optimize_control.csv');
+        # Get opt input object and create dataframe
+        time = np.linspace(0,3600,3601);
+        df_test = pd.DataFrame();
+        data = [];
+        opt_input = opt_problem.opt_input_tuple[1]
+        names = opt_problem.opt_input_tuple[0]
+        # Create data
+        for t in time:
+            data.append(opt_input(t))
+        # Create index
+        timedelta = pd.to_timedelta(time, 's');
+        index = pd.to_datetime(self.start_time) + timedelta;
+        df_test = pd.DataFrame(data=data, index=index, columns=names)
+        df_test.index.name = 'Time'
+        # Check references
+        self.check_df(df_test, 'optimize_opt_input.csv');
         
     def test_set_problem_type(self):
         '''Test the dynamic setting of a problem type.
