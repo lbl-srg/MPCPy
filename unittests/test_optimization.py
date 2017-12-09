@@ -186,6 +186,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         opt_options = opt_problem.get_optimization_options();
         # Set new options
         opt_options['IPOPT_options']['max_iter'] = 2;
+        opt_options['n_e'] = 2;
+        opt_options['result_mode'] = 'mesh_points';
         opt_problem.set_optimization_options(opt_options)
         # Get new options
         opt_options = opt_problem.get_optimization_options();
@@ -332,6 +334,60 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         df_test.loc[0] = opt_statistics[:-1]
         self.check_df(df_test, 'statistics_initial_constraint.csv', timeseries=False);
 
+class OptimizeFromJModelicaOptInputs(TestCaseMPCPy):
+    '''Test simple model optimization functions.
+    
+    '''
+    
+    def setUp(self):
+        self.start_time = '1/1/2017';
+        self.final_time = '1/2/2017';
+        # Set .mo path
+        self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        # Gather inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        self.controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
+        self.controls.collect_data(self.start_time, self.final_time);
+        # Set measurements
+        self.measurements = {};
+        self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        self.measurements['q_flow'] = {'Sample' : variables.Static('q_flow_sample', 1800, units.s)};
+        # Gather constraints       
+        constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'GTE', units.K), \
+                                   'T_db_max' : ('T_db', 'LTE', units.K)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time, self.final_time);
+
+    def test_optimize(self):
+        '''Test the optimization of a model.
+        
+        '''
+        
+        modelpath = 'Simple.RC';        
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);                              
+        # Solve optimization problem                     
+        opt_problem.optimize(self.start_time, self.final_time);
+        (names,opt_input) = opt_problem._package_type.res_opt.get_opt_input()
+        print(model.control_data['q_flow'].get_base_data())
+        print(names)
+        import numpy as np
+        for t in np.linspace(0, 24*3600, 25):
+            print(t,opt_input(t))
+        
 #%% Temperature tests
 class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
     '''Tests for the optimization of a model using JModelica.
