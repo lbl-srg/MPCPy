@@ -111,7 +111,8 @@ class Optimization(utility._mpcpyPandas):
         Upon solving the optimization problem, this method updates the
         ``Model.control_data`` dictionary with the optimal control 
         timeseries for each control variable and the Model.measurements 
-        dictionary with the optimal measurements under the ``'Simulated'`` key.
+        dictionary with the optimal measurements under the ``'Simulated'`` 
+        key.
         
         '''
 
@@ -678,6 +679,8 @@ class JModelica(_Package, utility._FMU):
     def _get_control_results(self, Optimization):
         '''Update the model control data and measurements dictionaries.
         
+        Also add the opt_input object as attribute to Optimization.
+        
         '''
 
         # Get fmu variables units
@@ -707,6 +710,8 @@ class JModelica(_Package, utility._FMU):
             if not unit:
                 unit = units.unit1;
             self.Model.control_data[key] = variables.Timeseries(key, ts, unit);
+            # Get opt input object tuple (names, collocation polynomials f(t))
+            Optimization.opt_input_tuple = self.res_opt.get_opt_input()
         # Update model simulated data
         for key in Optimization.Model.measurements.keys():
             data = self.res_opt['mpc_model.' + key];
