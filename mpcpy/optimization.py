@@ -676,33 +676,55 @@ class JModelica(_Package, utility._FMU):
         self.external_data = ExternalData(Q=Q, quad_pen=quad_pen, eliminated=eliminated);
         
     def _get_control_results(self, Optimization):
-        '''Update the control data dictionary in the model with optimization results.
+        '''Update the model control data and measurements dictionaries.
         
         '''
 
-        fmu_variable_units = self._get_fmu_variable_units();                                     
+        # Get fmu variables units
+        fmu_variable_units = self._get_fmu_variable_units();
+        # Update model control data
         for key in self.Model.control_data.keys():
+            # Get optimal control data
             data = self.res_opt['mpc_model.' + key];
             time = self.res_opt['time'];
             timedelta = pd.to_timedelta(time, 's');
             timeindex = self._global_start_time_utc + timedelta;
-            ts = pd.Series(data = data, index = timeindex);
+            ts_opt = pd.Series(data = data, index = timeindex);
+            # Get old control data
+            ts_old = self.Model.control_data[key].get_base_data();
+            # Append opt to old
+            ts = ts_old.append(ts_opt)
+            # Remove duplicate indicies
+            ts = ts[~ts.index.duplicated(keep='last')]
+            # Sort by index
+            ts = ts.sort_index()
+            # Update control_data
             ts.name = key;
             unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
             if not unit:
-                unit = units.unit1;                
-            Optimization.Model.control_data[key] = variables.Timeseries(key, ts, unit);  
+                unit = units.unit1;
+            self.Model.control_data[key] = variables.Timeseries(key, ts, unit);
+        # Update model simulated data
         for key in Optimization.Model.measurements.keys():
             data = self.res_opt['mpc_model.' + key];
             time = self.res_opt['time'];
             timedelta = pd.to_timedelta(time, 's');
             timeindex = self._global_start_time_utc + timedelta;
-            ts = pd.Series(data = data, index = timeindex);
+            ts_opt = pd.Series(data = data, index = timeindex);
+            # Get old measurement data
+            ts_old = self.Model.measurements[key]['Simulated'].get_base_data();
+            # Append opt to old
+            ts = ts_old.append(ts_opt)
+            # Remove duplicate indicies
+            ts = ts[~ts.index.duplicated(keep='last')]
+            # Sort by index
+            ts = ts.sort_index()
+            # Update control_data
             ts.name = key;
             unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
             if not unit:
-                unit = units.unit1;                
-            Optimization.Model.measurements[key]['Simulated'] = variables.Timeseries(key, ts, unit);
+                unit = units.unit1;
+            self.Model.measurements[key]['Simulated'] = variables.Timeseries(key, ts, unit);
             
     def _get_parameter_results(self, Optimization):
         '''Update the parameter data dictionary in the model with optimization results.
