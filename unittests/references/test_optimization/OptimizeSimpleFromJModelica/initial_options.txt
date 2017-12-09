@@ -28,7 +28,7 @@
     "init_traj": null,
     "mutable_external_data": true,
     "n_cp": 3,
-    "n_e": 50,
+    "n_e": 0,
     "n_eval_points": 20,
     "named_vars": false,
     "nominal_traj": null,
