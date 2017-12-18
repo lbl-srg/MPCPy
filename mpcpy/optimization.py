@@ -765,7 +765,7 @@ class JModelica(_Package, utility._FMU):
                     if opt_options[key] != self.opt_options[key]:
                         self._step_from_meas = False;
         # Set options
-        self.opt_options = opt_options;
+        self.opt_options = copy.deepcopy(opt_options);
         
     def _get_optimization_statistics(self):
         '''Get the JModelica optimization result statistics.
