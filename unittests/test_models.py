@@ -206,10 +206,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         plt.close('all');
         # Exogenous collection time
         self.start_time_exodata = '1/1/2015';
-        self.final_time_exodata = '1/30/2015';    
-        # Emulation time
-        self.start_time_emulation = '1/1/2015';
-        self.final_time_emulation = '1/4/2015';
+        self.final_time_exodata = '1/30/2015';
         # Estimation time
         self.start_time_estimation = '1/1/2015';
         self.final_time_estimation = '1/4/2015';
@@ -228,7 +225,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.building_est.control_data = self.control.data;
         self.building_est.tz_name = self.weather.tz_name;       
         # Collect measurement data
-        self.building_est.collect_measurements(self.start_time_emulation, self.final_time_emulation);
+        self.building_est.collect_measurements(self.start_time_estimation, self.final_time_estimation);
         # Instantiate model
         self.model = models.Modelica(self.estimate_method, \
                                      self.validation_method, \
@@ -332,10 +329,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         plt.close('all');
         # Exogenous collection time
         self.start_time_exodata = '1/1/2015';
-        self.final_time_exodata = '1/30/2015';    
-        # Emulation time
-        self.start_time_emulation = '1/1/2015';
-        self.final_time_emulation = '1/4/2015';
+        self.final_time_exodata = '1/30/2015';
         # Estimation time
         self.start_time_estimation = '1/1/2015';
         self.final_time_estimation = '1/4/2015';
@@ -354,7 +348,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         self.building.control_data = self.control.data;
         self.building.tz_name = self.weather.tz_name;       
         # Collect measurement data
-        self.building.collect_measurements(self.start_time_emulation, self.final_time_emulation);
+        self.building.collect_measurements(self.start_time_estimation, self.final_time_estimation);
         # Instantiate model
         self.model = models.Modelica(self.estimate_method, \
                                      self.validation_method, \
