@@ -220,17 +220,13 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                 optimization.JModelica, \
                                                 'q_flow', \
                                                 constraint_data = self.constraints.data);
-        # Get initial options
-        opt_options = opt_problem.get_optimization_options();
-        # Set new options
-        opt_options['n_e'] = 2;
-        self.assertRaises(KeyError, opt_problem.set_optimization_options(opt_options));
-        opt_options['external_data'] = 2;
-        self.assertRaises(KeyError, opt_problem.set_optimization_options(opt_options));
-        opt_options['init_traj'] = 2;
-        self.assertRaises(KeyError, opt_problem.set_optimization_options(opt_options));
-        opt_options['nominal_traj'] = 2;
-        self.assertRaises(KeyError, opt_problem.set_optimization_options(opt_options));
+        for key in ['external_data', 'init_traj', 'nominal_traj']:
+            # Get initial options
+            opt_options = opt_problem.get_optimization_options();
+            # Set new options and check KeyError raised
+            with self.assertRaises(KeyError):
+                opt_options[key] = 2;
+                opt_problem.set_optimization_options(opt_options);
         
     def test_get_statistics(self):
         '''Test the getting of optimization result statistics.
