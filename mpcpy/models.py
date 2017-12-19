@@ -931,17 +931,16 @@ class ModestPy(_Estimate):
                 seed = kwargs[key]
             elif key == 'ftype':
                 ftype = kwargs[key]
-
+    
         # Get measurements
         # ================
         ideal = pd.DataFrame()
         meas_vars = Model.measurement_variable_list
         for v in meas_vars:
-            if 'Measured' in Model.measurements[v]:
-                base = Model.measurements[v]['Measured'].get_base_data()
-                # Drop duplicates to avoid pandas errors
-                base = base[~base.index.duplicated(keep='first')]
-                ideal[v] = base
+            base = Model.measurements[v]['Measured'].get_base_data()
+            # Drop duplicates to avoid pandas errors
+            base = base[~base.index.duplicated(keep='first')]
+            ideal[v] = base
 
         # Get inputs
         # ==========
