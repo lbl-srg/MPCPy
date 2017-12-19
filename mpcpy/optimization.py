@@ -40,9 +40,10 @@ from mpcpy import units
 from pymodelica import compile_fmu
 from pyjmi import transfer_optimization_problem;
 from pyjmi.optimization.casadi_collocation import ExternalData
+import copy
 
 #%% Optimization Class
-class Optimization(object):
+class Optimization(utility._mpcpyPandas):
     '''Class for representing an optimization problem.    
  
     Parameters
@@ -60,7 +61,7 @@ class Optimization(object):
     objective_variable : string
         The name of the model variable to be used in the objective function.
     constraint_data : dictionary, optional
-        ``exodata`` constraint object data attribute. 
+        ``exodata`` constraint object data attribute.
     
     
     Attributes
@@ -87,6 +88,7 @@ class Optimization(object):
         self.objective_variable = objective_variable;
         self._problem_type = problem_type();
         self._package_type = package_type(self);
+        self.tz_name = Model.tz_name
         
     def optimize(self, start_time, final_time, **kwargs):
         '''Solve the optimization problem over the specified time horizon.
@@ -95,6 +97,12 @@ class Optimization(object):
         ----------
         start_time : string
             Start time of estimation period.
+            Set to 'continue' in order to continue the model optimization
+            from the final time of the previous optimization.  The continuous
+            states are not saved.  Exodata input objects must contain values 
+            for the continuation timestamp.  The measurements in a continued 
+            simulation replace previous values.  They do not append to a 
+            previous simulation's measurements.
         final_time : string
             Final time of estimation period.
             
@@ -107,7 +115,7 @@ class Optimization(object):
         
         '''
 
-        self.Model._set_time_interval(start_time, final_time);
+        self._set_time_interval(start_time, final_time);
         self._problem_type._optimize(self, **kwargs);
 
     def set_problem_type(self, problem_type):
@@ -391,7 +399,12 @@ class JModelica(_Package, utility._FMU):
     
     This package is compatible with ``models.Modelica`` objects.  Please
     consult the JModelica user guide for more information regarding 
-    optimization options and solver statistics.
+    optimization options and solver statistics.  
+    
+    The option 'n_e' is overwritten by default to equal the number of 
+    points as calculated using the model measurements sample rate and 
+    length of optimization horizon (same as if model is simulated).  
+    However, editing this option will overwrite this default.
     
     '''
     
@@ -411,7 +424,7 @@ class JModelica(_Package, utility._FMU):
         '''
         
         self._simulate_initial(Optimization);
-        self._solve();
+        self._solve(Optimization);
         self._get_control_results(Optimization);           
         
     def _energycostmin(self, Optimization, price_data):
@@ -421,7 +434,7 @@ class JModelica(_Package, utility._FMU):
         
         self.other_inputs['pi_e'] = price_data['pi_e'];
         self._simulate_initial(Optimization);
-        self._solve();   
+        self._solve(Optimization);   
         self._get_control_results(Optimization);                                      
         
     def _parameterestimate(self, Optimization, measurement_variable_list):
@@ -431,7 +444,7 @@ class JModelica(_Package, utility._FMU):
 
         self.measurement_variable_list = measurement_variable_list;        
         self._simulate_initial(Optimization);
-        self._solve();
+        self._solve(Optimization);
         self._get_parameter_results(Optimization);
         
     def _initalize_mop(self):
@@ -588,43 +601,48 @@ class JModelica(_Package, utility._FMU):
         for key in self.Model.measurements.keys():
             self.measurements['mpc_model.' + key] = self.Model.measurements[key];           
         # Set timing
-        self.start_time_utc = self.Model.start_time_utc;
-        self.final_time_utc = self.Model.final_time_utc;     
-        self.elapsed_seconds = self.Model.elapsed_seconds;        
+        self._continue = Optimization._continue;
+        self.start_time_utc = Optimization.start_time_utc;
+        self.final_time_utc = Optimization.final_time_utc;
+        self._global_start_time_utc = Optimization._global_start_time_utc
+        self.elapsed_seconds = Optimization.elapsed_seconds;  
+        self.total_elapsed_seconds = Optimization.total_elapsed_seconds;        
         # Simulate fmu
         self._simulate_fmu();
         # Store initial simulation
         self.res_init = self._res;
                                             
-    def _solve(self):
+    def _solve(self, Optimization):
         '''Solve the optimization problem.
         
         '''
-        # Set start and final time
-        self.Model.elapsed_seconds
+
         # Create input_mpcpy_ts_list
         self._create_input_mpcpy_ts_list_opt();
         # Set inputs
-        self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list_opt);          
+        self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list_opt);
         # Create ExternalData structure
-        self._create_external_data();
+        self._create_external_data(Optimization);
         # Set optimization options
         self.opt_options['external_data'] = self.external_data;
         self.opt_options['init_traj'] = self.res_init;
         self.opt_options['nominal_traj'] = self.res_init;
-        self.opt_options['n_e'] = self._sim_opts['ncp'];
+        if self._step_from_meas:
+            self.opt_options['n_e'] = self._sim_opts['ncp'];
         # Set parameters if they exist
         if hasattr(self, 'parameter_data'):
             for key in self.parameter_data.keys():
                 self.opt_problem.set(key, self.parameter_data[key]['Value'].get_base_data());
         # Set start and final time
-        self.opt_problem.set('start_time', 0);
-        self.opt_problem.set('final_time', self.Model.elapsed_seconds);
+        start_time = self.total_elapsed_seconds - self.elapsed_seconds;
+        final_time = self.total_elapsed_seconds;
+        self.opt_problem.set('start_time', start_time);
+        self.opt_problem.set('final_time', final_time);
         # Optimize
         self.res_opt = self.opt_problem.optimize(options=self.opt_options);
         print(self.res_opt.get_solver_statistics());
         
-    def _create_external_data(self):   
+    def _create_external_data(self, Optimization):   
         '''Define external data inputs to optimization problem.
         
         '''
@@ -633,8 +651,8 @@ class JModelica(_Package, utility._FMU):
         N_mea = 0;
         if hasattr(self, 'measurement_variable_list'):
             for key in self.measurement_variable_list:
-                df = self.Model.measurements[key]['Measured'].get_base_data()[self.Model.start_time:self.Model.final_time].to_frame();
-                df_simtime = self._add_simtime_column(df);
+                df = self.Model.measurements[key]['Measured'].get_base_data().to_frame();
+                df_simtime = self._add_simtime_column(df, Optimization._global_start_time_utc);
                 mea_traj = np.vstack((df_simtime['SimTime'].get_values(), \
                                      df_simtime[key].get_values()));
                 quad_pen['mpc_model.' + key] = mea_traj;
@@ -667,7 +685,7 @@ class JModelica(_Package, utility._FMU):
             data = self.res_opt['mpc_model.' + key];
             time = self.res_opt['time'];
             timedelta = pd.to_timedelta(time, 's');
-            timeindex = self.start_time_utc + timedelta;
+            timeindex = self._global_start_time_utc + timedelta;
             ts = pd.Series(data = data, index = timeindex);
             ts.name = key;
             unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
@@ -678,7 +696,7 @@ class JModelica(_Package, utility._FMU):
             data = self.res_opt['mpc_model.' + key];
             time = self.res_opt['time'];
             timedelta = pd.to_timedelta(time, 's');
-            timeindex = self.start_time_utc + timedelta;
+            timeindex = self._global_start_time_utc + timedelta;
             ts = pd.Series(data = data, index = timeindex);
             ts.name = key;
             unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
@@ -723,20 +741,31 @@ class JModelica(_Package, utility._FMU):
         
         '''
         
-        return self.opt_options;
+        return copy.deepcopy(self.opt_options);
         
     def _set_optimization_options(self, opt_options, init = False):
         '''Set the JModelica optimization options using a dictionary.
         
         '''
-        # Check that automatically set options are not being changed
-        if not init:
+        
+        # Initialize with specific default options
+        if init:
+            # Optimization control step
+            self._step_from_meas = True;
+            opt_options['n_e'] = 0;
+        # Check on automatically set options
+        else:
             for key in opt_options:
-                if key in ['external_data', 'init_traj', 'nominal_traj', 'n_e']:
+                if key in ['external_data', 'init_traj', 'nominal_traj']:
+                    # These cannot be changed
                     if opt_options[key] != self.opt_options[key]:
                         raise KeyError('Key {} is set automatically upon solve.'.format(key));
+                if key is 'n_e':
+                    # This can be changed but flag needs to be set
+                    if opt_options[key] != self.opt_options[key]:
+                        self._step_from_meas = False;
         # Set options
-        self.opt_options = opt_options;
+        self.opt_options = copy.deepcopy(opt_options);
         
     def _get_optimization_statistics(self):
         '''Get the JModelica optimization result statistics.

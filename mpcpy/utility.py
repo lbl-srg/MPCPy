@@ -120,15 +120,18 @@ class _mpcpyPandas(object):
         
         return var
      
-    def _add_simtime_column(self, df):
+    def _add_simtime_column(self, df, index_start):
         '''Add a simulation time column to a dataframe from the DateTimeIndex.
         
-        The simulation time is added in seconds starting at 0.
+        The simulation time is added in seconds starting at 0 from a specified 
+        index value.
         
         Parameters
         ----------
         df : ``pandas`` dataframe object
             Dataframe for which to add a simulation time column.
+        index_start : datetime object
+            Index which corresponds to simulation time of 0.
         
         Returns
         -------
@@ -137,6 +140,7 @@ class _mpcpyPandas(object):
 
         '''
         
+        df = df.loc[index_start:]
         t = df.index.to_series();
         dt = t - t[0];
         dt = dt.apply(lambda x: x / np.timedelta64(1, 's'));
@@ -146,12 +150,12 @@ class _mpcpyPandas(object):
         return df_simtime
         
     def _set_time_interval(self, start_time, final_time):
-        '''Convert start and final time to utc timestamps and other metrics.
+        '''Handle setting of start and final time and other metrics.
 
         Parameters
         ----------
         start_time : string
-            Starting time of period.
+            Starting time of period or 'continue'.
         final_time : string
             Final time of period.
     
@@ -174,16 +178,31 @@ class _mpcpyPandas(object):
 
         '''
 
+        # Set timezone if doesn't exist
         try:
             getattr(self, 'tz_name')
         except AttributeError:
             self.tz_name = 'UTC';
+        # Set start time
+        if start_time is 'continue':
+            # Continue from last
+            self.start_time = self._last_final_time_utc.tz_convert(self.tz_name);
+            self._continue = True;
+        else:
+            # Get new start time
+            try:
+                self.start_time = pd.to_datetime(start_time).tz_localize(self.tz_name);
+            except TypeError:
+                self.start_time = start_time;
+            self._global_start_time_utc = self.start_time.tz_convert('UTC');
+            self.total_elapsed_seconds = 0
+            self._continue = False;
+        # Set final time
         try:
-            self.start_time = pd.to_datetime(start_time).tz_localize(self.tz_name);
             self.final_time = pd.to_datetime(final_time).tz_localize(self.tz_name);
         except TypeError:
-            self.start_time = start_time;
             self.final_time = final_time;
+        # Process timing
         start_of_year = pd.to_datetime('1/1/' + str(self.start_time.year)).tz_localize(self.tz_name);
         year_start_timedelta = self.start_time - start_of_year;
         year_final_timedelta = self.final_time - start_of_year;
@@ -192,6 +211,9 @@ class _mpcpyPandas(object):
         self.elapsed_seconds = (self.final_time - self.start_time).total_seconds();
         self.year_start_seconds = year_start_timedelta.total_seconds();
         self.year_final_seconds = year_final_timedelta.total_seconds();
+        # Update attributes needed for 'continue'
+        self.total_elapsed_seconds = self.total_elapsed_seconds + self.elapsed_seconds;
+        self._last_final_time_utc = self.final_time_utc;
         
     def _parse_time_zone_kwargs(self, kwargs):
         '''Set the timezone using geography or timezone name.
@@ -252,33 +274,42 @@ class _FMU(_mpcpyPandas):
         # Create input_mpcpy_ts_list
         self._create_input_mpcpy_ts_list_sim();
         # Set inputs
-        self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list);       
-        # Load simulation fmu  
-        simulate_model = load_fmu(self.fmupath);
+        self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list);
+        # Get simulation options
+        self._sim_opts = self.fmu.simulate_options();
+        # Set simulation fmu with start
+        if self._continue:
+            # Continue fmu
+            self._sim_opts['initialize'] = False;
+        else:
+            # Load fmu
+            self.fmu = load_fmu(self.fmupath);
+        # Set start/final time
+        start_time = self.total_elapsed_seconds - self.elapsed_seconds;
+        final_time = self.total_elapsed_seconds;
         # Set parameters in fmu if they exist
         if hasattr(self, 'parameter_data'):
             for key in self.parameter_data.keys():
-                simulate_model.set(key, self.parameter_data[key]['Value'].get_base_data());
+                self.fmu.set(key, self.parameter_data[key]['Value'].get_base_data());
         # Get minimum measurement sample rate for simulation
         min_sample = 3600;
         for key in self.measurements.keys():
             sample = self.measurements[key]['Sample'].get_base_data();
             if sample < min_sample:
                 min_sample = sample; 
-        # Set Options
-        self._sim_opts = simulate_model.simulate_options();
+        # Set sample rate for simulation
         self._sim_opts['ncp'] = int(self.elapsed_seconds/min_sample);
         # Simulate
-        self._res = simulate_model.simulate(start_time = 0, \
-                                           final_time = self.elapsed_seconds, \
-                                           input = self._input_object, \
-                                           options = self._sim_opts);
+        self._res = self.fmu.simulate(start_time = start_time, \
+                                      final_time = final_time, \
+                                      input = self._input_object, \
+                                      options = self._sim_opts);
         # Retrieve measurements
         fmu_variable_units = self._get_fmu_variable_units();
         for key in self.measurements.keys():
             data = self._res[key];
             time = self._res['time'];
-            timedelta = pd.to_timedelta(time, 's');
+            timedelta = pd.to_timedelta(time-time[0], 's');
             timeindex = self.start_time_utc + timedelta;
             ts = pd.Series(data = data, index = timeindex);
             ts.name = key;
@@ -344,7 +375,7 @@ class _FMU(_mpcpyPandas):
         if input_mpcpy_ts_list:
             # If not, fill input object
             self._input_df = self._mpcpy_ts_list_to_dataframe(input_mpcpy_ts_list);
-            self._input_object = self._dataframe_to_input_object(self._input_df[self.start_time_utc:self.final_time_utc]);
+            self._input_object = self._dataframe_to_input_object(self._input_df, self.start_time_utc, self.final_time_utc);
         else:
             # Otherwise, create empty input object
             self._input_object = ();
@@ -407,13 +438,17 @@ class _FMU(_mpcpyPandas):
                                        target = self.fmu_target);
             self.fmu = load_fmu(self.fmupath);
         
-    def _dataframe_to_input_object(self, df):
+    def _dataframe_to_input_object(self, df, start_time, final_time):
         '''Create a fmu input object from dataframe.
         
         Parameters
         ----------
         df : ``pandas`` dataframe object
             Dataframe to convert to fmu input_object.
+        start_time : datetime object
+            Start of input object data
+        final_time : datetime object
+            End of input object data
             
         Returns
         -------
@@ -423,10 +458,11 @@ class _FMU(_mpcpyPandas):
         '''
 
         input_names = tuple(df);
-        input_df_simtime = self._add_simtime_column(df);
-        input_trajectory = input_df_simtime['SimTime'].get_values();
+        df_simtime = self._add_simtime_column(df, self._global_start_time_utc);
+        input_df = df_simtime.loc[start_time:final_time]
+        input_trajectory = input_df['SimTime'].get_values();
         for header in input_names:
-            input_trajectory = np.vstack((input_trajectory, df[header].get_values()));
+            input_trajectory = np.vstack((input_trajectory, input_df[header].get_values()));
         input_object = (input_names, np.transpose(input_trajectory));
         
         return input_object;

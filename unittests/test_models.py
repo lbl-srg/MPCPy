@@ -54,6 +54,39 @@ class SimpleRC(TestCaseMPCPy):
         df_test = self.model.get_base_measurements('Simulated');
         self.check_df(df_test, 'simulate_base.csv');
         
+    def test_simulate_continue(self):
+        '''Test simulation of a model in steps.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_nostart';
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(self.start_time, self.final_time);
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}), \
+                                     control_data = controls.data);
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_display.csv');
+        
+        # Simulate model in 4-hour chunks
+        sim_steps = pd.date_range(self.start_time, self.final_time, freq=str('8H'))
+        for i in range(len(sim_steps)-1):
+            if i == 0:
+                self.model.simulate(sim_steps[i], sim_steps[i+1]);
+            else:
+                self.model.simulate('continue', sim_steps[i+1]);
+            # Check references
+            df_test = self.model.display_measurements('Simulated');
+            self.check_df(df_test, 'simulate_step{0}.csv'.format(i));
+        
     def test_simulate_noinputs(self):
         '''Test simulation of a model with no external inputs.'''
         # Set model paths
@@ -167,45 +200,13 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
                                             self.measurements, 
                                             self.measurement_variable_map, 
                                             tz_name = self.weather.tz_name);
-                                            
-    def test_simulate_initial_parameters(self):
-        '''Test the simulation of the model.'''
-        plt.close('all');       
-        # Simulation time
-        self.start_time = '1/1/2015';
-        self.final_time = '1/4/2015';
-        # Exodata
-        self.weather.collect_data(self.start_time, self.final_time);
-        self.internal.collect_data(self.start_time, self.final_time);
-        self.control.collect_data(self.start_time, self.final_time);       
-        # Collect emulation measurements for comparison
-        self.building_est.collect_measurements(self.start_time, self.final_time);
-        # Instantiate model
-        self.model = models.Modelica(self.estimate_method, \
-                                     self.validation_method, \
-                                     self.building_est.measurements, \
-                                     moinfo = (self.mopath, self.modelpath, self.libraries), \
-                                     zone_names = self.zone_names, \
-                                     weather_data = self.weather.data, \
-                                     internal_data = self.internal.data, \
-                                     control_data = self.control.data, \
-                                     parameter_data = self.parameters.data, \
-                                     tz_name = self.weather.tz_name);                    
-        # Simulate model with current guess of parameters
-        self.model.simulate(self.start_time, self.final_time);
-        # Check references
-        df_test = self.model.display_measurements('Simulated');
-        self.check_df(df_test, 'simulate_initial_parameters.csv');
 
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
         plt.close('all');
         # Exogenous collection time
         self.start_time_exodata = '1/1/2015';
-        self.final_time_exodata = '1/30/2015';    
-        # Emulation time
-        self.start_time_emulation = '1/1/2015';
-        self.final_time_emulation = '1/4/2015';
+        self.final_time_exodata = '1/30/2015';
         # Estimation time
         self.start_time_estimation = '1/1/2015';
         self.final_time_estimation = '1/4/2015';
@@ -224,7 +225,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.building_est.control_data = self.control.data;
         self.building_est.tz_name = self.weather.tz_name;       
         # Collect measurement data
-        self.building_est.collect_measurements(self.start_time_emulation, self.final_time_emulation);
+        self.building_est.collect_measurements(self.start_time_estimation, self.final_time_estimation);
         # Instantiate model
         self.model = models.Modelica(self.estimate_method, \
                                      self.validation_method, \
@@ -236,16 +237,28 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
                                      control_data = self.control.data, \
                                      parameter_data = self.parameters.data, \
                                      tz_name = self.weather.tz_name);                 
-        # Estimate model based on emulated data
-        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
+        # Simulate model with initial guess
+        self.model.simulate(self.start_time_estimation, self.final_time_estimation)
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        self.check_df(df_test, 'simulate_estimated_parameters.csv');
+        self.check_df(df_test, 'simulate_initial_parameters.csv');
+        # Estimate model based on emulated data
+        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
+        # Validate model based on estimation data
+        self.model.validate(self.start_time_estimation, self.final_time_estimation, \
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation_csv'), plot=0)
+        # Check references
+        RMSE = {};
+        for key in self.model.RMSE.keys():
+            RMSE[key] = {};
+            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+        df_test = pd.DataFrame(data = RMSE);
+        self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
         # Validate on validation data
         self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
         self.model.measurements = self.building_val.measurements;
         self.model.validate(self.start_time_validation, self.final_time_validation, \
-                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation'));
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation_csv'), plot=0);
         # Check references
         RMSE = {};
         for key in self.model.RMSE.keys():
@@ -310,49 +323,13 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
                                                  fmupath = self.building_source_file_path, \
                                                  zone_names = self.zone_names, \
                                                  parameter_data = building_parameters_data);
-                                                 
-    def test_simulate_initial_parameters(self):
-        '''Test the simulation of the model.'''
-        plt.close('all');       
-        # Simulation time
-        self.start_time = '1/1/2015';
-        self.final_time = '1/4/2015';
-        # Exodata
-        self.weather.collect_data(self.start_time, self.final_time);
-        self.internal.collect_data(self.start_time, self.final_time);
-        self.control.collect_data(self.start_time, self.final_time);       
-        # Collect emulation measurements for comparison
-        self.building.weather_data = self.weather.data;
-        self.building.internal_data = self.internal.data;
-        self.building.control_data = self.control.data;
-        self.building.tz_name = self.weather.tz_name;
-        self.building.collect_measurements(self.start_time, self.final_time);
-        # Instantiate model
-        self.model = models.Modelica(self.estimate_method, \
-                                     self.validation_method, \
-                                     self.building.measurements, \
-                                     moinfo = (self.mopath, self.modelpath, self.libraries), \
-                                     zone_names = self.zone_names, \
-                                     weather_data = self.weather.data, \
-                                     internal_data = self.internal.data, \
-                                     control_data = self.control.data, \
-                                     parameter_data = self.parameters.data, \
-                                     tz_name = self.weather.tz_name);                    
-        # Simulate model with current guess of parameters
-        self.model.simulate(self.start_time, self.final_time);
-        # Check references
-        df_test = self.model.display_measurements('Simulated');
-        self.check_df(df_test, 'simulate_initial_parameters.csv');
         
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
         plt.close('all');
         # Exogenous collection time
         self.start_time_exodata = '1/1/2015';
-        self.final_time_exodata = '1/30/2015';    
-        # Emulation time
-        self.start_time_emulation = '1/1/2015';
-        self.final_time_emulation = '1/4/2015';
+        self.final_time_exodata = '1/30/2015';
         # Estimation time
         self.start_time_estimation = '1/1/2015';
         self.final_time_estimation = '1/4/2015';
@@ -371,7 +348,66 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         self.building.control_data = self.control.data;
         self.building.tz_name = self.weather.tz_name;       
         # Collect measurement data
-        self.building.collect_measurements(self.start_time_emulation, self.final_time_emulation);
+        self.building.collect_measurements(self.start_time_estimation, self.final_time_estimation);
+        # Instantiate model
+        self.model = models.Modelica(self.estimate_method, \
+                                     self.validation_method, \
+                                     self.building.measurements, \
+                                     moinfo = (self.mopath, self.modelpath, self.libraries), \
+                                     zone_names = self.zone_names, \
+                                     weather_data = self.weather.data, \
+                                     internal_data = self.internal.data, \
+                                     control_data = self.control.data, \
+                                     parameter_data = self.parameters.data, \
+                                     tz_name = self.weather.tz_name);
+        # Simulate model with initial guess
+        self.model.simulate(self.start_time_estimation, self.final_time_estimation)
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_initial_parameters.csv');
+        # Estimate model based on emulated data
+        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
+        # Validate model based on estimation data
+        self.model.validate(self.start_time_estimation, self.final_time_estimation, \
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation'), plot=0)
+        # Check references
+        RMSE = {};
+        for key in self.model.RMSE.keys():
+            RMSE[key] = {};
+            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+        df_test = pd.DataFrame(data = RMSE);
+        self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
+        # Validate on validation data
+        self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
+        self.model.measurements = self.building.measurements;
+        self.model.validate(self.start_time_validation, self.final_time_validation, \
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation'), plot=0);
+        # Check references
+        RMSE = {};
+        for key in self.model.RMSE.keys():
+            RMSE[key] = {};
+            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+        df_test = pd.DataFrame(data = RMSE);
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
+
+    def test_estimate_error_continue(self):
+        '''Test that an error is thrown for estimation start_time of continue.
+        
+        '''
+        
+        plt.close('all');
+        # Exogenous collection time
+        start_time_exodata = '1/1/2015';
+        final_time_exodata = '1/30/2015';    
+        # Estimation time
+        start_time_estimation = 'continue';
+        final_time_estimation = '1/4/2015';
+        # Measurement variables for estimate
+        self.measurement_variable_list = ['wesTdb', 'easTdb', 'halTdb'];
+        # Exodata
+        self.weather.collect_data(start_time_exodata, final_time_exodata);
+        self.internal.collect_data(start_time_exodata, final_time_exodata);
+        self.control.collect_data(start_time_exodata, final_time_exodata);
         # Instantiate model
         self.model = models.Modelica(self.estimate_method, \
                                      self.validation_method, \
@@ -383,24 +419,9 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
                                      control_data = self.control.data, \
                                      parameter_data = self.parameters.data, \
                                      tz_name = self.weather.tz_name);                 
-        # Estimate model based on emulated data
-        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
-        # Check references
-        df_test = self.model.display_measurements('Simulated');
-        self.check_df(df_test, 'simulate_estimated_parameters.csv');
-        # Validate on validation data
-        self.building.collect_measurements(self.start_time_validation, self.final_time_validation);
-        self.model.measurements = self.building.measurements;
-        self.model.validate(self.start_time_validation, self.final_time_validation, \
-                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation'));
-        # Check references
-        RMSE = {};
-        for key in self.model.RMSE.keys():
-            RMSE[key] = {};
-            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
-        df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
-        
+        # Error when estimate model
+        with self.assertRaises(ValueError):
+            self.model.estimate(start_time_estimation, final_time_estimation, self.measurement_variable_list);
 
 class EstimateFromModestPyRealCSV(TestCaseMPCPy):
     '''Test parameter estimation of a model using ModestPy from real csv data.'''
