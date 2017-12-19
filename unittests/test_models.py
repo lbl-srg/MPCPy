@@ -493,10 +493,7 @@ class EstimateFromModestPyRealCSV(TestCaseMPCPy):
         plt.close('all');
         # Exogenous collection time
         self.start_time_exodata = '1/1/2015';
-        self.final_time_exodata = '1/30/2015';    
-        # Emulation time
-        self.start_time_emulation = '1/1/2015';
-        self.final_time_emulation = '1/4/2015';
+        self.final_time_exodata = '1/30/2015';
         # Estimation time
         self.start_time_estimation = '1/1/2015';
         self.final_time_estimation = '1/4/2015';
@@ -515,7 +512,7 @@ class EstimateFromModestPyRealCSV(TestCaseMPCPy):
         self.building_est.control_data = self.control.data;
         self.building_est.tz_name = self.weather.tz_name;       
         # Collect measurement data
-        self.building_est.collect_measurements(self.start_time_emulation, self.final_time_emulation);
+        self.building_est.collect_measurements(self.start_time_estimation, self.final_time_estimation);
         # Instantiate model
         self.model = models.Modelica(self.estimate_method, \
                                      self.validation_method, \
@@ -527,6 +524,11 @@ class EstimateFromModestPyRealCSV(TestCaseMPCPy):
                                      control_data = self.control.data, \
                                      parameter_data = self.parameters.data, \
                                      tz_name = self.weather.tz_name);
+        # Simulate model with initial guess
+        self.model.simulate(self.start_time_estimation, self.final_time_estimation)
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_initial_parameters.csv');
         # Estimate model based on emulated data
         ga_opts = {'maxiter': 23, 'lhs': True, 'pop_size': 15}  # Limited number of iterations to speed up
         ps_opts = {'maxiter': 2}  # Limited number of iterations to speed up
@@ -534,22 +536,28 @@ class EstimateFromModestPyRealCSV(TestCaseMPCPy):
         seed = 1  # The above settings work with this seed
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list,
                             seed=seed, methods=methods, ga_opts=ga_opts, ps_opts=ps_opts);
-        # Check references
-        self.model.simulate(self.start_time_emulation, self.final_time_emulation);
-        df_test = self.model.display_measurements('Simulated');
-        self.check_df(df_test, 'simulate_estimated_parameters.csv');
-        # Validate on validation data
-        self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
-        self.model.measurements = self.building_val.measurements;
-        self.model.validate(self.start_time_validation, self.final_time_validation, \
-                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation'));
+        # Validate model based on estimation data
+        self.model.validate(self.start_time_estimation, self.final_time_estimation, \
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation'), plot=0)
         # Check references
         RMSE = {};
         for key in self.model.RMSE.keys():
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False, tol=1e-3);
+        self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
+        # Validate on validation data
+        self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
+        self.model.measurements = self.building_val.measurements;
+        self.model.validate(self.start_time_validation, self.final_time_validation, \
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation'), plot=0);
+        # Check references
+        RMSE = {};
+        for key in self.model.RMSE.keys():
+            RMSE[key] = {};
+            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+        df_test = pd.DataFrame(data = RMSE);
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
 
 #%%
 class EstimateFromUKF(TestCaseMPCPy):
