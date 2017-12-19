@@ -1009,9 +1009,11 @@ class ModestPy(_Estimate):
 
         # Trim dataframes and adjust indexes
         # ==================================
+        # Define start and end of learning period
+        start = Model.start_time_utc
+        end = Model.final_time_utc
         # Learning period
-        start = ideal.index[0]
-        end = ideal.index[-1]
+        ideal = ideal[start:end]
         inp = inp[start:end]
         # Adjust index to the smallest step
         inp_step = inp.index[1] - inp.index[0]
