@@ -232,7 +232,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         # Perform parameter estimation
         self._set_time_interval(start_time, final_time);
         self.measurement_variable_list = measurement_variable_list;
-        self._estimate_method._estimate(self);
+        self._estimate_method._estimate(self, **kwargs);
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
         '''Validate the estimated parameters of the model.
