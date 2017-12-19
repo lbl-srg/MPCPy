@@ -996,9 +996,9 @@ class ModestPy(_Estimate):
             # Initial value
             val = Model.parameter_data[par_name]['Value'].get_base_data()
             # Variability
-            is_free = Model.parameter_data[par_name]['Free'].display_data()
+            is_free = Model.parameter_data[par_name]['Free'].get_base_data()
 
-            if (is_free is True) or (is_free is 1):
+            if is_free is 1:
                 # Estimated parameter
                 lo = Model.parameter_data[par_name]['Minimum'].get_base_data()
                 hi = Model.parameter_data[par_name]['Maximum'].get_base_data()
