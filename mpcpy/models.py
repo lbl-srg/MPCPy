@@ -226,13 +226,6 @@ class Modelica(_Model, utility._FMU, utility._Building):
         if not free:
             # If none free raise error
             raise ValueError('No parameters set as "Free" in parameter_data dictionary. Cannot run parameter estimation.');
-<<<<<<< HEAD
-        else:
-            # Otherwise, continue with parameter estimation
-            self._set_time_interval(start_time, final_time);
-            self.measurement_variable_list = measurement_variable_list;
-            self._estimate_method._estimate(self, **kwargs);
-=======
         # Check for continue
         if start_time == 'continue':
             raise ValueError('"continue" is not a valid entry for start_time for parameter estimation problems.')
@@ -240,7 +233,6 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self._set_time_interval(start_time, final_time);
         self.measurement_variable_list = measurement_variable_list;
         self._estimate_method._estimate(self);
->>>>>>> master
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
         '''Validate the estimated parameters of the model.
@@ -1022,7 +1014,6 @@ class ModestPy(_Estimate):
         start = ideal.index[0]
         end = ideal.index[-1]
         inp = inp[start:end]
-
         # Adjust index to the smallest step
         inp_step = inp.index[1] - inp.index[0]
         ideal_step = ideal.index[1] - ideal.index[1]
