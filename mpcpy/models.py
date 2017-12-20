@@ -1013,8 +1013,8 @@ class ModestPy(_Estimate):
         start = Model.start_time_utc
         end = Model.final_time_utc
         # Learning period
-        ideal = ideal[start:end]
-        inp = inp[start:end]
+        ideal = ideal.loc[start:end]
+        inp = inp.loc[start:end]
         # Adjust index to the smallest step
         inp_step = inp.index[1] - inp.index[0]
         ideal_step = ideal.index[1] - ideal.index[1]
@@ -1038,7 +1038,7 @@ class ModestPy(_Estimate):
                                       lp_n=lp_n, lp_len=None, lp_frame=None, 
                                       vp=None, ic_param=None, methods=methods,
                                       fmi_opts=fmi_opts, ga_opts=ga_opts, ps_opts=ps_opts,
-                                      seed=seed, ftype=ftype)
+                                      sqp_opts=sqp_opts, seed=seed, ftype=ftype)
         estimates = session.estimate()
 
         # Put estimates into Model.parameter_data
