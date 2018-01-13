@@ -26,6 +26,8 @@ Estimate Methods
 
 .. autoclass:: mpcpy.models.UKF
 
+.. autoclass:: mpcpy.models.ModestPy
+
 Validate Methods
 ================
 
@@ -849,21 +851,47 @@ class UKF(_Estimate, utility._FMU):
 
 class ModestPy(_Estimate):
     """
-    ModestPy estimation method using multi-step estimation. Available methods:
+    ModestPy_ estimation algorithm based on a multi-step estimation. Available steps:
     * genetic algorithm ('GA')
     * pattern search ('PS')
     * sequential quadratic programming ('SQP')
 
+    GA followed by PS is the default method sequence. Both are able to handle models
+    with possibly non-linear and non-continuous terms. Typically, the estimation
+    takes more time than using JModelica, but there are higher chances to find
+    the global optimum.
+
     The method saves additional output files: 
 
-    * best_per_run.csv - estimates and errors from all runs (run per row),
-    * final.csv - final estimated parameters
-    * summary_N.csv - errors, methods, parameters from all iterations
-    * errors.png - plot of errors from all runs
-    * ga_N.png and ps_N.png - parameter evolution plots for N run of GA and PS.
+        * best_per_run.csv - estimates and errors from all runs (run per row),
+
+        * final.csv - final estimated parameters
+
+        * summary_N.csv - errors, methods, parameters from all iterations
+
+        * errors.png - plot of errors from all runs
+
+        * ga_N.png and ps_N.png - parameter evolution plots for N run of GA and PS (n/a for SQP)
 
     By default the files are saved in the current working directory. A custom
-    directory can be chosen with the *workdir* argument.
+    directory can be chosen with the ``workdir`` argument.
+
+    The estimation methods (GA, PS, SQP) have method specific options that can
+    be overwritten by the user. The most often used options are (default values shown):
+
+        * ``ga_opts = {'maxiter': 50, 'pop_size': max(4 * n_parameters, 20), 'tol': 1e-6, 'lhs': False}``
+
+        * ``ps_opts = {'maxiter': 500, 'tol': 1e-11}``
+
+        * ``sqp_opts = {'scipy_opts': {'disp': True, 'iprint': 2, 'maxiter': 150, 'full_output': True}}``
+
+    where ``maxiter`` is the maximum number of iterations, ``pop_size`` is the GA population size,
+    ``tol`` is the error tolerance, ``lhs`` is the Latin Hypercube Sampling initialization. The SQP
+    method is based on the SciPy implementation. Refer to the `SciPy documentation`_ to see what
+    parameters can be passed in ``scipy_opts``.
+
+    .. _ModestPy: https://github.com/sdu-cfei/modest-py
+    .. _SciPy documentation: https://docs.scipy.org/doc/scipy/reference/optimize.minimize-slsqp.html
 
     Optional parameters
     -------------------
