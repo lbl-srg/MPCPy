@@ -28,7 +28,9 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
 	    numpydoc >= 0.7.0
 
-	    tzwhere **=** 2.3
+	    tzwhere **==** 2.3
+
+        modestpy **==** 0.0.7
 
 2. Install libgeos-dev with command:
 
