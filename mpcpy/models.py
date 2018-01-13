@@ -852,9 +852,12 @@ class UKF(_Estimate, utility._FMU):
 class ModestPy(_Estimate):
     """
     ModestPy_ estimation algorithm based on a multi-step estimation. Available steps:
-    * genetic algorithm ('GA')
-    * pattern search ('PS')
-    * sequential quadratic programming ('SQP')
+
+        * genetic algorithm ('GA'),
+
+        * pattern search ('PS'),
+
+        * sequential quadratic programming ('SQP').
 
     GA followed by PS is the default method sequence. Both are able to handle models
     with possibly non-linear and non-continuous terms. Typically, the estimation
@@ -865,13 +868,13 @@ class ModestPy(_Estimate):
 
         * best_per_run.csv - estimates and errors from all runs (run per row),
 
-        * final.csv - final estimated parameters
+        * final.csv - final estimated parameters,
 
-        * summary_N.csv - errors, methods, parameters from all iterations
+        * summary_N.csv - errors, methods, parameters from all iterations,
 
-        * errors.png - plot of errors from all runs
+        * errors.png - plot of errors from all runs,
 
-        * ga_N.png and ps_N.png - parameter evolution plots for N run of GA and PS (n/a for SQP)
+        * ga_N.png and ps_N.png - parameter evolution plots for N run of GA and PS (n/a for SQP).
 
     By default the files are saved in the current working directory. A custom
     directory can be chosen with the ``workdir`` argument.
