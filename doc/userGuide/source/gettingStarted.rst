@@ -12,31 +12,31 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
     - using pip, install the following packages:
 
-	    matplotlib >= 2.0.2
+        matplotlib >= 2.0.2
 
-	    numpy >= 1.13.1
+        numpy >= 1.13.1
 
-	    pandas >= 0.20.3
+        pandas >= 0.20.3
 
-	    python-dateutil >= 2.6.1
+        python-dateutil >= 2.6.1
 
-	    pytz >= 2017.2
+        pytz >= 2017.2
 
-	    scikit-learn >= 0.18.2
+        scikit-learn >= 0.18.2
 
-	    sphinx >= 1.6.3
+        sphinx >= 1.6.3
 
-	    numpydoc >= 0.7.0
+        numpydoc >= 0.7.0
 
-	    tzwhere **==** 2.3
+        tzwhere **==** 2.3
 
         modestpy **==** 0.0.7
 
 2. Install libgeos-dev with command:
 
-	.. code-block:: text
+    .. code-block:: text
 
-	    > sudo apt-get install libgeos-dev
+        > sudo apt-get install libgeos-dev
 
 3. Install JModelica 2.0 (for Modelica compiling, optimization, and fmu simulation)
 
@@ -83,10 +83,10 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
     - Run the introductory tutorial example.  From the command-line, use the commands:
 
-	.. code-block:: text
+    .. code-block:: text
 
-	    > cd doc/userGuide/tutorial
-	    > python introductory.py
+        > cd doc/userGuide/tutorial
+        > python introductory.py
 
 10. Optional, for developers only
 
@@ -94,12 +94,12 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
     - to generate the user guide pdf, latex must be installed.  Use the following commands to install texlive and latexmk:
 
-    	.. code-block:: text
+        .. code-block:: text
 
-	    > sudo apt-get install texlive
-	    > sudo apt-get install texlive-formats-extra
-	    > sudo apt-get install latexmk
-	
+            > sudo apt-get install texlive
+            > sudo apt-get install texlive-formats-extra
+            > sudo apt-get install latexmk
+
 
 Introductory Tutorial
 ---------------------
@@ -115,17 +115,17 @@ To run all unit tests from command-line, use the command:
 
     .. code-block:: text
 
-    	> python bin/runUnitTests
+        > python bin/runUnitTests
 
 To run only unit tests in the module test_models from command-line, use the command:
 
     .. code-block:: text
 
-	> python bin/runUnitTests -s test_models
+    > python bin/runUnitTests -s test_models
 
 To run only unit tests in the class SimpleRC from the module test_models from the command-line, use the command:
 
     .. code-block:: text
 
-	> python bin/runUnitTests -s test_models.SimpleRC
+    > python bin/runUnitTests -s test_models.SimpleRC
 
