@@ -28,6 +28,7 @@ While MPCPy provides an integration platform, it relies on free, open-source, th
 
 - **JModelica.org** (http://jmodelica.org/) is used for simulation of FMUs, compiling FMUs from Modelica models, parameter estimation of Modelica models, and control optimization using Modelica models.
 - **EstimationPy** (http://lbl-srg.github.io/EstimationPy/) is used for implementing the Unscented Kalman Filter for parameter estimation of FMU models.
+- **ModestPy** (https://github.com/sdu-cfei/modest-py) is used for parameter estimation of FMU models, with a focus on gradient-free methods (Genetic Algorithm, Pattern Search).
 
 Contributing
 ------------
