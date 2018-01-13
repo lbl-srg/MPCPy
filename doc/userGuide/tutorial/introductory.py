@@ -291,10 +291,12 @@ thermalResistor.R     0.0001  True     0.1   0.001  K/W  0.002
 
 Now, we can instantiate the model object by defining the estimation method, 
 validation method, measurement dictionary, model information, parameter data, 
-and exogenous data.  In this case, we use JModelica optimization to perform 
-the parameter estimation and will validate the parameter estimation by 
-calculating the root mean square error (RMSE) between measurements from the 
-model and emulation.
+and exogenous data.  Different methods are available for the parameter estimation.
+The methods can be accessed using a common interface, so it is easy to switch
+between them. In this tutorial we present two examples: JModelica and ModestPy. 
+
+To estimate parameters using JModelica:
+
 
 >>> model = models.Modelica(models.JModelica,
 ...                         models.RMSE,
@@ -304,6 +306,20 @@ model and emulation.
 ...                         weather_data = weather.data,
 ...                         control_data = control.data,
 ...                         tz_name = weather.tz_name)
+
+To estimate parameters using ModestPy:
+
+>>> model = models.Modelica(models.ModestPy,
+...                         models.RMSE,
+...                         emulation.measurements,
+...                         moinfo = moinfo,
+...                         parameter_data = parameters.data,
+...                         weather_data = weather.data,
+...                         control_data = control.data,
+...                         tz_name = weather.tz_name)
+
+MPCPy will validate the parameter estimation by calculating the root mean square error 
+(RMSE) between measurements from the model and emulation.
 
 Let's simulate the model to see how far off we are with our initial parameter
 guesses.  The ``simulate()`` function updates the measurement dictionary with 
@@ -331,6 +347,10 @@ the model.
 
 >>> model.estimate('1/1/2017', '1/2/2017', ['Tzone']) # doctest: +ELLIPSIS
 -etc-
+
+Each estimation method (e.g. JModelica, ModestPy) may have method specific
+options that can be passed as optional arguments to ``estimate()``. The
+allowed optional arguments for each method are discussed in :ref:`Models`.
 
 Let's validate the estimation on the training period.  The ``validate()``
 method will simulate the model over the specified time period, calculate the
