@@ -65,25 +65,41 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                 optimization.JModelica, \
                                                 'q_flow', \
                                                 constraint_data = self.constraints.data);                              
-        # Solve optimization problem                     
+        # Solve optimization problem with default res_control_step                   
         opt_problem.optimize(self.start_time, self.final_time);
-        # Update model
-        model = opt_problem.Model;
         # Check references
-        df_test = model.display_measurements('Simulated');
+        df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_measurements.csv');
         df_test = model.control_data['q_flow'].display_data().to_frame();
         df_test.index.name = 'Time'
-        self.check_df(df_test, 'optimize_control.csv');
+        self.check_df(df_test, 'optimize_control_default.csv');
+        # Simulate model with optimal control
+        model.simulate(self.start_time, self.final_time)
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_optimal_default.csv');
+        # Solve optimization problem with user-defined res_control_step 
+        opt_problem.optimize(self.start_time, self.final_time, res_control_step = 60.0);
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_measurements.csv');
+        df_test = model.control_data['q_flow'].display_data().to_frame();
+        df_test.index.name = 'Time'
+        self.check_df(df_test, 'optimize_control_userdefined.csv');
+        # Simulate model with optimal control
+        model.simulate(self.start_time, self.final_time)
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_optimal_userdefined.csv');
         # Get opt input object and create dataframe
         time = np.linspace(0,3600,3601);
         df_test = pd.DataFrame();
         data = [];
-        opt_input = opt_problem.opt_input_tuple[1]
-        names = opt_problem.opt_input_tuple[0]
+        opt_input_traj = opt_problem.opt_input[1]
+        names = opt_problem.opt_input[0]
         # Create data
         for t in time:
-            data.append(opt_input(t))
+            data.append(opt_input_traj(t))
         # Create index
         timedelta = pd.to_timedelta(time, 's');
         index = pd.to_datetime(self.start_time) + timedelta;
@@ -117,10 +133,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                 constraint_data = self.constraints.data);
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
-        # Update model
-        model = opt_problem.Model;
         # Check references
-        df_test = model.display_measurements('Simulated');
+        df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_energy.csv');
         # Set new problem type
         opt_problem.set_problem_type(optimization.EnergyCostMin);
@@ -130,10 +144,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
         opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
-        # Update model
-        model = opt_problem.Model;
         # Check references
-        df_test = model.display_measurements('Simulated');
+        df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_energycost.csv');
         
     def test_optimize_subpackage(self):
@@ -156,10 +168,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                 constraint_data = self.constraints.data);
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
-        # Update model
-        model = opt_problem.Model;
         # Check references
-        df_test = model.display_measurements('Simulated');
+        df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_subpackage.csv');
         
     def test_get_options(self):
@@ -218,10 +228,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         self.check_json(json_test, 'new_options.txt');
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
-        # Update model
-        model = opt_problem.Model;
         # Check references
-        df_test = model.display_measurements('Simulated');
+        df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_new_options.csv');
 
     def test_set_options_error(self):
@@ -302,10 +310,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                 constraint_data = self.constraints.data);
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
-        # Update model
-        model = opt_problem.Model;
         # Check references
-        df_test = model.display_measurements('Simulated');
+        df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_set_parameters_1.csv');
         # Set new parameters of model
         parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_new', 1e7, units.J_K);
@@ -313,10 +319,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         opt_problem.Model.parameter_data = parameter_data;
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
-        # Update model
-        model = opt_problem.Model;
         # Check references
-        df_test = model.display_measurements('Simulated');
+        df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_set_parameters_2.csv');
         
     def test_initial_constraint(self):
@@ -341,10 +345,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                 constraint_data = self.constraints.data);
         # Solve optimization problem                     
         opt_problem.optimize(self.start_time, self.final_time);
-        # Update model
-        model = opt_problem.Model;
         # Check references
-        df_test = model.display_measurements('Simulated');
+        df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_initial_constraint.csv');
         opt_statistics = opt_problem.get_optimization_statistics();
         # Check references (except execution time)
@@ -467,10 +469,8 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
                                                      constraint_data = self.constraints.data)
         # Optimize
         self.opt_problem.optimize(self.start_time_optimization, self.final_time_optimization);
-        # Update model
-        self.model = self.opt_problem.Model;
         # Check references
-        df_test = self.model.display_measurements('Simulated');
+        df_test = self.opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'energymin.csv');
 
     def test_energycostmin(self):
