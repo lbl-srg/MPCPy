@@ -198,12 +198,15 @@ information about where the model resides, and information about model exodata.
 
 The measurement dictionary holds information about and data from the variables 
 being measured.  We start with defining the variables we are interested in
-measuring and their sample rate.  In this case, we only have one, and it
-is the output of the model, called 'Tzone'.  Note that 'heatCapacitor.T' would
-also be valid.  
+measuring and their sample rate.  In this case, we have two, the output of 
+the model, called 'Tzone' and the control input called 'Qflow'.  
+Note that 'heatCapacitor.T' would also be valid instead of 'Tzone'.  
 
->>> measurements = {'Tzone' : {}}
+>>> measurements = {'Tzone' : {}, 'Qflow' : {}}
 >>> measurements['Tzone']['Sample'] = variables.Static('sample_rate_Tzone',
+...                                                    3600,
+...                                                    units.s)
+>>> measurements['Qflow']['Sample'] = variables.Static('sample_rate_Qflow',
 ...                                                    3600,
 ...                                                    units.s)
 
@@ -238,11 +241,11 @@ timeseries data in the ``'Measured'`` field for each variable.
 -etc-
 >>> # Display the results
 >>> emulation.display_measurements('Measured') # doctest: +ELLIPSIS
-                                Tzone
-Time                                 
-2017-01-01 06:00:00+00:00  293.150000
-2017-01-01 07:00:00+00:00  291.015800
-2017-01-01 08:00:00+00:00  291.335967
+                            Qflow       Tzone
+Time                                         
+2017-01-01 06:00:00+00:00  3000.0  293.150000
+2017-01-01 07:00:00+00:00  3000.0  291.015800
+2017-01-01 08:00:00+00:00  3000.0  291.335967
 -etc-
 
 
@@ -314,11 +317,11 @@ timeseries data in the ``'Simulated'`` field for each variable.
 -etc-
 >>> # Display the results
 >>> model.display_measurements('Simulated') # doctest: +ELLIPSIS
-                                Tzone
-Time                                 
-2017-01-01 06:00:00+00:00  293.150000
-2017-01-01 07:00:00+00:00  266.964432
-2017-01-01 08:00:00+00:00  267.440054
+                            Qflow       Tzone
+Time                                         
+2017-01-01 06:00:00+00:00  3000.0  293.150000
+2017-01-01 07:00:00+00:00  3000.0  266.964432
+2017-01-01 08:00:00+00:00  3000.0  267.440054
 -etc-
 
 
@@ -453,23 +456,52 @@ We can get the optimization solver statistics in the form of
 >>> opt_problem.get_optimization_statistics() # doctest: +ELLIPSIS
 ('Solve_Succeeded', 12, -etc-)
 
-Finally, we can retrieve the optimal control solution and verify that the 
+We can retrieve the optimal control solution and verify that the 
 constraints were satisfied.  The intermediate points are a result of the 
 direct collocation method used by JModelica.
 
->>> opt_problem.Model.control_data['Qflow'].display_data() # doctest: +ELLIPSIS
-2017-01-02 06:00:00+00:00            645.563337
-2017-01-02 06:09:18.183693+00:00    1501.595902
-2017-01-02 06:38:41.816307+00:00    2603.388448
-2017-01-02 07:00:00+00:00           1879.949971
+>>> opt_problem.display_measurements('Simulated') # doctest: +ELLIPSIS
+                                        Qflow   Tzone
+Time                                                 
+2017-01-02 06:00:00+00:00          645.563337  298.15
+2017-01-02 06:09:18.183693+00:00  1501.595902  293.15
+2017-01-02 06:38:41.816307+00:00  2603.388448  293.15
+2017-01-02 07:00:00+00:00         1879.949971  293.15
 -etc-
->>> opt_problem.Model.display_measurements('Simulated') # doctest: +ELLIPSIS
-                                   Tzone
-Time                                    
-2017-01-02 06:00:00+00:00         298.15
-2017-01-02 06:09:18.183693+00:00  293.15
-2017-01-02 06:38:41.816307+00:00  293.15
-2017-01-02 07:00:00+00:00         293.15
+
+Finally, we can simulate the model using the optimized control trajectory.
+Note that the ``model.control_data`` dictionary is updated by the 
+``opt_problem.optimize()`` function.
+
+>>> model.simulate('1/2/2017', '1/3/2017') # doctest: +ELLIPSIS
+-etc-
+>>> model.display_measurements('Simulated') # doctest: +ELLIPSIS
+                                 Qflow       Tzone
+Time                                              
+2017-01-02 06:00:00+00:00   645.563337  293.150000
+2017-01-02 07:00:00+00:00  1879.949971  291.383066
+2017-01-02 08:00:00+00:00  2277.394658  293.022479
+-etc-
+
+Note there is some mismatch between the simulated model output temperature 
+and the raw optimal control solution model output temperature output.  
+This is due to the interpolation of control input results during simulation 
+not aligning with the collocation polynomials and timestep determined by the
+optimization solver.  We can solve the optimization problem again, this 
+time updating the ``model.control_data`` with a greater time resolution of 1 
+second.  Some mismatch will still occur due to the optimization solution
+using collocation being an approximation of the true dynamic model.
+
+>>> opt_problem.optimize('1/2/2017', '1/3/2017', res_control_step=1.0) # doctest: +ELLIPSIS
+-etc-
+>>> model.simulate('1/2/2017', '1/3/2017') # doctest: +ELLIPSIS
+-etc-
+>>> model.display_measurements('Simulated') # doctest: +ELLIPSIS
+                                 Qflow       Tzone
+Time                                              
+2017-01-02 06:00:00+00:00   645.563324  293.150000
+2017-01-02 07:00:00+00:00  1879.949955  292.873253
+2017-01-02 08:00:00+00:00  2277.394649  293.129007
 -etc-
 
 """
