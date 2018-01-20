@@ -43,7 +43,7 @@ from pyjmi.optimization.casadi_collocation import ExternalData
 import copy
 
 #%% Optimization Class
-class Optimization(utility._mpcpyPandas):
+class Optimization(utility._mpcpyPandas, utility._Measurements):
     '''Class for representing an optimization problem.    
  
     Parameters
@@ -247,8 +247,8 @@ class _Package(object):
         ------
         Upon solving the optimization problem, this method updates the
         ``Optimization.Model.control_data`` dictionary with the optimal control 
-        timeseries for each control variable and the 
-        Optimization.Model.measurements dictionary with the optimal 
+        timeseries for each control variable and creates the 
+        Optimization.measurements dictionary with the optimization solution
         measurements under the ``'Simulated'`` key.
         
         '''
@@ -264,8 +264,8 @@ class _Package(object):
         ------
         Upon solving the optimization problem, this method updates the
         ``Optimization.Model.control_data`` dictionary with the optimal control 
-        timeseries for each control variable and the 
-        Optimization.Model.measurements dictionary with the optimal 
+        timeseries for each control variable and creates the 
+        Optimization.measurements dictionary with the optimization solution
         measurements under the ``'Simulated'`` key.
         
         '''
@@ -708,7 +708,34 @@ class JModelica(_Package, utility._FMU):
                 unit = units.unit1;
             self.Model.control_data[key] = variables.Timeseries(key, ts, unit);
             # Get opt input object tuple (names, collocation polynomials f(t))
-            Optimization.opt_input_tuple = self.res_opt.get_opt_input()
+            Optimization.opt_input = opt_input
+        # Create optimization measurement dictionary
+        Optimization.measurements = {};
+        for key in Optimization.Model.measurements.keys():
+            # Add optimization results data
+            Optimization.measurements[key] = {};
+            data = self.res_opt['mpc_model.' + key];
+            time = self.res_opt['time'];
+            timedelta = pd.to_timedelta(time, 's');
+            timeindex = self._global_start_time_utc + timedelta;
+            ts_opt = pd.Series(data = data, index = timeindex).tz_localize('UTC');
+            # Get old measurement data
+            ts_old = self.Model.measurements[key]['Simulated'].get_base_data();
+            # Remove rows with updated data
+            first = (ts_old.index == self.start_time_utc).tolist().index(True)
+            last = (ts_old.index == self.final_time_utc).tolist().index(True)
+            drop_list = ts_old.index[first:last+1]
+            ts_old = ts_old.drop(drop_list);
+            # Append opt to old
+            ts = ts_old.append(ts_opt)
+            # Sort by index
+            ts = ts.sort_index()
+            # Update control_data
+            ts.name = key;
+            unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
+            if not unit:
+                unit = units.unit1;
+            Optimization.measurements[key]['Simulated'] = variables.Timeseries(key, ts, unit);
             
     def _get_parameter_results(self, Optimization):
         '''Update the parameter data dictionary in the model with optimization results.
