@@ -405,8 +405,10 @@ class JModelica(_Package, utility._FMU):
     length of optimization horizon (same as if model is simulated).  
     However, editing this option will overwrite this default.
     
-    ``optimize()`` Parameters
-    -------------------------
+    Notes
+    -----
+    ``optimize()`` kwargs:
+
     res_control_step : int, optional
         The time interval in seconds at which the model.control_data is 
         updated with the optimal control results.  The control data comes
