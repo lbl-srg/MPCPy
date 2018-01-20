@@ -473,6 +473,12 @@ Finally, we can simulate the model using the optimized control trajectory.
 Note that the ``model.control_data`` dictionary is updated by the 
 ``opt_problem.optimize()`` function.
 
+>>> model.control_data['Qflow'].display_data().loc[pd.to_datetime('1/2/2017  06:00:00'):pd.to_datetime('1/3/2017 06:00:00')] # doctest: +ELLIPSIS
+2017-01-02 06:00:00+00:00            645.563337
+2017-01-02 06:09:18.183693+00:00    1501.595902
+2017-01-02 06:38:41.816307+00:00    2603.388448
+2017-01-02 07:00:00+00:00           1879.949971
+-etc-
 >>> model.simulate('1/2/2017', '1/3/2017') # doctest: +ELLIPSIS
 -etc-
 >>> model.display_measurements('Simulated') # doctest: +ELLIPSIS
@@ -493,6 +499,11 @@ second.  Some mismatch will still occur due to the optimization solution
 using collocation being an approximation of the true dynamic model.
 
 >>> opt_problem.optimize('1/2/2017', '1/3/2017', res_control_step=1.0) # doctest: +ELLIPSIS
+-etc-
+>>> model.control_data['Qflow'].display_data().loc[pd.to_datetime('1/2/2017 06:00:00'):pd.to_datetime('1/3/2017 06:00:00')] # doctest: +ELLIPSIS
+2017-01-02 06:00:00+00:00     645.563324
+2017-01-02 06:00:01+00:00     647.315037
+2017-01-02 06:00:02+00:00     649.065967
 -etc-
 >>> model.simulate('1/2/2017', '1/3/2017') # doctest: +ELLIPSIS
 -etc-
