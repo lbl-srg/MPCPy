@@ -93,6 +93,9 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
     def optimize(self, start_time, final_time, **kwargs):
         '''Solve the optimization problem over the specified time horizon.
         
+        Consult the documentation for the solver package type for available
+        kwargs.  
+        
         Parameters
         ----------
         start_time : string
@@ -323,7 +326,7 @@ class EnergyMin(_Problem):
         
         '''
         
-        Optimization._package_type._energymin(Optimization);
+        Optimization._package_type._energymin(Optimization, **kwargs);
         
     def _setup_jmodelica(self, JModelica, Optimization):
         '''Setup the optimization problem for JModelica.
@@ -348,8 +351,7 @@ class EnergyCostMin(_Problem):
         
         '''
 
-        price_data = kwargs['price_data'];
-        Optimization._package_type._energycostmin(Optimization, price_data);
+        Optimization._package_type._energycostmin(Optimization, **kwargs);
         
     def _setup_jmodelica(self, JModelica, Optimization):
         '''Setup the optimization problem for JModelica.
@@ -404,6 +406,20 @@ class JModelica(_Package, utility._FMU):
     length of optimization horizon (same as if model is simulated).  
     However, editing this option will overwrite this default.
     
+    ``optimize()`` Parameters
+    -------------------------
+    res_control_step : int, optional
+        The time interval in seconds at which the model.control_data is 
+        updated with the optimal control results.  The control data comes
+        from evaluating the optimal input collocation polynomials at the
+        specified time interval.
+        The default value is the interval returned by JModelica according 
+        to the 'result_mode' option.  See JModelica documentation for more
+        details.
+    price_data : dictionary
+        ``exodata`` price object data attribute.  
+        For EnergyCostMin problems only.
+    
     '''
     
     def __init__(self, Optimization):
@@ -416,24 +432,25 @@ class JModelica(_Package, utility._FMU):
         # Set default optimization options
         self._set_optimization_options(self.opt_problem.optimize_options(), init = True)
     
-    def _energymin(self, Optimization):
+    def _energymin(self, Optimization, **kwargs):
         '''Perform the energy minimization.
         
         '''
         
         self._simulate_initial(Optimization);
         self._solve(Optimization);
-        self._get_control_results(Optimization);           
+        self._get_control_results(Optimization, **kwargs);           
         
-    def _energycostmin(self, Optimization, price_data):
+    def _energycostmin(self, Optimization, **kwargs):
         '''Perform the energy cost minimization.
         
         '''
         
+        price_data = kwargs['price_data'];
         self.other_inputs['pi_e'] = price_data['pi_e'];
         self._simulate_initial(Optimization);
         self._solve(Optimization);   
-        self._get_control_results(Optimization);                                      
+        self._get_control_results(Optimization, **kwargs);                                      
         
     def _parameterestimate(self, Optimization, measurement_variable_list):
         '''Perform the parameter estimation.
@@ -673,20 +690,33 @@ class JModelica(_Package, utility._FMU):
         # Create ExternalData structure
         self.external_data = ExternalData(Q=Q, quad_pen=quad_pen, eliminated=eliminated);
         
-    def _get_control_results(self, Optimization):
+    def _get_control_results(self, Optimization, **kwargs):
         '''Update the model control data and measurements dictionaries.
         
         Also add the opt_input object as attribute to Optimization.
         
         '''
 
+        # Determine time interval
+        if 'res_control_step' in kwargs:
+            s_start = self.res_opt['time'][0]
+            s_final = self.res_opt['time'][-1]
+            res_control_step = kwargs['res_control_step'];
+            time = np.linspace(s_start,s_final,(s_final-s_start)/res_control_step+1);
+        else:
+            time = self.res_opt['time']
         # Get fmu variables units
         fmu_variable_units = self._get_fmu_variable_units();
         # Update model control data
         for key in self.Model.control_data.keys():
             # Get optimal control data
-            data = self.res_opt['mpc_model.' + key];
-            time = self.res_opt['time'];
+            opt_input = self.res_opt.get_opt_input()
+            opt_input_traj = opt_input[1]
+            i = opt_input[0].index(key)
+            data = []
+            # Create data
+            for t in time:
+                data.append(opt_input_traj(t)[i])
             timedelta = pd.to_timedelta(time, 's');
             timeindex = self._global_start_time_utc + timedelta;
             ts_opt = pd.Series(data = data, index = timeindex).tz_localize('UTC');
