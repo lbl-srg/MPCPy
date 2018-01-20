@@ -100,10 +100,6 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
         ----------
         start_time : string
             Start time of estimation period.
-            Set to 'continue' in order to continue the model optimization
-            from the final time of the previous optimization.  The continuous
-            states are not saved.  Exodata input objects must contain values 
-            for the continuation timestamp.
         final_time : string
             Final time of estimation period.
             
@@ -115,7 +111,10 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
         optimization.
         
         '''
-
+        
+        # Check for continue
+        if start_time == 'continue':
+            raise ValueError('"continue" is not a valid entry for start_time for optimization problems.')
         self._set_time_interval(start_time, final_time);
         self._problem_type._optimize(self, **kwargs);
 
