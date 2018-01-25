@@ -43,7 +43,7 @@ from pyjmi.optimization.casadi_collocation import ExternalData
 import copy
 
 #%% Optimization Class
-class Optimization(utility._mpcpyPandas):
+class Optimization(utility._mpcpyPandas, utility._Measurements):
     '''Class for representing an optimization problem.    
  
     Parameters
@@ -93,16 +93,13 @@ class Optimization(utility._mpcpyPandas):
     def optimize(self, start_time, final_time, **kwargs):
         '''Solve the optimization problem over the specified time horizon.
         
+        Consult the documentation for the solver package type for available
+        kwargs.  
+        
         Parameters
         ----------
         start_time : string
             Start time of estimation period.
-            Set to 'continue' in order to continue the model optimization
-            from the final time of the previous optimization.  The continuous
-            states are not saved.  Exodata input objects must contain values 
-            for the continuation timestamp.  The measurements in a continued 
-            simulation replace previous values.  They do not append to a 
-            previous simulation's measurements.
         final_time : string
             Final time of estimation period.
             
@@ -110,11 +107,14 @@ class Optimization(utility._mpcpyPandas):
         ------
         Upon solving the optimization problem, this method updates the
         ``Model.control_data`` dictionary with the optimal control 
-        timeseries for each control variable and the Model.measurements 
-        dictionary with the optimal measurements under the ``'Simulated'`` key.
+        timeseries for each control variable for the time period of 
+        optimization.
         
         '''
-
+        
+        # Check for continue
+        if start_time == 'continue':
+            raise ValueError('"continue" is not a valid entry for start_time for optimization problems.')
         self._set_time_interval(start_time, final_time);
         self._problem_type._optimize(self, **kwargs);
 
@@ -249,8 +249,8 @@ class _Package(object):
         ------
         Upon solving the optimization problem, this method updates the
         ``Optimization.Model.control_data`` dictionary with the optimal control 
-        timeseries for each control variable and the 
-        Optimization.Model.measurements dictionary with the optimal 
+        timeseries for each control variable and creates the 
+        Optimization.measurements dictionary with the optimization solution
         measurements under the ``'Simulated'`` key.
         
         '''
@@ -266,8 +266,8 @@ class _Package(object):
         ------
         Upon solving the optimization problem, this method updates the
         ``Optimization.Model.control_data`` dictionary with the optimal control 
-        timeseries for each control variable and the 
-        Optimization.Model.measurements dictionary with the optimal 
+        timeseries for each control variable and creates the 
+        Optimization.measurements dictionary with the optimization solution
         measurements under the ``'Simulated'`` key.
         
         '''
@@ -325,7 +325,7 @@ class EnergyMin(_Problem):
         
         '''
         
-        Optimization._package_type._energymin(Optimization);
+        Optimization._package_type._energymin(Optimization, **kwargs);
         
     def _setup_jmodelica(self, JModelica, Optimization):
         '''Setup the optimization problem for JModelica.
@@ -350,8 +350,7 @@ class EnergyCostMin(_Problem):
         
         '''
 
-        price_data = kwargs['price_data'];
-        Optimization._package_type._energycostmin(Optimization, price_data);
+        Optimization._package_type._energycostmin(Optimization, **kwargs);
         
     def _setup_jmodelica(self, JModelica, Optimization):
         '''Setup the optimization problem for JModelica.
@@ -406,6 +405,22 @@ class JModelica(_Package, utility._FMU):
     length of optimization horizon (same as if model is simulated).  
     However, editing this option will overwrite this default.
     
+    Notes
+    -----
+    ``optimize()`` kwargs:
+
+    res_control_step : int, optional
+        The time interval in seconds at which the model.control_data is 
+        updated with the optimal control results.  The control data comes
+        from evaluating the optimal input collocation polynomials at the
+        specified time interval.
+        The default value is the interval returned by JModelica according 
+        to the 'result_mode' option.  See JModelica documentation for more
+        details.
+    price_data : dictionary
+        ``exodata`` price object data attribute.  
+        For EnergyCostMin problems only.
+    
     '''
     
     def __init__(self, Optimization):
@@ -418,24 +433,25 @@ class JModelica(_Package, utility._FMU):
         # Set default optimization options
         self._set_optimization_options(self.opt_problem.optimize_options(), init = True)
     
-    def _energymin(self, Optimization):
+    def _energymin(self, Optimization, **kwargs):
         '''Perform the energy minimization.
         
         '''
         
         self._simulate_initial(Optimization);
         self._solve(Optimization);
-        self._get_control_results(Optimization);           
+        self._get_control_results(Optimization, **kwargs);           
         
-    def _energycostmin(self, Optimization, price_data):
+    def _energycostmin(self, Optimization, **kwargs):
         '''Perform the energy cost minimization.
         
         '''
         
+        price_data = kwargs['price_data'];
         self.other_inputs['pi_e'] = price_data['pi_e'];
         self._simulate_initial(Optimization);
         self._solve(Optimization);   
-        self._get_control_results(Optimization);                                      
+        self._get_control_results(Optimization, **kwargs);                                      
         
     def _parameterestimate(self, Optimization, measurement_variable_list):
         '''Perform the parameter estimation.
@@ -675,34 +691,82 @@ class JModelica(_Package, utility._FMU):
         # Create ExternalData structure
         self.external_data = ExternalData(Q=Q, quad_pen=quad_pen, eliminated=eliminated);
         
-    def _get_control_results(self, Optimization):
-        '''Update the control data dictionary in the model with optimization results.
+    def _get_control_results(self, Optimization, **kwargs):
+        '''Update the model control data and measurements dictionaries.
+        
+        Also add the opt_input object as attribute to Optimization.
         
         '''
 
-        fmu_variable_units = self._get_fmu_variable_units();                                     
+        # Determine time interval
+        if 'res_control_step' in kwargs:
+            s_start = self.res_opt['time'][0]
+            s_final = self.res_opt['time'][-1]
+            res_control_step = kwargs['res_control_step'];
+            time = np.linspace(s_start,s_final,(s_final-s_start)/res_control_step+1);
+        else:
+            time = self.res_opt['time']
+        # Get fmu variables units
+        fmu_variable_units = self._get_fmu_variable_units();
+        # Update model control data
         for key in self.Model.control_data.keys():
-            data = self.res_opt['mpc_model.' + key];
-            time = self.res_opt['time'];
+            # Get optimal control data
+            opt_input = self.res_opt.get_opt_input()
+            opt_input_traj = opt_input[1]
+            i = opt_input[0].index(key)
+            data = []
+            # Create data
+            for t in time:
+                data.append(opt_input_traj(t)[i])
             timedelta = pd.to_timedelta(time, 's');
             timeindex = self._global_start_time_utc + timedelta;
-            ts = pd.Series(data = data, index = timeindex);
+            ts_opt = pd.Series(data = data, index = timeindex).tz_localize('UTC');
+            # Get old control data
+            ts_old = self.Model.control_data[key].get_base_data();
+            # Remove rows with updated data
+            first = (ts_old.index == self.start_time_utc).tolist().index(True)
+            last = (ts_old.index == self.final_time_utc).tolist().index(True)
+            drop_list = ts_old.index[first:last+1]
+            ts_old = ts_old.drop(drop_list);
+            # Append opt to old
+            ts = ts_old.append(ts_opt)
+            # Sort by index
+            ts = ts.sort_index()
+            # Update control_data
             ts.name = key;
             unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
             if not unit:
-                unit = units.unit1;                
-            Optimization.Model.control_data[key] = variables.Timeseries(key, ts, unit);  
+                unit = units.unit1;
+            self.Model.control_data[key] = variables.Timeseries(key, ts, unit);
+            # Get opt input object tuple (names, collocation polynomials f(t))
+            Optimization.opt_input = opt_input
+        # Create optimization measurement dictionary
+        Optimization.measurements = {};
         for key in Optimization.Model.measurements.keys():
+            # Add optimization results data
+            Optimization.measurements[key] = {};
             data = self.res_opt['mpc_model.' + key];
             time = self.res_opt['time'];
             timedelta = pd.to_timedelta(time, 's');
             timeindex = self._global_start_time_utc + timedelta;
-            ts = pd.Series(data = data, index = timeindex);
+            ts_opt = pd.Series(data = data, index = timeindex).tz_localize('UTC');
+            # Get old measurement data
+            ts_old = self.Model.measurements[key]['Simulated'].get_base_data();
+            # Remove rows with updated data
+            first = (ts_old.index == self.start_time_utc).tolist().index(True)
+            last = (ts_old.index == self.final_time_utc).tolist().index(True)
+            drop_list = ts_old.index[first:last+1]
+            ts_old = ts_old.drop(drop_list);
+            # Append opt to old
+            ts = ts_old.append(ts_opt)
+            # Sort by index
+            ts = ts.sort_index()
+            # Update control_data
             ts.name = key;
             unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
             if not unit:
-                unit = units.unit1;                
-            Optimization.Model.measurements[key]['Simulated'] = variables.Timeseries(key, ts, unit);
+                unit = units.unit1;
+            Optimization.measurements[key]['Simulated'] = variables.Timeseries(key, ts, unit);
             
     def _get_parameter_results(self, Optimization):
         '''Update the parameter data dictionary in the model with optimization results.
