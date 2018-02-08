@@ -208,7 +208,7 @@ class TestCaseMPCPy(unittest.TestCase):
             # Calculate errors
             for i in range(len(y_ref)):
                 # If non-numeric comparison
-                if type(y_ref[i]) is str or type(y_ref[i]) is bool:
+                if type(y_ref[i]) is str or type(y_ref[i]) is bool or type(y_ref[i]) is np.bool_:
                     try:
                         self.assertTrue(y_ref[i] == y_test[i])
                     except AssertionError:
