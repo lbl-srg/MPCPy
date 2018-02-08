@@ -299,6 +299,8 @@ class _FMU(_mpcpyPandas):
                 min_sample = sample; 
         # Set sample rate for simulation
         self._sim_opts['ncp'] = int(self.elapsed_seconds/min_sample);
+        # Set cvode solver tolerance
+        self._sim_opts['CVode_options']['rtol'] = 1e-6;
         # Simulate
         self._res = self.fmu.simulate(start_time = start_time, \
                                       final_time = final_time, \
