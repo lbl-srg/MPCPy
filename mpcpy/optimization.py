@@ -108,7 +108,9 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
         Upon solving the optimization problem, this method updates the
         ``Model.control_data`` dictionary with the optimal control 
         timeseries for each control variable for the time period of 
-        optimization.
+        optimization.  If the optimization horizon extends past the 
+        final time of ``Model.control_data``, then the extra data is 
+        appended.
         
         '''
         
@@ -725,8 +727,14 @@ class JModelica(_Package, utility._FMU):
             ts_old = self.Model.control_data[key].get_base_data();
             # Remove rows with updated data
             first = (ts_old.index == self.start_time_utc).tolist().index(True)
-            last = (ts_old.index == self.final_time_utc).tolist().index(True)
-            drop_list = ts_old.index[first:last+1]
+            if ts_old.index[-1] >= self.final_time_utc:
+                # If final time is before end of timeseries, replace only
+                # specific location
+                last = (ts_old.index == self.final_time_utc).tolist().index(True)
+                drop_list = ts_old.index[first:last+1]
+            else:
+                # If final time is after end of timeseries, add control to end
+                drop_list = ts_old.index[first:]
             ts_old = ts_old.drop(drop_list);
             # Append opt to old
             ts = ts_old.append(ts_opt)

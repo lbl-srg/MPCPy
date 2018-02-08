@@ -373,7 +373,34 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                 constraint_data = self.constraints.data);
         # Check ValueError raised
         with self.assertRaises(ValueError):
-            opt_problem.optimize('continue', self.final_time);     
+            opt_problem.optimize('continue', self.final_time);
+    
+    def test_optimize_long(self):
+        '''Test update of control data with opt horizon longer than initial.
+        
+        '''
+        
+        modelpath = 'Simple.RC';
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Solve optimization problem                     
+        opt_problem.optimize('1/10/2017 00:00:00', '1/11/2017 02:00:00');
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_long_measurements.csv');
+        df_test = model.control_data['q_flow'].display_data().to_frame();
+        df_test.index.name = 'Time'
+        self.check_df(df_test, 'optimize_long_control.csv');
         
 #%% Temperature tests
 class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
