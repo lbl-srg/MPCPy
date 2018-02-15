@@ -219,6 +219,32 @@ class WeatherFromDF(TestCaseMPCPy):
         df_test = weather.display_data();
         self.check_df(df_test, 'collect_data_local_time_from_tz_name.csv');
         
+class Weather_ghi_to_poa(TestCaseMPCPy):
+    '''Test the estimation of poa irradiance from ghi measurements.
+    
+    '''
+    
+    def test_ghi_to_poa(self):
+        # Instantiate weather object
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'WeatherUndergroundHistory.csv');
+        geography = [37.8716, -122.2727];
+        variable_map = {'solar_radiation_set_1' : ('weaHGloHor', units.W_m2)};
+        
+        weather = exodata.WeatherFromCSV(csv_filepath,
+                                         variable_map, 
+                                         geography = geography,
+                                         tz_name = 'utc');
+        # Collect data
+        weather.collect_data('2017-09-18 00:00:00','2017-09-21 00:00:00' )
+        # Add POA irradiance for walls with cardinal orientations
+        til = 90
+        azis = [0,90,180,270]
+        for azi in azis:
+            weather.add_poa_from_ghi(til, azi, poa_var='weaHPoa_{0}'.format(azi))
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df(df_test, 'ghi_to_poa.csv'.format(azi));
+        
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):
     '''Test the collection of internal data from a CSV file.
