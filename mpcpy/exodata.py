@@ -336,14 +336,18 @@ class _Weather(_Type, utility._FMU):
         ----------
         surface_tilt : float or int
             Surface tilt angle in degrees.
+            
         surface_azimuth : float or int
             Surface azimuth angle in degrees.
+            
         albedo : float or int, optional
             Ground albedo.
             Default is 0.2.
+            
         ghi_var : str, optional
             Existing data header name representing global horizontal irradiance.
             Default is 'weaHGloHor'.
+            
         poa_var : str, optional
             New data header name to represent total POA irradiance.
             Default is 'weaHPoa'.
@@ -351,13 +355,9 @@ class _Weather(_Type, utility._FMU):
         Returns
         -------
         poa_irradiance : pandas DataFrame
-            DataFrame containing components of POA irradiance.
-            ['poa_global'] : total POA irradiance
-            ['poa_direct'] : direct component of POA irradiance
-            ['poa_diffuse'] : total diffuse component of POA irradiance
-            ['poa_sky_diffuse'] : sky diffuse component of POA irradiance
-            ['poa_ground_diffuse'] : ground diffuse component of POA irradiance
-            [``ghi_var``] : Global horizontal irradiance measurement used
+            DataFrame containing components of POA irradiance:
+            ``'poa_global', 'poa_direct', 'poa_diffuse', 'poa_sky_diffuse', 
+            'poa_ground_diffuse', 'ghi_var'``
 
         References
         ----------
