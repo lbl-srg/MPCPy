@@ -247,6 +247,7 @@ import pandas as pd
 from tzwhere import tzwhere
 from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
+import pvlib
 from mpcpy import units
 from mpcpy import variables
 import os
@@ -314,8 +315,72 @@ class _Type(utility._mpcpyPandas):
 class _Weather(_Type, utility._FMU):
     '''Mix-in class for weather exogenous data.
 
-    '''        
-     
+    '''
+
+    def add_poa_from_ghi(self, surface_tilt, surface_azimuth, albedo=0.2,
+                         ghi_var='weaHGloHor', poa_var='weaHPoa'):
+        '''Add data for plane of array irradiance from global horizontal.
+        
+        Parameters
+        ----------
+        surface_tilt : float or int
+            Surface tilt angle in degrees.
+        surface_azimuth : float or int
+            Surface azimuth angle in degrees.
+        albedo : float or int, optional
+            Ground albedo.
+            Default is 0.2.
+        ghi_var : str, optional
+            Existing data header name representing global horizontal irradiance.
+            Default is 'weaHGloHor'.
+        poa_var : str, optional
+            New data header name to represent total POA irradiance.
+            Default is 'weaHPoa'.
+        
+        Returns
+        -------
+        poa_irradiance : pandas DataFrame
+            DataFrame containing components of POA irradiance.
+            ['poa_global'] : total POA irradiance
+            ['poa_direct'] : direct component of POA irradiance
+            ['poa_diffuse'] : total diffuse component of POA irradiance
+            ['poa_sky_diffuse'] : sky diffuse component of POA irradiance
+            ['poa_ground_diffuse'] : ground diffuse component of POA irradiance
+            [``ghi_var``] : Global horizontal irradiance measurement used
+                
+        '''
+        
+        # Setup surface system
+        surface = pvlib.pvsystem.PVSystem(surface_tilt, 
+                                          surface_azimuth,
+                                          albedo)
+        # Get GHI data
+        ghi_var = self.data[ghi_var]
+        ghi = ghi_var.display_data()
+        times = ghi.index
+        # Get latitude and longitude in deg
+        lat = self.lat.display_data()
+        lon = self.lon.display_data()
+        # Get Zenith Angle
+        pos = pvlib.solarposition.get_solarposition(times, lat, lon)
+        zen = pos['zenith']
+        azi = pos['azimuth']
+        # Calculate DNI and DHI
+        res = pvlib.irradiance.erbs(ghi, zen, times)
+        dni = res['dni']
+        dhi = res['dhi']
+        # Calculate poa irradiance
+        poa = surface.get_irradiance(zen, azi, dni, ghi, dhi)
+        # Append ghi
+        poa[ghi_var] = ghi
+        # Add to self.data
+        ts = poa['poa_global']
+        unit = ghi_var.get_display_unit()
+        poa_var = variables.Timeseries(poa_var,ts,unit)
+        self.data[poa_var] = poa_var
+        
+        return poa
+        
     def _make_mpcpy_ts_list(self):
         '''Make a list of timeseries from a data dictionary.
         
