@@ -55,18 +55,25 @@ the possibility of different temperatures at multiple depths. Therefore,
 the dictionary format for ground temperature is:
 
 ``weather.data["weaTGnd"] = {"Depth" : mpcpy.Variables.Timeseries}``
+
+An additional function for weather data objects adds plane of array 
+irradiance (POA) data estimated from global horizontal irradiance (GHI).
+This addresses a common problem where GHI is the only solar measurement
+available.  More information can be in the documentation for the
+``add_poa_from_ghi()`` function in weather data object classes.
+
  
 Classes
 =======
 
 .. autoclass:: mpcpy.exodata.WeatherFromEPW
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, add_poa_from_ghi
 
 .. autoclass:: mpcpy.exodata.WeatherFromCSV
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, add_poa_from_ghi
     
 .. autoclass:: mpcpy.exodata.WeatherFromDF
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, add_poa_from_ghi
 
 
 ========   
@@ -321,6 +328,10 @@ class _Weather(_Type, utility._FMU):
                          ghi_var='weaHGloHor', poa_var='weaHPoa'):
         '''Add data for plane of array irradiance from global horizontal.
         
+        This function uses pvlib [1].  In particular, the Erbs decomposition
+        model [2] and Hay/Davies transposition model [3].  See also [4] for
+        a good overview of POA estimation.
+
         Parameters
         ----------
         surface_tilt : float or int
@@ -336,7 +347,7 @@ class _Weather(_Type, utility._FMU):
         poa_var : str, optional
             New data header name to represent total POA irradiance.
             Default is 'weaHPoa'.
-        
+
         Returns
         -------
         poa_irradiance : pandas DataFrame
@@ -347,7 +358,26 @@ class _Weather(_Type, utility._FMU):
             ['poa_sky_diffuse'] : sky diffuse component of POA irradiance
             ['poa_ground_diffuse'] : ground diffuse component of POA irradiance
             [``ghi_var``] : Global horizontal irradiance measurement used
-                
+
+        References
+        ----------
+        [1] J.S. Stein, W.F. Holmgren, J. Forbess, and C.W. Hansen, "PVLIB: 
+        Open Source Photovoltaic Performance Modeling Functions for Matlab 
+        and Python", in 43rd Photovoltaic Specialists Conference, 2016.
+        
+        [2] D.G. Erbs, S.A. Klein, J.A. Duffie, "Estimation of the 
+        diffuse radiation fraction for hourly daily and monthly-average 
+        global radiation", Sol. Energy, vol. 28, no. 4, pp. 293-302, 1982.
+        
+        [3] J. Hay, J. Davies, "Calculation of the solar radiation incident
+        on an inclined surface", Proc. 1st Can. Sol. Radiation Data 
+        Workshop, 1980.
+        
+        [4] M. Lave, W. Hayes, A. Pohl, and C.W. Hansen, "Evaluation of 
+        Global Horizontal Irradiance to Plane-of-Array Irradiance Models 
+        at Locations Across the United States", IEEE Journal of 
+        Photovoltaics, vol. 5, no. 2, 597-606.
+
         '''
         
         # Setup surface system
