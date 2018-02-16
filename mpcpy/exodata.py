@@ -406,8 +406,8 @@ class _Weather(_Type, utility._FMU):
         # Add to self.data
         ts = poa['poa_global']
         unit = ghi_var.get_display_unit()
-        poa_var = variables.Timeseries(poa_var,ts,unit)
-        self.data[poa_var] = poa_var
+        var = variables.Timeseries(poa_var,ts,unit)
+        self.data[poa_var] = var
         
         return poa
         

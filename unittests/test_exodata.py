@@ -240,7 +240,10 @@ class Weather_ghi_to_poa(TestCaseMPCPy):
         til = 90
         azis = [0,90,180,270]
         for azi in azis:
-            weather.add_poa_from_ghi(til, azi, poa_var='weaHPoa_{0}'.format(azi))
+            poa_var = 'weaHPoa_{0}'.format(azi)
+            weather.add_poa_from_ghi(til, azi, poa_var=poa_var)
+            # Check variable added correctly
+            self.assertTrue(poa_var in weather.data.keys())
         # Check reference
         df_test = weather.display_data();
         self.check_df(df_test, 'ghi_to_poa_utc.csv'.format(azi));
