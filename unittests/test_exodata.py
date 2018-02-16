@@ -224,9 +224,9 @@ class Weather_ghi_to_poa(TestCaseMPCPy):
     
     '''
     
-    def test_ghi_to_poa(self):
+    def test_ghi_to_poa_utc(self):
         # Instantiate weather object
-        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'WeatherUndergroundHistory.csv');
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'WeatherUndergroundHistory_utc.csv');
         geography = [37.8716, -122.2727];
         variable_map = {'solar_radiation_set_1' : ('weaHGloHor', units.W_m2)};
         
@@ -243,7 +243,28 @@ class Weather_ghi_to_poa(TestCaseMPCPy):
             weather.add_poa_from_ghi(til, azi, poa_var='weaHPoa_{0}'.format(azi))
         # Check reference
         df_test = weather.display_data();
-        self.check_df(df_test, 'ghi_to_poa.csv'.format(azi));
+        self.check_df(df_test, 'ghi_to_poa_utc.csv'.format(azi));
+        
+    def test_ghi_to_poa_local(self):
+        # Instantiate weather object
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'WeatherUndergroundHistory_local.csv');
+        geography = [37.8716, -122.2727];
+        variable_map = {'solar_radiation_set_1' : ('weaHGloHor', units.W_m2)};
+        
+        weather = exodata.WeatherFromCSV(csv_filepath,
+                                         variable_map, 
+                                         geography = geography,
+                                         tz_name = 'from_geography');
+        # Collect data
+        weather.collect_data('2017-09-17 17:00:00','2017-09-20 17:00:00' )
+        # Add POA irradiance for walls with cardinal orientations
+        til = 90
+        azis = [0,90,180,270]
+        for azi in azis:
+            weather.add_poa_from_ghi(til, azi, poa_var='weaHPoa_{0}'.format(azi))
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df(df_test, 'ghi_to_poa_local.csv'.format(azi));
         
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):
