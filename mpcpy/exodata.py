@@ -1047,6 +1047,8 @@ class WeatherFromDF(_Weather, utility._DAQ):
         # Assert geography
         assert(bool(self.lat) == True);
         assert(bool(self.lon) == True);
+        # Set time index from default or user-specified time header
+        self._df = self._df.tz_localize(self.tz_name);   
            
     def _collect_data(self, start_time, final_time):
         '''Collect data from DataFrame into data dictionary.
@@ -1384,7 +1386,7 @@ class OtherInputFromCSV(_OtherInput, utility._DAQ):
         self.variable_map = variable_map;
         # Common kwargs
         self._parse_daq_kwargs(kwargs);
-        self._parse_time_zone_kwargs(kwargs);             
+        self._parse_time_zone_kwargs(kwargs);      
                    
     def _collect_data(self, start_time, final_time):
         '''Collect data from the csv file into data dictionary.
@@ -1431,7 +1433,9 @@ class OtherInputFromDF(_OtherInput, utility._DAQ):
         self.variable_map = variable_map;
         # Common kwargs
         self._parse_daq_kwargs(kwargs);
-        self._parse_time_zone_kwargs(kwargs);             
+        self._parse_time_zone_kwargs(kwargs);  
+        # Set time index from default or user-specified time header
+        self._df = self._df.tz_localize(self.tz_name);              
                    
     def _collect_data(self, start_time, final_time):
         '''Collect data from the df into data dictionary.

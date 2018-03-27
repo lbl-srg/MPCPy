@@ -776,8 +776,6 @@ class _DAQ(object):
         
         '''
         
-        # Set time index from default or user-specified time header
-        self._df = self._df.tz_localize(self.tz_name);   
         # Get timeseries data according to variable map and cleaning
         for self._key in self.variable_map:
             try:
