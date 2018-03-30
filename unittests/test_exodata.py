@@ -218,6 +218,25 @@ class WeatherFromDF(TestCaseMPCPy):
         # Check reference
         df_test = weather.display_data();
         self.check_df(df_test, 'collect_data_local_time_from_tz_name.csv');
+
+    def test_collect_data_tz_handling(self):
+        start_time = '2016-10-19 19:53:00';
+        final_time = '2016-10-20 06:53:00';
+        time = pd.to_datetime(self.df['DateUTC']);
+        self.df.set_index(time, inplace=True);
+        # Localize timezone
+        self.df = self.df.tz_localize('UTC')
+        # Instantiate weather object
+        weather = exodata.WeatherFromDF(self.df, \
+                                        self.variable_map, \
+                                        geography = self.geography);
+        # Get weather data
+        weather.collect_data(start_time, final_time);
+        # Collect twice
+        weather.collect_data(start_time, final_time);
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df(df_test, 'collect_data_default_time.csv');
         
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):
