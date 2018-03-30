@@ -345,20 +345,42 @@ class ControlFromDF(TestCaseMPCPy):
         self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'building', 'ControlCSV_0.csv'));
         time = pd.to_datetime(self.df['Time']);
         self.df.set_index(time, inplace=True);
-        variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
+        self.variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                         'conHeat_hal' : ('conHeat_hal', units.unit1), \
                         'conHeat_eas' : ('conHeat_eas', units.unit1)};
-        # Instantiate control object
-        self.control = exodata.ControlFromDF(self.df, \
-                                              variable_map); 
 
     def test_collect_data(self):
         start_time = '1/1/2015 13:00:00';
         final_time = '1/2/2015';
+        # Instantiate control object
+        self.control = exodata.ControlFromDF(self.df, \
+                                             self.variable_map); 
         # Get control data
         self.control.collect_data(start_time, final_time);
         # Check reference
         df_test = self.control.display_data();
+        self.check_df(df_test, 'collect_data.csv');
+        
+    def test_collect_data_tz_handling(self):
+        start_time = '1/1/2015 13:00:00';
+        final_time = '1/2/2015';
+        # Localize timezone
+        self.df = self.df.tz_localize('UTC')
+        # Instantiate weather object
+        with self.assertRaises(TypeError):
+            control = exodata.ControlFromDF(self.df, \
+                                            self.variable_map); 
+        # Remove timezone
+        self.df = self.df.tz_convert(None)
+        # Instantiate weather object
+        control = exodata.ControlFromDF(self.df, \
+                                        self.variable_map);
+        # Get control data
+        control.collect_data(start_time, final_time);
+        # Collect twice
+        control.collect_data(start_time, final_time);
+        # Check reference
+        df_test = control.display_data();
         self.check_df(df_test, 'collect_data.csv');
 
 #%% Other Input Tests
@@ -392,18 +414,40 @@ class OtherInputFromDF(TestCaseMPCPy):
         self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'weather', 'Tamb.csv'));
         time = pd.to_datetime(self.df['Time']);
         self.df.set_index(time, inplace=True);
-        variable_map = {'T' : ('Tamb', units.degC)};
-        # Instantiate control object
-        self.otherinput = exodata.OtherInputFromDF(self.df, \
-                                                   variable_map); 
+        self.variable_map = {'T' : ('Tamb', units.degC)};
 
     def test_collect_data(self):
         start_time = '1/1/2015 00:00:00';
         final_time = '1/1/2015 06:00:00';
+        # Instantiate control object
+        otherinput = exodata.OtherInputFromDF(self.df, \
+                                                   self.variable_map);
         # Get control data
-        self.otherinput.collect_data(start_time, final_time);
+        otherinput.collect_data(start_time, final_time);
         # Check reference
-        df_test = self.otherinput.display_data();
+        df_test = otherinput.display_data();
+        self.check_df(df_test, 'collect_data.csv');
+
+    def test_collect_data_tz_handling(self):
+        start_time = '1/1/2015 00:00:00';
+        final_time = '1/1/2015 06:00:00';
+        # Localize timezone
+        self.df = self.df.tz_localize('UTC')
+        # Instantiate weather object
+        with self.assertRaises(TypeError):
+            otherinput = exodata.OtherInputFromDF(self.df, \
+                                                  self.variable_map); 
+        # Remove timezone
+        self.df = self.df.tz_convert(None)
+        # Instantiate weather object
+        otherinput = exodata.OtherInputFromDF(self.df, \
+                                              self.variable_map);
+        # Get control data
+        otherinput.collect_data(start_time, final_time);
+        # Collect twice
+        otherinput.collect_data(start_time, final_time);
+        # Check reference
+        df_test = otherinput.display_data();
         self.check_df(df_test, 'collect_data.csv');
 
 #%% Parameter Tests
@@ -484,7 +528,7 @@ class ConstraintFromDF(TestCaseMPCPy):
         self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'sampleConstraintCSV_Setback.csv'));
         time = pd.to_datetime(self.df['Time']);
         self.df.set_index(time, inplace=True);
-        variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
+        self.variable_map = {'wesTdb_min' : ('wesTdb', 'GTE', units.degC), \
                         'wesTdb_max' : ('wesTdb', 'LTE', units.degC), \
                         'easTdb_min' : ('easTdb', 'GTE', units.degC), \
                         'easTdb_max' : ('easTdb', 'LTE', units.degC), \
@@ -496,18 +540,41 @@ class ConstraintFromDF(TestCaseMPCPy):
                         'conHeat_hal_max' : ('conHeat_hal', 'LTE', units.unit1), \
                         'conHeat_eas_min' : ('conHeat_eas', 'GTE', units.unit1), \
                         'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
-        # Instantiate weather object
-        self.constraints = exodata.ConstraintFromDF(self.df, \
-                                                    variable_map);
 
     def test_collect_data(self):
         start_time = '1/1/2015 13:00:00';
         final_time = '1/2/2015';
+        # Instantiate weather object
+        constraints = exodata.ConstraintFromDF(self.df, \
+                                               self.variable_map);
         # Get constraint data
-        self.constraints.collect_data(start_time, final_time);
+        constraints.collect_data(start_time, final_time);
         # Check reference
-        df_test = self.constraints.display_data();
-        self.check_df(df_test, 'collect_data.csv'); 
+        df_test = constraints.display_data();
+        self.check_df(df_test, 'collect_data.csv');
+
+    def test_collect_data_tz_handling(self):
+        start_time = '1/1/2015 13:00:00';
+        final_time = '1/2/2015';
+        # Localize timezone
+        self.df = self.df.tz_localize('UTC')
+        # Instantiate weather object
+        with self.assertRaises(TypeError):
+            constraints = exodata.ConstraintFromDF(self.df, \
+                                                   self.variable_map); 
+        # Remove timezone
+        self.df = self.df.tz_convert(None)
+        # Instantiate weather object
+        constraints = exodata.ConstraintFromDF(self.df, \
+                                               self.variable_map);
+        # Get control data
+        constraints.collect_data(start_time, final_time);
+        # Collect twice
+        constraints.collect_data(start_time, final_time);
+        # Check reference
+        df_test = constraints.display_data();
+        self.check_df(df_test, 'collect_data.csv');
+
 
 class ConstraintFromOccupancyModel(TestCaseMPCPy):
     '''Test the collection of constraint data from an occupancy model.
@@ -575,19 +642,41 @@ class PriceFromDF(TestCaseMPCPy):
         self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'PriceCSV.csv'));
         time = pd.to_datetime(self.df['Time']);
         self.df.set_index(time, inplace=True);
-        variable_map = {'pi_e' : ('pi_e', units.unit1)};
-        # Instantiate weather object
-        self.prices = exodata.PriceFromDF(self.df, \
-                                          variable_map);
+        self.variable_map = {'pi_e' : ('pi_e', units.unit1)};
 
     def test_print(self):
         start_time = '1/1/2015 13:00:00';
         final_time = '1/2/2015';
+        # Instantiate weather object
+        prices = exodata.PriceFromDF(self.df, \
+                                     self.variable_map);
         # Get price data
-        self.prices.collect_data(start_time, final_time);
+        prices.collect_data(start_time, final_time);
         # Check reference
-        df_test = self.prices.display_data();
-        self.check_df(df_test, 'collect_data.csv');  
+        df_test = prices.display_data();
+        self.check_df(df_test, 'collect_data.csv');
+
+    def test_collect_data_tz_handling(self):
+        start_time = '1/1/2015 13:00:00';
+        final_time = '1/2/2015';
+        # Localize timezone
+        self.df = self.df.tz_localize('UTC')
+        # Instantiate weather object
+        with self.assertRaises(TypeError):
+            prices = exodata.PriceFromDF(self.df, \
+                                         self.variable_map); 
+        # Remove timezone
+        self.df = self.df.tz_convert(None)
+        # Instantiate weather object
+        prices = exodata.PriceFromDF(self.df, \
+                                     self.variable_map);
+        # Get control data
+        prices.collect_data(start_time, final_time);
+        # Collect twice
+        prices.collect_data(start_time, final_time);
+        # Check reference
+        df_test = prices.display_data();
+        self.check_df(df_test, 'collect_data.csv');
 
 #%% Source Tests
 class Type(TestCaseMPCPy):

@@ -1343,7 +1343,15 @@ class ControlFromDF(_Control, utility._DAQ):
         # Common kwargs
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);             
-                   
+        # Set time index from default or user-specified time header
+        try:
+            self._df = self._df.tz_localize(self.tz_name);   
+        except TypeError:
+            raise TypeError('Supplied dataframe is already tz-aware.  \
+                            Instead, let exodata object assign tz.  \
+                            Fix by not making df tz-aware or removing \
+                            tz using ``df = df.tz_convert(None)``.')
+                            
     def _collect_data(self, start_time, final_time):
         '''Collect data from the df into data dictionary.
         
@@ -1441,7 +1449,13 @@ class OtherInputFromDF(_OtherInput, utility._DAQ):
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);  
         # Set time index from default or user-specified time header
-        self._df = self._df.tz_localize(self.tz_name);              
+        try:
+            self._df = self._df.tz_localize(self.tz_name);   
+        except TypeError:
+            raise TypeError('Supplied dataframe is already tz-aware.  \
+                            Instead, let exodata object assign tz.  \
+                            Fix by not making df tz-aware or removing \
+                            tz using ``df = df.tz_convert(None)``.')            
                    
     def _collect_data(self, start_time, final_time):
         '''Collect data from the df into data dictionary.
@@ -1648,7 +1662,15 @@ class ConstraintFromDF(_Constraint, utility._DAQ):
         self.variable_map = variable_map;
         # Common kwargs
         self._parse_daq_kwargs(kwargs);
-        self._parse_time_zone_kwargs(kwargs);             
+        self._parse_time_zone_kwargs(kwargs);
+        # Set time index from default or user-specified time header
+        try:
+            self._df = self._df.tz_localize(self.tz_name);   
+        except TypeError:
+            raise TypeError('Supplied dataframe is already tz-aware.  \
+                            Instead, let exodata object assign tz.  \
+                            Fix by not making df tz-aware or removing \
+                            tz using ``df = df.tz_convert(None)``.')          
                    
     def _collect_data(self, start_time, final_time):
         '''Collect data from the df into data dictionary.
@@ -1806,7 +1828,15 @@ class PriceFromDF(_Price, utility._DAQ):
         self.variable_map = variable_map;
         # Common kwargs
         self._parse_daq_kwargs(kwargs);
-        self._parse_time_zone_kwargs(kwargs);             
+        self._parse_time_zone_kwargs(kwargs);   
+        # Set time index from default or user-specified time header
+        try:
+            self._df = self._df.tz_localize(self.tz_name);   
+        except TypeError:
+            raise TypeError('Supplied dataframe is already tz-aware.  \
+                            Instead, let exodata object assign tz.  \
+                            Fix by not making df tz-aware or removing \
+                            tz using ``df = df.tz_convert(None)``.')          
                    
     def _collect_data(self, start_time, final_time):
         '''Collect data from the df into data dictionary.
