@@ -1030,7 +1030,7 @@ class WeatherFromDF(_Weather, utility._DAQ):
         '''Constructor of DataFrame weather exodata object.
         
         '''
-        print(df.index.get_values()[0].__class__)
+        
         self.name = 'weather_from_df';
         self._df = df;  
         self.data = {};   
