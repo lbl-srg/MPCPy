@@ -227,6 +227,13 @@ class WeatherFromDF(TestCaseMPCPy):
         # Localize timezone
         self.df = self.df.tz_localize('UTC')
         # Instantiate weather object
+        with self.assertRaises(TypeError):
+            weather = exodata.WeatherFromDF(self.df, \
+                                            self.variable_map, \
+                                            geography = self.geography);
+        # Remove timezone
+        self.df = self.df.tz_convert(None)
+        # Instantiate weather object
         weather = exodata.WeatherFromDF(self.df, \
                                         self.variable_map, \
                                         geography = self.geography);
