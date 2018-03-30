@@ -1048,7 +1048,13 @@ class WeatherFromDF(_Weather, utility._DAQ):
         assert(bool(self.lat) == True);
         assert(bool(self.lon) == True);
         # Set time index from default or user-specified time header
-        self._df = self._df.tz_localize(self.tz_name);   
+        try:
+            self._df = self._df.tz_localize(self.tz_name);   
+        except TypeError:
+            raise TypeError('Supplied dataframe is already tz-aware.  \
+                            Instead, let exodata object assign tz.  \
+                            Fix by not making df tz-aware or removing \
+                            tz using ``df = df.tz_convert(None)``.')
            
     def _collect_data(self, start_time, final_time):
         '''Collect data from DataFrame into data dictionary.
