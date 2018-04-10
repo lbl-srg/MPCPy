@@ -869,9 +869,14 @@ class RMSE(_Validate):
 
         Model.RMSE = {};
         for key in Model.measurements.keys():
-            data = Model.measurements[key]['Measured'].get_base_data()[Model.start_time:Model.final_time];
-            data_est = Model.measurements[key]['Simulated'].get_base_data()[Model.start_time:Model.final_time];
-            RMSE = np.sqrt(sum((data_est-data)**2)/len(data));
+            data = Model.measurements[key]['Measured'].get_base_data()[Model.start_time_utc:Model.final_time_utc];
+            data_est = Model.measurements[key]['Simulated'].get_base_data()[Model.start_time_utc:Model.final_time_utc];
+            summed = 0;
+            for i in range(len(data_est)):
+                t = data_est.index.values[i]
+                diff = (data_est[t] - data[t])**2
+                summed = summed + diff;
+            RMSE = np.sqrt(summed/len(data_est));
             unit_class = Model.measurements[key]['Measured'].get_base_unit();
             Model.RMSE[key] = variables.Static('RMSE_'+key, RMSE, unit_class);
         if plot == 1:
