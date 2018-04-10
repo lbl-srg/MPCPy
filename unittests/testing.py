@@ -33,6 +33,8 @@ import os
 import json
 import numpy as np
 from matplotlib import pyplot as plt
+import Tkinter as tk
+
 
 class TestCaseMPCPy(unittest.TestCase):
     '''General test methods for testing in mpcpy.
@@ -228,26 +230,31 @@ class TestCaseMPCPy(unittest.TestCase):
                 try:
                     self.assertTrue(err_max <= tol)
                 except AssertionError:
-                    plt.figure()
-                    # Plot reference
-                    plt.plot(y_ref, '-ob', 
-                                    label = 'ref', 
-                                    linewidth = 3,
-                                    markersize = 8)
-                    # Plot test
-                    plt.plot(y_test, '-or', 
-                                     label = 'test',
-                                     linewidth = 1.5,
-                                     markersize = 4)
-                    # Plot location of max error
-                    plt.plot(i_max, y_test[i_max], 'og', 
-                                                   label = 'location of max error', 
-                                                   markerfacecolor='none',
-                                                   markersize = 12.0, 
-                                                   markeredgewidth = 3)
-                    # Save plot
-                    plt.legend()
-                    fig_path = self.ref_file_path[:-4]+'_'+key+'.png'
-                    plt.savefig(fig_path)
-                    # Fail test
-                    self.assertTrue(False, 'Value test failed with max error {0} for key {1} and reference index {2}.  Check {3} for plot of all values for key.'.format(err_max, key, df_ref.index.values[i_max], fig_path))
+                    try:
+                        plt.figure()
+                        # Plot reference
+                        plt.plot(y_ref, '-ob', 
+                                        label = 'ref', 
+                                        linewidth = 3,
+                                        markersize = 8)
+                        # Plot test
+                        plt.plot(y_test, '-or', 
+                                         label = 'test',
+                                         linewidth = 1.5,
+                                         markersize = 4)
+                        # Plot location of max error
+                        plt.plot(i_max, y_test[i_max], 'og', 
+                                                       label = 'location of max error', 
+                                                       markerfacecolor='none',
+                                                       markersize = 12.0, 
+                                                       markeredgewidth = 3)
+                        # Save plot
+                        plt.legend()
+                        fig_path = self.ref_file_path[:-4]+'_'+key+'.png'
+                        plt.savefig(fig_path)
+                        # Fail test
+                        self.assertTrue(False, 'Value test failed with max error {0} for key {1} and reference index {2}.  Check {3} for plot of all values for key.'.format(err_max, key, df_ref.index.values[i_max], fig_path))
+                    except tk.TclError,e:
+                        # Fail test with no graphic
+                        self.assertTrue(False, 'Value test failed with max error {0} for key {1} and reference index {2}.  Plot not created due to following error:\n{3}.'.format(err_max, key, df_ref.index.values[i_max]),e)
+                        
