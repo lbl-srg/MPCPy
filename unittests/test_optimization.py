@@ -231,6 +231,39 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_new_options.csv');
+        
+    def test_set_options_iterative(self):
+        '''Test the setting of optimization options after initial optimization.
+        
+        '''
+        
+        modelpath = 'Simple.RC';
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Solve optimization problem                     
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Get options
+        opt_options = opt_problem.get_optimization_options();
+        # Set new options
+        opt_options['IPOPT_options']['max_iter'] = 2;
+        opt_options['n_e'] = 2;
+        opt_options['result_mode'] = 'mesh_points';
+        opt_problem.set_optimization_options(opt_options)
+        # Resolve optimization problem                     
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_new_options.csv');
 
     def test_set_options_error(self):
         '''Test the setting of optimization options cannot occur with auto options.
