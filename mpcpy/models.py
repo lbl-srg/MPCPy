@@ -869,14 +869,19 @@ class RMSE(_Validate):
 
         Model.RMSE = {};
         for key in Model.measurements.keys():
-            data = Model.measurements[key]['Measured'].get_base_data()[Model.start_time_utc:Model.final_time_utc];
-            data_est = Model.measurements[key]['Simulated'].get_base_data()[Model.start_time_utc:Model.final_time_utc];
+            data = Model.measurements[key]['Measured'].get_base_data().loc[Model.start_time_utc:Model.final_time_utc];
+            data_est = Model.measurements[key]['Simulated'].get_base_data().loc[Model.start_time_utc:Model.final_time_utc];
             summed = 0;
+            length = 0;
             for i in range(len(data_est)):
                 t = data_est.index.values[i]
-                diff = (data_est[t] - data[t])**2
-                summed = summed + diff;
-            RMSE = np.sqrt(summed/len(data_est));
+                try:
+                    diff = (data_est.loc[t] - data.loc[t])**2
+                    summed = summed + diff;
+                    length = length + 1;
+                except KeyError:
+                    print('Time {0} missing in measured data.'.format(t));
+            RMSE = np.sqrt(summed/length);
             unit_class = Model.measurements[key]['Measured'].get_base_unit();
             Model.RMSE[key] = variables.Static('RMSE_'+key, RMSE, unit_class);
         if plot == 1:
