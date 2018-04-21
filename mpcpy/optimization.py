@@ -110,7 +110,10 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
         timeseries for each control variable for the time period of 
         optimization.  If the optimization horizon extends past the 
         final time of ``Model.control_data``, then the extra data is 
-        appended.
+        appended.  Also creates the Optimization.measurements dictionary 
+        with the optimization solution measurements under the 
+        ``'Simulated'`` key.  This is created for the variables defined in
+        ``Model.measurements``.
         
         '''
         
@@ -694,7 +697,7 @@ class JModelica(_Package, utility._FMU):
         self.external_data = ExternalData(Q=Q, quad_pen=quad_pen, eliminated=eliminated);
         
     def _get_control_results(self, Optimization, **kwargs):
-        '''Update the model control data and measurements dictionaries.
+        '''Update the model control_data and optimization measurements.
         
         Also add the opt_input object as attribute to Optimization.
         
