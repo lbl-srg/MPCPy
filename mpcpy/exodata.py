@@ -952,6 +952,8 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         Path of csv file.
     variable_map : dictionary
         {"Column Header Name" : ("Weather Variable Name", mpcpy.Units.unit)}.
+    geography  : [numeric, numeric]
+                List of [Latitude, Longitude] in degrees
 
     Attributes
     ----------
@@ -962,13 +964,13 @@ class WeatherFromCSV(_Weather, utility._DAQ):
     lon : numeric
         Longitude in degrees.
     tz_name : string
-        Timezone name.  
+        Timezone name.
     file_path : string
         Path of csv file.        
 
     '''
     
-    def __init__(self, csv_file_path, variable_map, **kwargs):
+    def __init__(self, csv_file_path, variable_map, geography, **kwargs):
         '''Constructor of csv weather exodata object.
         
         '''
@@ -977,13 +979,15 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         self.file_path = csv_file_path;  
         self.data = {};   
         # Dictionary of format {'csvHeader' : ('weaVarName', mpcpyUnit)}
-        self.variable_map = variable_map;          
+        self.variable_map = variable_map;
+        self.geography = geography;
         # Process Variables
         if 'process_variables' in kwargs:
             self.process_variables = kwargs['process_variables'];
         else:
             self.process_variables = None;
         # Common kwargs
+        kwargs['geography'] = geography
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
         # Assert geography
