@@ -79,8 +79,7 @@ class WeatherFromCSV(TestCaseMPCPy):
     def test_instantiate_without_geography(self):
         with self.assertRaises(TypeError):
             weather = exodata.WeatherFromCSV(self.csv_filepath,
-                                             self.variable_map,
-                                             None);
+                                             self.variable_map);
 
     def test_collect_data_default_time(self):
         start_time = '2016-10-19 19:53:00';
