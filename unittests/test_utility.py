@@ -129,7 +129,6 @@ class TestSimulateFMU(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        df_test.to_csv('/home/dhb-lx/git/mpcpy/MPCPy/unittests/me_1.csv')
         self.check_df(df_test, 'simulate_fmu_me.csv');
 
     def test_simulate_cs_1(self):
@@ -145,7 +144,6 @@ class TestSimulateFMU(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        df_test.to_csv('/home/dhb-lx/git/mpcpy/MPCPy/unittests/cs_1.csv')
         self.check_df(df_test, 'simulate_fmu_cs.csv');
         
     def test_simulate_me_2(self):
@@ -160,8 +158,7 @@ class TestSimulateFMU(TestCaseMPCPy):
         # Simulate model
         self.model.simulate(self.start_time, self.final_time);
         # Check references
-        df_test = self.model.display_measurements('Simulated');
-        df_test.to_csv('/home/dhb-lx/git/mpcpy/MPCPy/unittests/me_2.csv')        
+        df_test = self.model.display_measurements('Simulated');     
         self.check_df(df_test, 'simulate_fmu_me.csv');
         
     def test_simulate_cs_2(self):
@@ -177,7 +174,6 @@ class TestSimulateFMU(TestCaseMPCPy):
         self.model.simulate(self.start_time, self.final_time);
         # Check references
         df_test = self.model.display_measurements('Simulated');
-        df_test.to_csv('/home/dhb-lx/git/mpcpy/MPCPy/unittests/cs_2.csv')  
         self.check_df(df_test, 'simulate_fmu_cs.csv');
 
 if __name__ == '__main__':
