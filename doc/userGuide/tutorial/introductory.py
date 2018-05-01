@@ -240,12 +240,12 @@ timeseries data in the ``'Measured'`` field for each variable.
 >>> emulation.collect_measurements('1/1/2017', '1/2/2017') # doctest: +ELLIPSIS
 -etc-
 >>> # Display the results
->>> emulation.display_measurements('Measured') # doctest: +ELLIPSIS
-                            Qflow       Tzone
-Time                                         
-2017-01-01 06:00:00+00:00  3000.0  293.150000
-2017-01-01 07:00:00+00:00  3000.0  291.010425
-2017-01-01 08:00:00+00:00  3000.0  291.317144
+>>> emulation.display_measurements('Measured').applymap('{:.2f}'.format) # doctest: +ELLIPSIS
+                             Qflow   Tzone
+Time                                      
+2017-01-01 06:00:00+00:00  3000.00  293.15
+2017-01-01 07:00:00+00:00  3000.00  291.01
+2017-01-01 08:00:00+00:00  3000.00  291.32
 -etc-
 
 Estimate Parameters
@@ -315,12 +315,12 @@ timeseries data in the ``'Simulated'`` field for each variable.
 >>> model.simulate('1/1/2017', '1/2/2017') # doctest: +ELLIPSIS
 -etc-
 >>> # Display the results
->>> model.display_measurements('Simulated') # doctest: +ELLIPSIS
-                            Qflow       Tzone
-Time                                         
-2017-01-01 06:00:00+00:00  3000.0  293.150000
-2017-01-01 07:00:00+00:00  3000.0  266.950192
-2017-01-01 08:00:00+00:00  3000.0  267.439061
+>>> model.display_measurements('Simulated').applymap('{:.2f}'.format) # doctest: +ELLIPSIS
+                             Qflow   Tzone
+Time                                      
+2017-01-01 06:00:00+00:00  3000.00  293.15
+2017-01-01 07:00:00+00:00  3000.00  266.95
+2017-01-01 08:00:00+00:00  3000.00  267.44
 -etc-
 
 
@@ -344,8 +344,8 @@ measurement variable.
 >>> model.validate('1/1/2017', '1/2/2017', 'validate_tra', plot=1) # doctest: +ELLIPSIS
 -etc-
 >>> # Get RMSE
->>> print(model.RMSE['Tzone'].display_data()) # doctest: +NORMALIZE_WHITESPACE
-0.041121444160604044
+>>> print("%.3f" % model.RMSE['Tzone'].display_data()) # doctest: +NORMALIZE_WHITESPACE
+0.041
 
 Now let's validate on a different period of exogenous data:
 
@@ -361,15 +361,15 @@ Now let's validate on a different period of exogenous data:
 >>> model.validate(start_time_val, final_time_val, 'validate_val', plot=1) # doctest: +ELLIPSIS
 -etc-
 >>> # Get RMSE
->>> print(model.RMSE['Tzone'].display_data()) # doctest: +NORMALIZE_WHITESPACE
-0.04739604390562877
+>>> print("%.3f" % model.RMSE['Tzone'].display_data()) # doctest: +NORMALIZE_WHITESPACE
+0.047
 
 Finally, let's view the estimated parameter values:
 
 >>> for key in model.parameter_data.keys():
-...     print(key, model.parameter_data[key]['Value'].display_data())
-('heatCapacitor.C', 119828.298458052)
-('thermalResistor.R', 0.0100102212418521)
+...     print(key, "%.2f" % model.parameter_data[key]['Value'].display_data())
+('heatCapacitor.C', '119828.30')
+('thermalResistor.R', '0.01')
 
 
 Optimize Control
@@ -459,33 +459,33 @@ We can retrieve the optimal control solution and verify that the
 constraints were satisfied.  The intermediate points are a result of the 
 direct collocation method used by JModelica.
 
->>> opt_problem.display_measurements('Simulated') # doctest: +ELLIPSIS
-                                        Qflow   Tzone
-Time                                                 
-2017-01-02 06:00:00+00:00          669.930559  298.15
-2017-01-02 06:09:18.183693+00:00  1512.949853  293.15
-2017-01-02 06:38:41.816307+00:00  2599.011301  293.15
-2017-01-02 07:00:00+00:00         1888.275086  293.15
+>>> opt_problem.display_measurements('Simulated').applymap('{:.2f}'.format) # doctest: +ELLIPSIS
+                                    Qflow   Tzone
+Time                                             
+2017-01-02 06:00:00+00:00          669.93  298.15
+2017-01-02 06:09:18.183693+00:00  1512.95  293.15
+2017-01-02 06:38:41.816307+00:00  2599.01  293.15
+2017-01-02 07:00:00+00:00         1888.28  293.15
 -etc-
 
 Finally, we can simulate the model using the optimized control trajectory.
 Note that the ``model.control_data`` dictionary is updated by the 
 ``opt_problem.optimize()`` function.
 
->>> model.control_data['Qflow'].display_data().loc[pd.to_datetime('1/2/2017  06:00:00'):pd.to_datetime('1/3/2017 06:00:00')] # doctest: +ELLIPSIS
-2017-01-02 06:00:00+00:00            669.930559
-2017-01-02 06:09:18.183693+00:00    1512.949853
-2017-01-02 06:38:41.816307+00:00    2599.011301
-2017-01-02 07:00:00+00:00           1888.275086
+>>> model.control_data['Qflow'].display_data().loc[pd.to_datetime('1/2/2017  06:00:00'):pd.to_datetime('1/3/2017 06:00:00')].map('{:.2f}'.format) # doctest: +ELLIPSIS
+2017-01-02 06:00:00+00:00            669.93
+2017-01-02 06:09:18.183693+00:00    1512.95
+2017-01-02 06:38:41.816307+00:00    2599.01
+2017-01-02 07:00:00+00:00           1888.28
 -etc-
 >>> model.simulate('1/2/2017', '1/3/2017') # doctest: +ELLIPSIS
 -etc-
->>> model.display_measurements('Simulated') # doctest: +ELLIPSIS
-                                 Qflow       Tzone
-Time                                              
-2017-01-02 06:00:00+00:00   669.930559  293.150000
-2017-01-02 07:00:00+00:00  1888.275086  291.406895
-2017-01-02 08:00:00+00:00  2277.671963  293.028281
+>>> model.display_measurements('Simulated').applymap('{:.2f}'.format) # doctest: +ELLIPSIS
+                             Qflow   Tzone
+Time                                      
+2017-01-02 06:00:00+00:00   669.93  293.15
+2017-01-02 07:00:00+00:00  1888.28  291.41
+2017-01-02 08:00:00+00:00  2277.67  293.03
 -etc-
 
 Note there is some mismatch between the simulated model output temperature 
@@ -499,19 +499,19 @@ using collocation being an approximation of the true dynamic model.
 
 >>> opt_problem.optimize('1/2/2017', '1/3/2017', res_control_step=1.0) # doctest: +ELLIPSIS
 -etc-
->>> model.control_data['Qflow'].display_data().loc[pd.to_datetime('1/2/2017 06:00:00'):pd.to_datetime('1/3/2017 06:00:00')] # doctest: +ELLIPSIS
-2017-01-02 06:00:00+00:00     669.930546
-2017-01-02 06:00:01+00:00     671.655491
-2017-01-02 06:00:02+00:00     673.379666
+>>> model.control_data['Qflow'].display_data().loc[pd.to_datetime('1/2/2017 06:00:00'):pd.to_datetime('1/3/2017 06:00:00')].map('{:.2f}'.format) # doctest: +ELLIPSIS
+2017-01-02 06:00:00+00:00     669.93
+2017-01-02 06:00:01+00:00     671.66
+2017-01-02 06:00:02+00:00     673.38
 -etc-
 >>> model.simulate('1/2/2017', '1/3/2017') # doctest: +ELLIPSIS
 -etc-
->>> model.display_measurements('Simulated') # doctest: +ELLIPSIS
-                                 Qflow       Tzone
-Time                                              
-2017-01-02 06:00:00+00:00   669.930546  293.150000
-2017-01-02 07:00:00+00:00  1888.275070  292.669206
-2017-01-02 08:00:00+00:00  2277.671954  293.125902
+>>> model.display_measurements('Simulated').applymap('{:.2f}'.format) # doctest: +ELLIPSIS
+                             Qflow   Tzone
+Time                                      
+2017-01-02 06:00:00+00:00   669.93  293.15
+2017-01-02 07:00:00+00:00  1888.28  292.67
+2017-01-02 08:00:00+00:00  2277.67  293.13
 -etc-
 
 """
