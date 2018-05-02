@@ -345,7 +345,7 @@ measurement variable.
 -etc-
 >>> # Get RMSE
 >>> print(model.RMSE['Tzone'].display_data()) # doctest: +NORMALIZE_WHITESPACE
-0.041121444160604044
+0.04114137642253871
 
 Now let's validate on a different period of exogenous data:
 
@@ -362,14 +362,14 @@ Now let's validate on a different period of exogenous data:
 -etc-
 >>> # Get RMSE
 >>> print(model.RMSE['Tzone'].display_data()) # doctest: +NORMALIZE_WHITESPACE
-0.04739604390562877
+0.0471111968971535
 
 Finally, let's view the estimated parameter values:
 
 >>> for key in model.parameter_data.keys():
 ...     print(key, model.parameter_data[key]['Value'].display_data())
-('heatCapacitor.C', 119828.298458052)
-('thermalResistor.R', 0.0100102212418521)
+('heatCapacitor.C', 119828.298457584)
+('thermalResistor.R', 0.0100102212418519)
 
 
 Optimize Control
@@ -485,7 +485,7 @@ Note that the ``model.control_data`` dictionary is updated by the
 Time                                              
 2017-01-02 06:00:00+00:00   669.930559  293.150000
 2017-01-02 07:00:00+00:00  1888.275086  291.406895
-2017-01-02 08:00:00+00:00  2277.671963  293.028281
+2017-01-02 08:00:00+00:00  2277.671963  293.028327
 -etc-
 
 Note there is some mismatch between the simulated model output temperature 
