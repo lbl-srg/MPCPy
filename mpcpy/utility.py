@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 from pyfmi.common import core
 from pyfmi.common import xmlparser
+import shutil
 import inspect
 from mpcpy import variables
 from mpcpy import units
@@ -421,6 +422,7 @@ class _FMU(_mpcpyPandas):
             self.libraries = None;
             self.fmu = load_fmu(self.fmupath);
             self.fmu_version = self.fmu.get_version();
+            self._xml_root = self._load_xml_root();
             self.fmu_target = self._get_fmu_target();
         if 'moinfo' in kwargs:
             self.mopath = kwargs['moinfo'][0];
@@ -440,7 +442,8 @@ class _FMU(_mpcpyPandas):
                                        version = self.fmu_version,
                                        target = self.fmu_target);
             self.fmu = load_fmu(self.fmupath);
-        
+            self._xml_root = self._load_xml_root();
+
     def _dataframe_to_input_object(self, df, start_time, final_time):
         '''Create a fmu input object from dataframe.
         
@@ -502,11 +505,8 @@ class _FMU(_mpcpyPandas):
         
         '''
         
-        tmpdir = core.unzip_unit(self.fmupath);
-        element_tree = xmlparser._parse_XML(tmpdir+os.sep + 'modelDescription.xml');
-        root = element_tree.getroot();
-        model_variables = root.find('ModelVariables');
-        type_definitions = root.find('TypeDefinitions');
+        model_variables = self._xml_root.find('ModelVariables');
+        type_definitions = self._xml_root.find('TypeDefinitions');
         variables = model_variables.getchildren();
         if type_definitions is not None:
             types = type_definitions.getchildren();
@@ -550,15 +550,12 @@ class _FMU(_mpcpyPandas):
         '''
         
         if self.fmu_version == '2.0':
-            tmpdir = core.unzip_unit(self.fmupath);
-            element_tree = xmlparser._parse_XML(tmpdir+os.sep + 'modelDescription.xml');
-            root = element_tree.getroot();
             try:
-                tag = root.find('ModelExchange').tag
+                tag = self._xml_root.find('ModelExchange').tag
             except:
                 pass
             try:
-                tag = root.find('CoSimulation').tag
+                tag = self._xml_root.find('CoSimulation').tag
             except:
                 pass
             if tag == 'ModelExchange':
@@ -600,6 +597,23 @@ class _FMU(_mpcpyPandas):
                 continue
             
         return unit_class
+        
+    def _load_xml_root(self):
+        '''Load the xml root.
+        
+        Returns
+        -------
+        _xml_root : xml root object
+            From element_tree.getroot().
+        
+        '''
+        
+        tmpdir = core.unzip_unit(self.fmupath);
+        element_tree = xmlparser._parse_XML(tmpdir+os.sep + 'modelDescription.xml');
+        shutil.rmtree(tmpdir)
+        _xml_root = element_tree.getroot();
+        
+        return _xml_root
         
 #%%
 class _Building(object):
