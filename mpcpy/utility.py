@@ -284,7 +284,7 @@ class _FMU(_mpcpyPandas):
             self._sim_opts['initialize'] = False;
         else:
             # Load fmu
-            self.fmu = load_fmu(self.fmupath);
+            self.fmu.reset();
         # Set start/final time
         start_time = self.total_elapsed_seconds - self.elapsed_seconds;
         final_time = self.total_elapsed_seconds;

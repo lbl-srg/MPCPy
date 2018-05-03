@@ -147,6 +147,160 @@ class EmulationFromFMU(TestCaseMPCPy):
             df_test = building.display_measurements('Measured');
             self.check_df(df_test, 'collect_measurements_continue_step{0}.csv'.format(i));
             
+    def test_collect_measurements_continue_me_1(self):
+        start_time = '1/1/2017';
+        final_time = '1/2/2017';
+        # Set measurements
+        measurements = {};
+        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_nostart';
+        moinfo = (mopath, modelpath, {});
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(start_time, final_time);
+        # Instantiate model
+        building = systems.EmulationFromFMU(measurements, \
+                                            moinfo = moinfo, \
+                                            control_data = controls.data,
+                                            version = '1.0',
+                                            target = 'me');
+        # Simulate model
+        building.collect_measurements(start_time, final_time);
+        # Check references
+        df_test = building.display_measurements('Simulated');
+        self.check_df(df_test, 'collect_measurements_display_me.csv');
+        
+        # Simulate model in 4-hour chunks
+        sim_steps = pd.date_range(start_time, final_time, freq=str('8H'))
+        for i in range(len(sim_steps)-1):
+            if i == 0:
+                building.collect_measurements(sim_steps[i], sim_steps[i+1]);
+            else:
+                building.collect_measurements('continue', sim_steps[i+1]);
+            # Check references
+            df_test = building.display_measurements('Simulated');
+            self.check_df(df_test, 'collect_measurements_step_me{0}.csv'.format(i));
+    
+    def test_collect_measurements_continue_me_2(self):
+        start_time = '1/1/2017';
+        final_time = '1/2/2017';
+        # Set measurements
+        measurements = {};
+        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_nostart';
+        moinfo = (mopath, modelpath, {});
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(start_time, final_time);
+        # Instantiate model
+        building = systems.EmulationFromFMU(measurements, \
+                                            moinfo = moinfo, \
+                                            control_data = controls.data,
+                                            version = '2.0',
+                                            target = 'me');
+        # Simulate model
+        building.collect_measurements(start_time, final_time);
+        # Check references
+        df_test = building.display_measurements('Simulated');
+        self.check_df(df_test, 'collect_measurements_display_me.csv');
+        
+        # Simulate model in 4-hour chunks
+        sim_steps = pd.date_range(start_time, final_time, freq=str('8H'))
+        for i in range(len(sim_steps)-1):
+            if i == 0:
+                building.collect_measurements(sim_steps[i], sim_steps[i+1]);
+            else:
+                building.collect_measurements('continue', sim_steps[i+1]);
+            # Check references
+            df_test = building.display_measurements('Simulated');
+            self.check_df(df_test, 'collect_measurements_step_me{0}.csv'.format(i));
+            
+    def test_collect_measurements_continue_cs_1(self):
+        start_time = '1/1/2017';
+        final_time = '1/2/2017';
+        # Set measurements
+        measurements = {};
+        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_nostart';
+        moinfo = (mopath, modelpath, {});
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(start_time, final_time);
+        # Instantiate model
+        building = systems.EmulationFromFMU(measurements, \
+                                            moinfo = moinfo, \
+                                            control_data = controls.data,
+                                            version = '1.0',
+                                            target = 'cs');
+        # Simulate model
+        building.collect_measurements(start_time, final_time);
+        # Check references
+        df_test = building.display_measurements('Simulated');
+        self.check_df(df_test, 'collect_measurements_display_cs.csv');
+        
+        # Simulate model in 4-hour chunks
+        sim_steps = pd.date_range(start_time, final_time, freq=str('8H'))
+        for i in range(len(sim_steps)-1):
+            if i == 0:
+                building.collect_measurements(sim_steps[i], sim_steps[i+1]);
+            else:
+                building.collect_measurements('continue', sim_steps[i+1]);
+            # Check references
+            df_test = building.display_measurements('Simulated');
+            self.check_df(df_test, 'collect_measurements_step_cs{0}.csv'.format(i));
+            
+    def test_collect_measurements_continue_cs_2(self):
+        start_time = '1/1/2017';
+        final_time = '1/2/2017';
+        # Set measurements
+        measurements = {};
+        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_nostart';
+        moinfo = (mopath, modelpath, {});
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(start_time, final_time);
+        # Instantiate model
+        building = systems.EmulationFromFMU(measurements, \
+                                            moinfo = moinfo, \
+                                            control_data = controls.data,
+                                            version = '2.0',
+                                            target = 'cs');
+        # Simulate model
+        building.collect_measurements(start_time, final_time);
+        # Check references
+        df_test = building.display_measurements('Simulated');
+        self.check_df(df_test, 'collect_measurements_display_cs.csv');
+        
+        # Simulate model in 4-hour chunks
+        sim_steps = pd.date_range(start_time, final_time, freq=str('8H'))
+        for i in range(len(sim_steps)-1):
+            if i == 0:
+                building.collect_measurements(sim_steps[i], sim_steps[i+1]);
+            else:
+                building.collect_measurements('continue', sim_steps[i+1]);
+            # Check references
+            df_test = building.display_measurements('Simulated');
+            self.check_df(df_test, 'collect_measurements_step_cs{0}.csv'.format(i));
+            
+
+            
     def plot_measurements(self, name):
         for key in self.building.measurements.keys():
             variable = self.building.measurements[key]['Measured'];
