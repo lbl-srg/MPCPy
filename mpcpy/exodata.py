@@ -1016,6 +1016,8 @@ class WeatherFromDF(_Weather, utility._DAQ):
         DataFrame of data.  The index must be a datetime object.
     variable_map : dictionary
         {"Column Header Name" : ("Weather Variable Name", mpcpy.Units.unit)}.
+    geography  : [numeric, numeric]
+                List of [Latitude, Longitude] in degrees
 
     Attributes
     ----------
@@ -1030,7 +1032,7 @@ class WeatherFromDF(_Weather, utility._DAQ):
 
     '''
     
-    def __init__(self, df, variable_map, **kwargs):
+    def __init__(self, df, variable_map, geography, **kwargs):
         '''Constructor of DataFrame weather exodata object.
         
         '''
@@ -1039,13 +1041,15 @@ class WeatherFromDF(_Weather, utility._DAQ):
         self._df = df;  
         self.data = {};   
         # Dictionary of format {'dfHeader' : ('weaVarName', mpcpyUnit)}
-        self.variable_map = variable_map;          
+        self.variable_map = variable_map;
+        self.geography = geography
         # Process Variables
         if 'process_variables' in kwargs:
             self.process_variables = kwargs['process_variables'];
         else:
             self.process_variables = None;
         # Common kwargs
+        kwargs['geography'] = geography
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
         # Assert geography
