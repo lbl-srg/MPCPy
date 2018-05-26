@@ -756,6 +756,10 @@ class WeatherFromEPW(_Weather):
     ----------
     epw_file_path : string
         Path of epw file.
+    standard_time : boolean
+        False to localize data timestamps to EPW file location.
+        True to treat data timestamps in standard time.
+        Default is False.
 
     Attributes
     ----------
@@ -772,7 +776,7 @@ class WeatherFromEPW(_Weather):
        
     '''
 
-    def __init__(self, epw_file_path):
+    def __init__(self, epw_file_path, standard_time = False):
         '''Constructor of epw weather exodata object.
 
         '''
@@ -780,8 +784,13 @@ class WeatherFromEPW(_Weather):
         self.name = 'weather_from_epw';
         self.file_path = epw_file_path;
         self._read_lat_lon_timZon_from_epw();
-        self.tz = tzwhere.tzwhere();
-        self.tz_name = self.tz.tzNameAt(self.lat.display_data(), self.lon.display_data());        
+        # Treat standard time
+        self.standard_time = standard_time;
+        if self.standard_time:
+            self.tz_name = 'utc';
+        else:
+            self.tz = tzwhere.tzwhere();
+            self.tz_name = self.tz.tzNameAt(self.lat.display_data(), self.lon.display_data());        
         self.data = {};
         self.process_variables = ['weaTBlaSky', \
                                   'weaTWetBul', \
@@ -853,26 +862,29 @@ class WeatherFromEPW(_Weather):
         df_epw.set_index(new_index, inplace=True);
         df_epw.index.name = 'Time';
         # Treat daylight savings time
-        try:
+        if self.standard_time:
             df_epw = df_epw.tz_localize(self.tz_name);
-        except pytz_exceptions.NonExistentTimeError as time_nonexist:
-            time_nonexist = pd.to_datetime(time_nonexist.args[0])
-            if time_nonexist.month == 3:
-                df_epw_st = df_epw[df_epw.index < time_nonexist];
-                df_epw_dst = df_epw[df_epw.index >= time_nonexist];
-                df_epw_dst = df_epw_dst.shift(periods = 1, freq = 'H');
-                df_epw = pd.concat([df_epw_st, df_epw_dst], axis = 0);
-        try:
-            df_epw = df_epw.tz_localize(self.tz_name);
-        except pytz_exceptions.AmbiguousTimeError as time_ambiguous:
-            time_ambiguous = pd.to_datetime(time_ambiguous.args[0].split("'")[1])
-            if time_ambiguous.month == 11:
-                df_epw_dst = df_epw[df_epw.index < time_ambiguous].tz_localize(self.tz_name);
-                df_epw_st = df_epw[(df_epw.index > time_ambiguous + relativedelta(hours = 1))].shift(periods = -1, freq = 'H').tz_localize(self.tz_name);
-                df_epw_amb = df_epw[(df_epw.index >= time_ambiguous) & (df_epw.index <= time_ambiguous + relativedelta(hours = 1))];
-                df_epw_amb_0 = df_epw_amb.iloc[0:1].tz_localize(self.tz_name, ambiguous = np.array([True]));
-                df_epw_amb_1 = df_epw_amb.iloc[1:2].shift(periods = -1, freq = 'H').tz_localize(self.tz_name, ambiguous = np.array([False]));
-                df_epw = pd.concat([df_epw_dst, df_epw_amb_0, df_epw_amb_1, df_epw_st], axis = 0);
+        else:
+            try:
+                df_epw = df_epw.tz_localize(self.tz_name);
+            except pytz_exceptions.NonExistentTimeError as time_nonexist:
+                time_nonexist = pd.to_datetime(time_nonexist.args[0])
+                if time_nonexist.month == 3:
+                    df_epw_st = df_epw[df_epw.index < time_nonexist];
+                    df_epw_dst = df_epw[df_epw.index >= time_nonexist];
+                    df_epw_dst = df_epw_dst.shift(periods = 1, freq = 'H');
+                    df_epw = pd.concat([df_epw_st, df_epw_dst], axis = 0);
+            try:
+                df_epw = df_epw.tz_localize(self.tz_name);
+            except pytz_exceptions.AmbiguousTimeError as time_ambiguous:
+                time_ambiguous = pd.to_datetime(time_ambiguous.args[0].split("'")[1])
+                if time_ambiguous.month == 11:
+                    df_epw_dst = df_epw[df_epw.index < time_ambiguous].tz_localize(self.tz_name);
+                    df_epw_st = df_epw[(df_epw.index > time_ambiguous + relativedelta(hours = 1))].shift(periods = -1, freq = 'H').tz_localize(self.tz_name);
+                    df_epw_amb = df_epw[(df_epw.index >= time_ambiguous) & (df_epw.index <= time_ambiguous + relativedelta(hours = 1))];
+                    df_epw_amb_0 = df_epw_amb.iloc[0:1].tz_localize(self.tz_name, ambiguous = np.array([True]));
+                    df_epw_amb_1 = df_epw_amb.iloc[1:2].shift(periods = -1, freq = 'H').tz_localize(self.tz_name, ambiguous = np.array([False]));
+                    df_epw = pd.concat([df_epw_dst, df_epw_amb_0, df_epw_amb_1, df_epw_st], axis = 0);
         #  Retrieve data (not all is retrieved)
         for key in header:
             # Convert to mpcpy standard

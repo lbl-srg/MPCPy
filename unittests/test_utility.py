@@ -10,6 +10,7 @@ from mpcpy import utility
 from mpcpy import units
 from mpcpy import systems
 from mpcpy import models
+from mpcpy import variables
 from testing import TestCaseMPCPy
 
 #%% General methods test
@@ -101,6 +102,79 @@ class TestGetInputNames(TestCaseMPCPy):
             self.assertEqual(building.input_names, ['q_flow']);
             model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}), version = version);
             self.assertEqual(model.input_names, ['q_flow']);
+            
+class TestSimulateFMU(TestCaseMPCPy):
+    '''Test simulation of me, cs, 1.0, 2.0 fmus.'''
+    def setUp(self):
+        self.start_time = '1/1/2017';
+        self.final_time = '1/2/2017';
+        # Set measurements
+        self.measurements = {};
+        self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';        
+        self.moinfo = (mopath, modelpath, {})
+
+    def test_simulate_me_1(self):
+        '''Test simulation me 1.0.'''
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = self.moinfo, 
+                                     version = '1.0',
+                                     target = 'me');
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_fmu_me.csv');
+
+    def test_simulate_cs_1(self):
+        '''Test simulation cs 1.0.'''
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = self.moinfo, 
+                                     version = '1.0',
+                                     target = 'cs');
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_fmu_cs.csv');
+        
+    def test_simulate_me_2(self):
+        '''Test simulation me 2.0.'''
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = self.moinfo, 
+                                     version = '2.0',
+                                     target = 'me');
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');     
+        self.check_df(df_test, 'simulate_fmu_me.csv');
+        
+    def test_simulate_cs_2(self):
+        '''Test simulation cs 2.0.'''
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = self.moinfo, 
+                                     version = '2.0',
+                                     target = 'cs');
+        # Simulate model
+        self.model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_fmu_cs.csv');
 
 if __name__ == '__main__':
     unittest.main()

@@ -52,6 +52,19 @@ class WeatherFromEPW(TestCaseMPCPy):
         df_test = self.weather.get_base_data();
         self.check_df(df_test, 'collect_data_partial_base.csv');
 
+    def test_standard_time(self):
+        start_time = '1/1/2015';
+        final_time = '1/1/2016';
+        weather = exodata.WeatherFromEPW(self.epw_filepath, standard_time=True)
+        weather.collect_data(start_time, final_time);
+        # Check instantiation        
+        self.assertAlmostEqual(weather.lat.display_data(), 41.980, places=4);
+        self.assertAlmostEqual(weather.lon.display_data(), -87.92, places=4);
+        self.assertEqual(weather.tz_name, 'utc');
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df(df_test, 'collect_data_standard_time.csv');
+
 class WeatherFromCSV(TestCaseMPCPy):
     '''Test the collection of weather data from a CSV file.
     
