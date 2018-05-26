@@ -82,13 +82,18 @@ class WeatherFromCSV(TestCaseMPCPy):
     def test_instantiate(self):
         weather = exodata.WeatherFromCSV(self.csv_filepath, \
                                          self.variable_map, 
-                                         geography = self.geography);
+                                         self.geography);
         self.assertEqual(weather.name, 'weather_from_csv');
         self.assertEqual(weather.file_path, self.csv_filepath);
         self.assertAlmostEqual(weather.lat.display_data(), 37.8716, places=4);
         self.assertAlmostEqual(weather.lon.display_data(), -122.2727, places=4);
         self.assertEqual(weather.tz_name, 'UTC');
-        
+
+    def test_instantiate_without_geography(self):
+        with self.assertRaises(TypeError):
+            weather = exodata.WeatherFromCSV(self.csv_filepath,
+                                             self.variable_map);
+
     def test_collect_data_default_time(self):
         start_time = '2016-10-19 19:53:00';
         final_time = '2016-10-20 06:53:00';
@@ -96,7 +101,7 @@ class WeatherFromCSV(TestCaseMPCPy):
         # Instantiate weather object
         weather = exodata.WeatherFromCSV(self.csv_filepath, \
                                          self.variable_map, \
-                                         geography = self.geography, \
+                                         self.geography, \
                                          time_header = time_header);
         # Get weather data
         weather.collect_data(start_time, final_time);
@@ -111,7 +116,7 @@ class WeatherFromCSV(TestCaseMPCPy):
         # Instantiate weather object
         weather = exodata.WeatherFromCSV(self.csv_filepath, \
                                          self.variable_map, \
-                                         geography = self.geography, \
+                                         self.geography, \
                                          time_header = time_header, \
                                          tz_name = 'from_geography');
         # Get weather data
@@ -127,7 +132,7 @@ class WeatherFromCSV(TestCaseMPCPy):
         # Instantiate weather object
         weather = exodata.WeatherFromCSV(self.csv_filepath, \
                                          self.variable_map, \
-                                         geography = self.geography, \
+                                         self.geography, \
                                          time_header = time_header, \
                                          tz_name = 'America/Los_Angeles');
         # Get weather data
@@ -151,7 +156,7 @@ class WeatherFromCSV(TestCaseMPCPy):
         # Instantiate weather object
         weather = exodata.WeatherFromCSV(self.csv_filepath, \
                                          variable_map, \
-                                         geography = self.geography, \
+                                         self.geography, \
                                          time_header = time_header, 
                                          clean_data = clean_data);
         # Get weather data
@@ -178,12 +183,17 @@ class WeatherFromDF(TestCaseMPCPy):
         time = pd.to_datetime(self.df['DateUTC']);
         self.df.set_index(time, inplace=True);
         weather = exodata.WeatherFromDF(self.df, \
-                                        self.variable_map, \
-                                        geography = self.geography);
+                                        self.variable_map,
+                                        self.geography);
         self.assertEqual(weather.name, 'weather_from_df');
         self.assertAlmostEqual(weather.lat.display_data(), 37.8716, places=4);
         self.assertAlmostEqual(weather.lon.display_data(), -122.2727, places=4);
         self.assertEqual(weather.tz_name, 'UTC');
+
+    def test_instantiate_without_geography(self):
+        with self.assertRaises(TypeError):
+            weather = exodata.WeatherFromDF(self.df,
+                                            self.variable_map)
         
     def test_collect_data_default_time(self):
         start_time = '2016-10-19 19:53:00';
@@ -193,7 +203,7 @@ class WeatherFromDF(TestCaseMPCPy):
         # Instantiate weather object
         weather = exodata.WeatherFromDF(self.df, \
                                         self.variable_map, \
-                                        geography = self.geography);
+                                        self.geography);
         # Get weather data
         weather.collect_data(start_time, final_time);
         # Check reference
@@ -208,7 +218,7 @@ class WeatherFromDF(TestCaseMPCPy):
         # Instantiate weather object
         weather = exodata.WeatherFromDF(self.df, \
                                         self.variable_map, \
-                                        geography = self.geography,
+                                        self.geography,
                                         tz_name = 'from_geography');
         # Get weather data
         weather.collect_data(start_time, final_time);
@@ -224,7 +234,7 @@ class WeatherFromDF(TestCaseMPCPy):
         # Instantiate weather object
         weather = exodata.WeatherFromDF(self.df, \
                                         self.variable_map, \
-                                        geography = self.geography,
+                                        self.geography,
                                         tz_name = 'America/Los_Angeles');
         # Get weather data
         weather.collect_data(start_time, final_time);
@@ -243,13 +253,13 @@ class WeatherFromDF(TestCaseMPCPy):
         with self.assertRaises(TypeError):
             weather = exodata.WeatherFromDF(self.df, \
                                             self.variable_map, \
-                                            geography = self.geography);
+                                            self.geography);
         # Remove timezone
         self.df = self.df.tz_convert(None)
         # Instantiate weather object
         weather = exodata.WeatherFromDF(self.df, \
                                         self.variable_map, \
-                                        geography = self.geography);
+                                        self.geography);
         # Get weather data
         weather.collect_data(start_time, final_time);
         # Collect twice
