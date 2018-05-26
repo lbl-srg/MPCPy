@@ -964,8 +964,8 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         Path of csv file.
     variable_map : dictionary
         {"Column Header Name" : ("Weather Variable Name", mpcpy.Units.unit)}.
-    geography  : [numeric, numeric]
-                List of [Latitude, Longitude] in degrees
+    geography : [numeric, numeric]
+        List of [Latitude, Longitude] in degrees.
 
     Attributes
     ----------
@@ -1002,9 +1002,6 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         kwargs['geography'] = geography
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
-        # Assert geography
-        assert(bool(self.lat) == True);
-        assert(bool(self.lon) == True);
            
     def _collect_data(self, start_time, final_time):
         '''Collect data from csv file into data dictionary.
@@ -1028,8 +1025,8 @@ class WeatherFromDF(_Weather, utility._DAQ):
         DataFrame of data.  The index must be a datetime object.
     variable_map : dictionary
         {"Column Header Name" : ("Weather Variable Name", mpcpy.Units.unit)}.
-    geography  : [numeric, numeric]
-                List of [Latitude, Longitude] in degrees
+    geography : [numeric, numeric]
+        List of [Latitude, Longitude] in degrees.
 
     Attributes
     ----------
@@ -1064,9 +1061,6 @@ class WeatherFromDF(_Weather, utility._DAQ):
         kwargs['geography'] = geography
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
-        # Assert geography
-        assert(bool(self.lat) == True);
-        assert(bool(self.lon) == True);
         # Set time index from default or user-specified time header
         try:
             self._df = self._df.tz_localize(self.tz_name);   
