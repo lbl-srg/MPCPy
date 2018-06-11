@@ -370,6 +370,33 @@ class EnergyCostMin(_Problem):
         JModelica._write_control_mop(Optimization);
         JModelica._compile_transfer_problem();
         
+class EnergyPlusDemandCostMin(_Problem):
+    '''Minimize the integral of the objective variable multiplied by a 
+    time-varying weighting factor over the time horizon plus the maximum
+    of the objective variable over the time horizon.
+    
+    '''
+
+    def _optimize(self, Optimization, **kwargs):
+        '''Solve the energy cost plus demand minimization problem.
+        
+        '''
+
+        Optimization._package_type._energyplusdemandcostmin(Optimization, **kwargs);
+        
+    def _setup_jmodelica(self, JModelica, Optimization):
+        '''Setup the optimization problem for JModelica.
+        
+        '''
+        
+        JModelica.Model = Optimization.Model;
+        JModelica.objective = 'mpc_model.' + Optimization.objective_variable + '*pi_e';
+        JModelica.extra_inputs = {};
+        JModelica.extra_inputs['pi_e'] = [];
+        JModelica._initalize_mop();
+        JModelica._write_control_mop(Optimization, demand=True);
+        JModelica._compile_transfer_problem();
+        
 class _ParameterEstimate(_Problem):
     '''Minimize the error between simulated and measured data by adjusting 
     time-invariant parameters of the model.  
@@ -456,7 +483,20 @@ class JModelica(_Package, utility._FMU):
         self.other_inputs['pi_e'] = price_data['pi_e'];
         self._simulate_initial(Optimization);
         self._solve(Optimization);   
-        self._get_control_results(Optimization, **kwargs);                                      
+        self._get_control_results(Optimization, **kwargs);     
+
+    def _energyplusdemandcostmin(self, Optimization, **kwargs):
+        '''Perform the energy cost minimization.
+        
+        '''
+        
+        price_data = kwargs['price_data'];
+        self.other_inputs['pi_e'] = price_data['pi_e'];
+        # Set demand charge
+        self.opt_problem.set('pi_d', price_data['pi_d'].get_base_data().get_values()[0]);
+        self._simulate_initial(Optimization);
+        self._solve(Optimization);   
+        self._get_control_results(Optimization, **kwargs);                                    
         
     def _parameterestimate(self, Optimization, measurement_variable_list):
         '''Perform the parameter estimation.
@@ -512,18 +552,25 @@ class JModelica(_Package, utility._FMU):
         # Save the model path of the initialization and optimziation models
         self.mopmodelpath = self.Model.modelpath.split('.')[0] + '.' + self.Model.modelpath.split('.')[-1];
         
-    def _write_control_mop(self, Optimization):
+    def _write_control_mop(self, Optimization, demand=False):
         '''Complete the mop file for a control optimization problem.
         
         '''
 
         self.mopfile.write('\n');
-        self.mopfile.write('  optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (objective = (J(finalTime)), startTime=start_time, finalTime=final_time)\n');
+        if not demand:
+            self.mopfile.write('  optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (objective = (J(finalTime)), startTime=start_time, finalTime=final_time)\n');
+        else:
+            self.mopfile.write('  optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (objective = (J(finalTime) + z*pi_d), startTime=start_time, finalTime=final_time)\n');
         # Instantiate optimization model
         self.mopfile.write('    extends ' + self.Model.modelpath.split('.')[-1] + '_initialize;\n');
         # Add start time and final time parameter
         self.mopfile.write('    parameter Real start_time = 0;\n');
         self.mopfile.write('    parameter Real final_time = 86400;\n');
+        # If demand, add demand parameter
+        if demand:
+            self.mopfile.write('    parameter Real z(free=true)=1e8;\n');
+            self.mopfile.write('    parameter Real pi_d;\n');
         # Remove control variables from input_names for optimization    
         self.opt_input_names = [];
         for key in self._init_input_names:
@@ -555,7 +602,10 @@ class JModelica(_Package, utility._FMU):
                 elif field == 'Final':
                     self.mopfile.write('    mpc_model.' + key + '(finalTime)=' + str(Optimization.constraint_data[key][field].get_base_data()) + ';\n');
                 elif field == 'Cyclic':
-                    self.mopfile.write('    mpc_model.' + key + '(startTime)=mpc_model.' + key + '(finalTime);\n');                   
+                    self.mopfile.write('    mpc_model.' + key + '(startTime)=mpc_model.' + key + '(finalTime);\n');  
+        # Add demand contraint
+        if demand:
+            self.mopfile.write('    mpc_model.' + Optimization.objective_variable + ' <= ' + 'z' + ';\n');
         # End optimization portion of package.mop
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_optimize;\n');
         # End package.mop and save
