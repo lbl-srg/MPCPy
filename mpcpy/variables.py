@@ -374,6 +374,8 @@ class Static(_Variable):
             self.data = [self.display_unit._convert_to_base(float(x)) for x in data];
         elif isinstance(data, np.ndarray):
             self.data = np.array([self.display_unit._convert_to_base(float(x)) for x in data]);
+        elif type(data) is str:
+            raise TypeError('String data is not supported. Data must be numeric or list or numpy array of numerics.')
         else:
             self.data = self.display_unit._convert_to_base(data);
         
