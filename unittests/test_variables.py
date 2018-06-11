@@ -63,6 +63,12 @@ class Static(unittest.TestCase):
         for x in x_array:
             self.assertEqual(self.var_array.display_data()[i], x);
             i = i + 1;
+            
+    def test_set_data_string(self):
+        '''Test setting data that is a string returns as TypeError.'''
+        data = '25.0';
+        with self.assertRaises(TypeError):
+            var = variables.Static('var_data', data, units.degC);
         
 class Timeseries(unittest.TestCase):
     '''Tests for Timeseries class.
