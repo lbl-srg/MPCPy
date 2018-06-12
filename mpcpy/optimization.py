@@ -607,7 +607,6 @@ class JModelica(_Package, utility._FMU):
         self.internal_data = self.Model.internal_data;
         self.control_data = self.Model.control_data;
         if type(Optimization._problem_type) is _ParameterEstimate:
-            plt.figure(1)
             self.other_inputs = self.Model.other_inputs;
             self.opt_input_names = self._init_input_names;
             # Otherwise inputs set by write control mop
