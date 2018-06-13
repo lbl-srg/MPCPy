@@ -57,6 +57,7 @@ Occupancy Methods
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from matplotlib import pyplot as plt
+plt.switch_backend('agg')
 import pandas as pd
 import csv
 import logging
