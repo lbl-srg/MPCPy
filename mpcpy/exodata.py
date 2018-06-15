@@ -839,7 +839,7 @@ class WeatherFromEPW(_Weather):
         '''
         
         # Define column headers to read in from epw
-        header = ['Year', 'Month', 'Day', 'Hour', 'Second', 'Unknown', \
+        header = ['Year', 'Month', 'Day', 'Hour', 'Minute', 'Unknown', \
                   'Dry bulb temperature', 'Dew point temperature', \
                   'Relative humidity', 'Atmospheric station pressure', \
                   'Extraterrestrial horizontal radiation', 'Extraterrestrial direct normal radiation', \
