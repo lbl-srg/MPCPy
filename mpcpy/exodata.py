@@ -250,6 +250,7 @@ from pytz import exceptions as pytz_exceptions
 from mpcpy import units
 from mpcpy import variables
 import os
+from collections import Counter
      
 #%% Abstract source interface class
 class _Type(utility._mpcpyPandas):
@@ -482,7 +483,7 @@ class _Weather(_Type, utility._FMU):
         self.measurements = {};
         for key in self.process_variables:
             self.measurements[key] = {};
-            self.measurements[key]['Sample'] = variables.Static(key+'_Sample', 3600, units.s);
+            self.measurements[key]['Sample'] = variables.Static(key+'_Sample', self.sample_rate, units.s);
         # Simulate the fmu
         self._simulate_fmu();
         # Add process var data 
@@ -756,9 +757,17 @@ class WeatherFromEPW(_Weather):
     ----------
     epw_file_path : string
         Path of epw file.
-    standard_time : boolean
-        False to localize data timestamps to EPW file location.
+    standard_time : boolean, optional
         True to treat data timestamps in standard time.
+        False to localize data timestamps to EPW file location.
+        Default is False.
+    custom : boolean, optional
+        True if EPW file supplied is a custom EPW file that has a different
+        timestep or data range than the standard EPW files.  
+        It is assumed that data is in the format that the timestep takes on 
+        the "hour-ending" format, similar to a standard EPW file, such that 
+        hr 1 represents data from 00:00 to 01:00.  Therefore, to collect data
+        from hr 1, a start time of 00:00 should be used.
         Default is False.
 
     Attributes
@@ -776,13 +785,14 @@ class WeatherFromEPW(_Weather):
        
     '''
 
-    def __init__(self, epw_file_path, standard_time = False):
+    def __init__(self, epw_file_path, standard_time=False, custom=False):
         '''Constructor of epw weather exodata object.
 
         '''
 
         self.name = 'weather_from_epw';
         self.file_path = epw_file_path;
+        self.custom = custom;
         self._read_lat_lon_timZon_from_epw();
         # Treat standard time
         self.standard_time = standard_time;
@@ -847,26 +857,37 @@ class WeatherFromEPW(_Weather):
                   'Liquid precipitation quantity'];
         # Read in data
         df_epw = pd.read_csv(self.file_path, skiprows = 8, header = None, names=header);
-        # Convert time columns to timestamp and set as index                           
-        df_epw['Hour'] = df_epw['Hour'] - 1;
-        
-        df_epw['Time'] = str(self.start_time.year) + ' ' + df_epw['Month'].apply(str) + ' ' + df_epw['Day'].apply(str) + ' ' + df_epw['Hour'].apply(str) + ':00';
+        # Set time index
+        if not self.custom:
+            # If not custom EPW, change hours to 0:23 so can be read into pandas.
+            # This adjustment will be made up for when performing "data swap" 
+            # later to align with Modelica Buildings Library.
+            df_epw['Hour'] = df_epw['Hour'] - 1;
+        df_epw['Time'] = str(self.start_time.year) + ' ' + df_epw['Month'].apply(str).str.zfill(2) + ' ' + df_epw['Day'].apply(str).str.zfill(2) + ' ' + df_epw['Hour'].apply(str).str.zfill(2) + ':' + df_epw['Minute'].apply(str).str.zfill(2);
         time = pd.to_datetime(df_epw['Time'], format= '%Y %m %d %H:%M');
         df_epw.set_index(time, inplace=True);
+        # Adjust data as needed
+        if self.custom:
+            self.sample_rate = self._detect_sample_rate(df_epw);
+            df_epw.set_index(df_epw.index.shift(-self.sample_rate,freq='s'), inplace=True);
+        #  If not custom EPW, perform data swap for epw (see Buildings.BoundaryConditions.WeatherData.ReaderTMY3 info)
+        else:
+            self.sample_rate = 3600
+            df_epw_last_row = df_epw.head(1);
+            df_epw = df_epw_last_row.append(df_epw.iloc[:-1], ignore_index=False);
+            new_index = df_epw.index[0:1].append(df_epw.index[1:] + pd.DateOffset(hours=1));
+            df_epw.set_index(new_index, inplace=True);
+            df_epw.index.name = 'Time';
         # Remove unneeded columns
-        df_epw = df_epw.drop(['Time', 'Year', 'Month', 'Day', 'Hour', 'Second', 'Unknown'], axis = 1);
-        #  Perform data swap for epw (see Buildings.BoundaryConditions.WeatherData.ReaderTMY3 info)  
-        df_epw_last_row = df_epw.head(1);
-        df_epw = df_epw_last_row.append(df_epw.iloc[:-1], ignore_index=False);
-        new_index = df_epw.index[0:1].append(df_epw.index[1:] + pd.DateOffset(hours=1));
-        df_epw.set_index(new_index, inplace=True);
-        df_epw.index.name = 'Time';
+        df_epw = df_epw.drop(['Time', 'Year', 'Month', 'Day', 'Hour', 'Minute', 'Unknown'], axis = 1);
         # Treat daylight savings time
         if self.standard_time:
             df_epw = df_epw.tz_localize(self.tz_name);
         else:
+            # Try to localize
             try:
                 df_epw = df_epw.tz_localize(self.tz_name);
+            # Fix dst start if not successful
             except pytz_exceptions.NonExistentTimeError as time_nonexist:
                 time_nonexist = pd.to_datetime(time_nonexist.args[0])
                 if time_nonexist.month == 3:
@@ -874,8 +895,10 @@ class WeatherFromEPW(_Weather):
                     df_epw_dst = df_epw[df_epw.index >= time_nonexist];
                     df_epw_dst = df_epw_dst.shift(periods = 1, freq = 'H');
                     df_epw = pd.concat([df_epw_st, df_epw_dst], axis = 0);
+            # Try again
             try:
                 df_epw = df_epw.tz_localize(self.tz_name);
+            # Fix dst end if not successful
             except pytz_exceptions.AmbiguousTimeError as time_ambiguous:
                 time_ambiguous = pd.to_datetime(time_ambiguous.args[0].split("'")[1])
                 if time_ambiguous.month == 11:
@@ -885,6 +908,10 @@ class WeatherFromEPW(_Weather):
                     df_epw_amb_0 = df_epw_amb.iloc[0:1].tz_localize(self.tz_name, ambiguous = np.array([True]));
                     df_epw_amb_1 = df_epw_amb.iloc[1:2].shift(periods = -1, freq = 'H').tz_localize(self.tz_name, ambiguous = np.array([False]));
                     df_epw = pd.concat([df_epw_dst, df_epw_amb_0, df_epw_amb_1, df_epw_st], axis = 0);
+            # Already localized
+            except TypeError:
+                pass;
+                    
         #  Retrieve data (not all is retrieved)
         for key in header:
             # Convert to mpcpy standard
@@ -944,17 +971,53 @@ class WeatherFromEPW(_Weather):
             elif key == 'Zenith luminance':
                 varname = 'weaZLum';
                 self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.cd_m2, start_time = self.start_time, final_time = self.final_time);          
-        # Time shift the solar data back 30 minutes by linear interpolation (see Buildings.BoundaryConditions.WeatherData.ReaderTMY3 info)
-        for key in self.data.keys():
-            if key in ['weaHHorIR', 'weaHGloHor', 'weaHDirNor', 'weaHDifHor', \
-                     'weaIAveHor', 'weaIDirNor', 'weaIDifHor', 'weaZLum']:
-                ts_old = self.data[key].display_data();
-                ts = ts_old.resample('30T').interpolate(method='time');
-                ts = ts.shift(freq = '-30T');
-                ts = ts.resample(rule='H').first();
-                ts = ts.ix[1:].append(ts_old.tail(n=1));
-                self.data[key].set_data(ts);
-                     
+        # If not custom, time shift the solar data back 30 minutes by linear interpolation (see Buildings.BoundaryConditions.WeatherData.ReaderTMY3 info)
+        if not self.custom:
+            for key in self.data.keys():
+                if key in ['weaHHorIR', 'weaHGloHor', 'weaHDirNor', 'weaHDifHor', \
+                         'weaIAveHor', 'weaIDirNor', 'weaIDifHor', 'weaZLum']:
+                    ts_old = self.data[key].display_data();
+                    ts = ts_old.resample('30T').interpolate(method='time');
+                    ts = ts.shift(freq = '-30T');
+                    ts = ts.resample(rule='H').first();
+                    ts = ts.ix[1:].append(ts_old.tail(n=1));
+                    self.data[key].set_data(ts);
+                    
+    def _detect_sample_rate(self, df):
+        '''Detect the sample rate of the data.
+        
+        Parameters
+        ----------
+        df : pandas DataFrame
+            DataFrame containing data for which to detect the sample rate.
+            
+        Returns
+        -------
+        sample_rate : int
+            Sample rate in seconds.
+        
+        '''
+            
+        # Detect sample rate
+        time_diffs = [];
+        time_prev = df.index.values[0]
+        for time in df.index.values[1:]:
+            # Keep track of time intervals
+            time_diffs.append((time-time_prev).astype('timedelta64[s]').astype(int))
+            # Update previous time
+            time_prev = time;
+        # Get counts of each sample rate
+        counts = Counter(time_diffs);
+        # Check that only one exists for epw file
+        if (len(counts)) != 1:
+            raise ValueError('Inconsistent time interval detected. EPW files can only have one time inverval.');
+        else:
+            # Get the sample rate if only 1
+            sample_rate = Counter(time_diffs).most_common(1)[0][0];
+        
+        return sample_rate
+
+
 class WeatherFromCSV(_Weather, utility._DAQ):
     '''Collects weather data from a csv file.
 
