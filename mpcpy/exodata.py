@@ -866,13 +866,13 @@ class WeatherFromEPW(_Weather):
         df_epw['Time'] = str(self.start_time.year) + ' ' + df_epw['Month'].apply(str).str.zfill(2) + ' ' + df_epw['Day'].apply(str).str.zfill(2) + ' ' + df_epw['Hour'].apply(str).str.zfill(2) + ':' + df_epw['Minute'].apply(str).str.zfill(2);
         time = pd.to_datetime(df_epw['Time'], format= '%Y %m %d %H:%M');
         df_epw.set_index(time, inplace=True);
+        # Detect sample rate
+        self.sample_rate = self._detect_sample_rate(df_epw);
         # Adjust data as needed
         if self.custom:
-            self.sample_rate = self._detect_sample_rate(df_epw);
             df_epw.set_index(df_epw.index.shift(-self.sample_rate,freq='s'), inplace=True);
         #  If not custom EPW, perform data swap for epw (see Buildings.BoundaryConditions.WeatherData.ReaderTMY3 info)
         else:
-            self.sample_rate = 3600
             df_epw_last_row = df_epw.head(1);
             df_epw = df_epw_last_row.append(df_epw.iloc[:-1], ignore_index=False);
             new_index = df_epw.index[0:1].append(df_epw.index[1:] + pd.DateOffset(hours=1));
@@ -996,8 +996,8 @@ class WeatherFromEPW(_Weather):
         sample_rate : int
             Sample rate in seconds.
         
-        '''
-            
+        ''' 
+        
         # Detect sample rate
         time_diffs = [];
         time_prev = df.index.values[0]
@@ -1014,7 +1014,7 @@ class WeatherFromEPW(_Weather):
         else:
             # Get the sample rate if only 1
             sample_rate = Counter(time_diffs).most_common(1)[0][0];
-        
+
         return sample_rate
 
 
