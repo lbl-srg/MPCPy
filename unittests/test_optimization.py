@@ -423,6 +423,7 @@ class EnergyPlusDemand(TestCaseMPCPy):
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
         self.measurements['q_flow'] = {'Sample' : variables.Static('q_flow_sample', 1800, units.s)};
+        self.measurements['Tamb.y'] = {'Sample' : variables.Static('T_amb_sample', 1800, units.s)};
         # Gather constraints       
         constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
         constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
@@ -470,6 +471,7 @@ class EnergyPlusDemand(TestCaseMPCPy):
         self.check_df(df_test, 'optimize_energyplusdemandcost.csv');
         fig,ax = plt.subplots(2,1,sharex=True)
         ax[0].plot(df_test['T_db'])
+        ax[0].plot(df_test['Tamb.y'])
         ax[1].plot(df_test['q_flow'])
         plt.show()
         
