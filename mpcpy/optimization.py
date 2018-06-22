@@ -625,7 +625,7 @@ class JModelica(_Package, utility._FMU):
         # If demand, add demand parameter
         if demand_periods:
             for period in range(demand_periods):
-                self.mopfile.write('    parameter Real z_{0}(free=true)=1e8;\n'.format(period));
+                self.mopfile.write('    parameter Real z_{0}(free=true, min=0)=1e8;\n'.format(period));
                 self.mopfile.write('    parameter Real pi_d_{0};\n'.format(period));
         # Remove control variables from input_names for optimization    
         self.opt_input_names = [];
