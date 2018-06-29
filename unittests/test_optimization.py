@@ -77,7 +77,6 @@ class UpdateConstraintData(TestCaseMPCPy):
         self.constraints.collect_data('1/11/2017', '1/12/2017');
         opt_problem.constraint_data = self.constraints.data;
         self.controls.collect_data('1/11/2017', '1/12/2017');
-        model.control_data = self.controls.data
         # Solve optimization problem with updated constraints
         opt_problem.optimize('1/11/2017', '1/12/2017');
         # Check references
@@ -86,6 +85,11 @@ class UpdateConstraintData(TestCaseMPCPy):
         df_test = model.control_data['q_flow'].display_data().to_frame();
         df_test.index.name = 'Time'
         self.check_df(df_test, 'optimize_control_default_updated_constraints.csv');
+        # Check new constraint key raises error
+        self.constraints.data['New_Constraint'] = opt_problem.constraint_data['q_flow']
+        opt_problem.constraint_data = self.constraints.data
+        with self.assertRaises(ValueError):
+            opt_problem.optimize('1/11/2017', '1/12/2017');
 
         
 class OptimizeSimpleFromJModelica(TestCaseMPCPy):
