@@ -709,15 +709,23 @@ class JModelica(_Package, utility._FMU):
         
         '''
 
-        # Set Exogenous
+        # Update exogenous except constraints
         self.weather_data = self.Model.weather_data;
         self.internal_data = self.Model.internal_data;
         self.control_data = self.Model.control_data;
+        # Update constraints
         if type(Optimization._problem_type) is _ParameterEstimate:
-            plt.figure(1)
             self.other_inputs = self.Model.other_inputs;
             self.opt_input_names = self._init_input_names;
-            # Otherwise inputs set by write control mop
+        else:
+            for key in Optimization.constraint_data.keys():
+                for field in Optimization.constraint_data[key]:     
+                    if field != 'Cyclic' and field != 'Final' and field != 'Initial':
+                        key_new = key.replace('.', '_') + '_' + field;
+                        if key_new not in self.other_inputs.keys():
+                            raise ValueError ('New constraint {0} found. The optimization problem needs to be re-instantiated to use this constraint.'.format(key_new))
+                        else:
+                            self.other_inputs[key_new] = Optimization.constraint_data[key][field];
         # Set parameters
         self.parameter_data = {};
         for key in self.Model.parameter_data.keys():
@@ -768,7 +776,6 @@ class JModelica(_Package, utility._FMU):
         self.opt_problem.set('final_time', final_time);
         # Optimize
         self.res_opt = self.opt_problem.optimize(options=self.opt_options);
-        print(self.res_opt.get_solver_statistics());
         
     def _create_external_data(self, Optimization):   
         '''Define external data inputs to optimization problem.

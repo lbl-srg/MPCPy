@@ -478,6 +478,50 @@ class EnergyPlusDemand(TestCaseMPCPy):
         plt.show()
         
         
+    def test_update_constraints(self):
+        '''Test the updating of constraints in the optimization.
+        
+        '''
+        
+        modelpath = 'Simple.RC';        
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);                              
+        # Solve optimization problem with default constraints                   
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_measurements.csv');
+        df_test = model.control_data['q_flow'].display_data().to_frame();
+        df_test.index.name = 'Time'
+        self.check_df(df_test, 'optimize_control_default.csv');
+        # Update constraints and control data
+        self.constraints.collect_data('1/11/2017', '1/12/2017');
+        opt_problem.constraint_data = self.constraints.data;
+        self.controls.collect_data('1/11/2017', '1/12/2017');
+        # Solve optimization problem with updated constraints
+        opt_problem.optimize('1/11/2017', '1/12/2017');
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_measurements_updated_constraints.csv');
+        df_test = model.control_data['q_flow'].display_data().to_frame();
+        df_test.index.name = 'Time'
+        self.check_df(df_test, 'optimize_control_default_updated_constraints.csv');
+        # Check new constraint key raises error
+        self.constraints.data['New_Constraint'] = opt_problem.constraint_data['q_flow']
+        opt_problem.constraint_data = self.constraints.data
+        with self.assertRaises(ValueError):
+            opt_problem.optimize('1/11/2017', '1/12/2017');
+        
 #%% Temperature tests
 class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
     '''Tests for the optimization of a model using JModelica.
