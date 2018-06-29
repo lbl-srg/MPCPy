@@ -59,8 +59,10 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
         is translated into an optimization problem accoding to the problem_type
         to be solved in the specified package_type.  See specific documentation
         on available package types.
-    objective_variable : string
-        The name of the model variable to be used in the objective function.
+    objective_variable_map : dict()
+        The names of the model variables to be used in the objective function.
+        {'Power' : variable name,
+         'Penalty' : variable name}
     constraint_data : dictionary, optional
         ``exodata`` constraint object data attribute.
     constraint_data : int, required if problem_type includes demand.
@@ -71,14 +73,14 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
     ----------
     Model :  mpcpy.model object
         Model with which to perform the optimization.
-    objective_variable : string
+    objective_variable_map : string
         The name of the model variable to be used in the objective function.
     constraint_data : dictionary
         ``exodata`` constraint object data attribute. 
        
     '''
         
-    def __init__(self, Model, problem_type, package_type, objective_variable, **kwargs):    
+    def __init__(self, Model, problem_type, package_type, objective_variable_map, **kwargs):    
         '''Constructor of an optimization problem object.
         
         '''
@@ -94,7 +96,7 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
                 raise TypeError('Demand period needs to be an integer value.')
         else:
             self.demand_periods = 0;
-        self.objective_variable = objective_variable;
+        self.objective_variable_map = objective_variable_map;
         self._problem_type = problem_type();
         self._package_type = package_type(self);
         self.tz_name = Model.tz_name
@@ -347,7 +349,11 @@ class EnergyMin(_Problem):
         '''
         
         JModelica.Model = Optimization.Model;
-        JModelica.objective = 'mpc_model.' + Optimization.objective_variable;
+        if Optimization.objective_variable_map['Penalty']:
+            penalty = ' + mpc_model.{0}'.format(Optimization.objective_variable_map['Penalty'])
+        else:
+            penalty = ''
+        JModelica.objective = 'mpc_model.{0}{1}'.format(Optimization.objective_variable_map['Power'], penalty);
         JModelica.extra_inputs = {};
         JModelica._initalize_mop();
         JModelica._write_control_mop(Optimization);
@@ -372,7 +378,11 @@ class EnergyCostMin(_Problem):
         '''
         
         JModelica.Model = Optimization.Model;
-        JModelica.objective = 'mpc_model.' + Optimization.objective_variable + '*pi_e';
+        if Optimization.objective_variable_map['Penalty']:
+            penalty = ' + mpc_model.{0}'.format(Optimization.objective_variable_map['Penalty'])
+        else:
+            penalty = ''
+        JModelica.objective = 'mpc_model.{0}*pi_e{1}'.format(Optimization.objective_variable_map['Power'], penalty);
         JModelica.extra_inputs = {};
         JModelica.extra_inputs['pi_e'] = [];
         JModelica._initalize_mop();
@@ -399,7 +409,11 @@ class EnergyPlusDemandCostMin(_Problem):
         '''
         
         JModelica.Model = Optimization.Model;
-        JModelica.objective = 'mpc_model.' + Optimization.objective_variable + '*pi_e';
+        if Optimization.objective_variable_map['Penalty']:
+            penalty = ' + mpc_model.{0}'.format(Optimization.objective_variable_map['Penalty'])
+        else:
+            penalty = ''
+        JModelica.objective = 'mpc_model.{0}*pi_e{1}'.format(Optimization.objective_variable_map['Power'], penalty);
         JModelica.extra_inputs = {};
         JModelica.extra_inputs['pi_e'] = [];
         for period in range(Optimization.demand_periods):
@@ -662,7 +676,7 @@ class JModelica(_Package, utility._FMU):
         # Add demand contraint
         if demand_periods:
             for period in range(demand_periods):
-                self.mopfile.write('    mpc_model.' + Optimization.objective_variable + ' <= ' + 'z_{0} + z_hat_{0}'.format(period) + ';\n');
+                self.mopfile.write('    mpc_model.' + Optimization.objective_variable_map['Power'] + ' <= ' + 'z_{0} + z_hat_{0}'.format(period) + ';\n');
         # End optimization portion of package.mop
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_optimize;\n');
         # End package.mop and save
