@@ -473,6 +473,8 @@ class EnergyPlusDemand(TestCaseMPCPy):
         ax[0].plot(df_test['T_db'])
         ax[0].plot(df_test['Tamb.y'])
         ax[1].plot(df_test['q_flow'])
+        ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
+        ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
         plt.show()
         
         
