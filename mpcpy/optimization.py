@@ -669,7 +669,6 @@ class JModelica(_Package, utility._FMU):
         self.opt_problem.set('final_time', final_time);
         # Optimize
         self.res_opt = self.opt_problem.optimize(options=self.opt_options);
-        print(self.res_opt.get_solver_statistics());
         
     def _create_external_data(self, Optimization):   
         '''Define external data inputs to optimization problem.
