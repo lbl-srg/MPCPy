@@ -410,12 +410,13 @@ class EnergyPlusDemandCostMin(_Problem):
         
         JModelica.Model = Optimization.Model;
         if Optimization.objective_variable_map['Penalty']:
-            penalty = ' + mpc_model.{0}'.format(Optimization.objective_variable_map['Penalty'])
+            penalty = ' + mpc_model.{0}*pi_p'.format(Optimization.objective_variable_map['Penalty'])
         else:
             penalty = ''
         JModelica.objective = 'mpc_model.{0}*pi_e{1}'.format(Optimization.objective_variable_map['Power'], penalty);
         JModelica.extra_inputs = {};
         JModelica.extra_inputs['pi_e'] = [];
+        JModelica.extra_inputs['pi_p'] = [];
         for period in range(Optimization.demand_periods):
             JModelica.extra_inputs['z_hat_{0}'.format(period)] = [];
         JModelica._initalize_mop();
@@ -517,6 +518,7 @@ class JModelica(_Package, utility._FMU):
         
         price_data = kwargs['price_data'];
         self.other_inputs['pi_e'] = price_data['pi_e'];
+        self.other_inputs['pi_p'] = price_data['pi_p'];
         # Set demand charge
         # Detect when change
         df_pi_d = price_data['pi_d'].get_base_data().loc[Optimization.start_time_utc:Optimization.final_time_utc];
