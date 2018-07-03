@@ -96,6 +96,10 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
                 raise TypeError('Demand period needs to be an integer value.')
         else:
             self.demand_periods = 0;
+        if 'coincedent' in kwargs:
+            self.coincedent = kwargs['coincedent']
+        else:
+            self.coincedent = None
         self.objective_variable_map = objective_variable_map;
         self._problem_type = problem_type();
         self._package_type = package_type(self);
@@ -379,12 +383,13 @@ class EnergyCostMin(_Problem):
         
         JModelica.Model = Optimization.Model;
         if Optimization.objective_variable_map['Penalty']:
-            penalty = ' + mpc_model.{0}'.format(Optimization.objective_variable_map['Penalty'])
+            penalty = ' + mpc_model.{0}*pi_p'.format(Optimization.objective_variable_map['Penalty'])
         else:
             penalty = ''
         JModelica.objective = 'mpc_model.{0}*pi_e{1}'.format(Optimization.objective_variable_map['Power'], penalty);
         JModelica.extra_inputs = {};
         JModelica.extra_inputs['pi_e'] = [];
+        JModelica.extra_inputs['pi_p'] = [];
         JModelica._initalize_mop();
         JModelica._write_control_mop(Optimization);
         JModelica._compile_transfer_problem();
@@ -419,8 +424,10 @@ class EnergyPlusDemandCostMin(_Problem):
         JModelica.extra_inputs['pi_p'] = [];
         for period in range(Optimization.demand_periods):
             JModelica.extra_inputs['z_hat_{0}'.format(period)] = [];
+        if Optimization.coincedent:
+            JModelica.extra_inputs['z_hat_c'] = [];
         JModelica._initalize_mop();
-        JModelica._write_control_mop(Optimization, demand_periods=Optimization.demand_periods);
+        JModelica._write_control_mop(Optimization, demand_periods=Optimization.demand_periods, coincedent = Optimization.coincedent);
         JModelica._compile_transfer_problem();
         
 class _ParameterEstimate(_Problem):
@@ -507,6 +514,7 @@ class JModelica(_Package, utility._FMU):
         
         price_data = kwargs['price_data'];
         self.other_inputs['pi_e'] = price_data['pi_e'];
+        self.other_inputs['pi_p'] = price_data['pi_p'];        
         self._simulate_initial(Optimization);
         self._solve(Optimization);   
         self._get_control_results(Optimization, **kwargs);     
@@ -516,6 +524,7 @@ class JModelica(_Package, utility._FMU):
         
         '''
         
+        coincedent = Optimization.coincedent
         price_data = kwargs['price_data'];
         self.other_inputs['pi_e'] = price_data['pi_e'];
         self.other_inputs['pi_p'] = price_data['pi_p'];
@@ -558,9 +567,17 @@ class JModelica(_Package, utility._FMU):
             ts = pd.Series(index=index_new, data=data_new);
             unit = price_data['pi_d'].get_base_unit();
             var = variables.Timeseries('z_hat_{0}'.format(i), ts, unit);
-            print('Setting z_hat_{0} as \n{1}\nSetting pi_d_{0} as {2}'.format(i,var.get_base_data(), price_data['pi_d'].get_base_data().loc[time]))
             self.other_inputs['z_hat_{0}'.format(i)] = var;
             self.opt_problem.set('pi_d_{0}'.format(i), price_data['pi_d'].get_base_data().loc[time]);
+        if coincedent:
+            index_new = [Optimization.start_time_utc,
+                         Optimization.final_time_utc];
+            data_new = [0, 0];
+            ts = pd.Series(index=index_new, data=data_new);
+            unit = price_data['pi_d'].get_base_unit();
+            var = variables.Timeseries('z_hat_c'.format(i), ts, unit);
+            self.other_inputs['z_hat_c'.format(i)] = var;
+            self.opt_problem.set('pi_d_c'.format(i), coincedent[0]);
         self._simulate_initial(Optimization);
         self._solve(Optimization);   
         self._get_control_results(Optimization, **kwargs);                                    
@@ -619,7 +636,7 @@ class JModelica(_Package, utility._FMU):
         # Save the model path of the initialization and optimziation models
         self.mopmodelpath = self.Model.modelpath.split('.')[0] + '.' + self.Model.modelpath.split('.')[-1];
         
-    def _write_control_mop(self, Optimization, demand_periods=None):
+    def _write_control_mop(self, Optimization, demand_periods=None, coincedent=None):
         '''Complete the mop file for a control optimization problem.
         
         '''
@@ -632,6 +649,8 @@ class JModelica(_Package, utility._FMU):
                 self.mopfile.write('  optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (objective = (J(finalTime) + z_0*pi_d_0')
                 for period in range(demand_periods-1):
                     self.mopfile.write(' + z_{0}*pi_d_{0}'.format(period+1));
+                if coincedent:
+                    self.mopfile.write(' + z_c*pi_d_c')
                 self.mopfile.write('), startTime=start_time, finalTime=final_time)\n');
         # Instantiate optimization model
         self.mopfile.write('    extends ' + self.Model.modelpath.split('.')[-1] + '_initialize;\n');
@@ -643,6 +662,9 @@ class JModelica(_Package, utility._FMU):
             for period in range(demand_periods):
                 self.mopfile.write('    parameter Real z_{0}(free=true, min=0)=1e8;\n'.format(period));
                 self.mopfile.write('    parameter Real pi_d_{0};\n'.format(period));
+            if coincedent:
+                self.mopfile.write('    parameter Real z_c(free=true, min=0)=1e8;\n'.format(period));
+                self.mopfile.write('    parameter Real pi_d_c;\n'.format(period));
         # Remove control variables from input_names for optimization    
         self.opt_input_names = [];
         for key in self._init_input_names:
@@ -679,6 +701,8 @@ class JModelica(_Package, utility._FMU):
         if demand_periods:
             for period in range(demand_periods):
                 self.mopfile.write('    mpc_model.' + Optimization.objective_variable_map['Power'] + ' <= ' + 'z_{0} + z_hat_{0}'.format(period) + ';\n');
+            if coincedent:
+                self.mopfile.write('    mpc_model.' + Optimization.objective_variable_map['Power'] + ' <= ' + 'z_c + z_hat_c'.format(period) + ';\n');
         # End optimization portion of package.mop
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_optimize;\n');
         # End package.mop and save
