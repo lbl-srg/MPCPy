@@ -531,7 +531,7 @@ class EnergyPlusDemand(TestCaseMPCPy):
                                                 optimization.JModelica, \
                                                 {'Power':'q_flow','Penalty':None}, \
                                                 constraint_data = self.constraints.data,
-                                                demand_periods=2, coincedent=(0.01774,0));
+                                                demand_periods=3, coincedent=(0.01774,0));
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
         price_variable_map = {'energy' : ('pi_e', units.unit1),
@@ -553,6 +553,7 @@ class EnergyPlusDemand(TestCaseMPCPy):
         
         dat = (opt_problem._package_type.res_opt['z_0'],
                opt_problem._package_type.res_opt['z_1'],
+               opt_problem._package_type.res_opt['z_2'],
                opt_problem._package_type.res_opt['z_c'])
         print(dat)
         print(opt_problem.get_optimization_statistics())
