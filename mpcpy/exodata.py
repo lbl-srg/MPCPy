@@ -910,28 +910,28 @@ class WeatherFromEPW(_Weather):
                 self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.deg, start_time = self.start_time, final_time = self.final_time);
             elif key == 'Horizontal infrared radiation':
                 varname = 'weaHHorIR';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time + pd.Timedelta('1 hours'));
             elif key == 'Direct normal radiation':
                 varname = 'weaHDirNor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time); 
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time + pd.Timedelta('1 hours'));
             elif key == 'Global horizontal radiation':
                 varname = 'weaHGloHor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time + pd.Timedelta('1 hours'));
             elif key == 'Diffuse horizontal radiation':
                 varname = 'weaHDifHor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.W_m2, start_time = self.start_time, final_time = self.final_time + pd.Timedelta('1 hours'));
             elif key == 'Averaged global horizontal illuminance':
                 varname = 'weaIAveHor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time + pd.Timedelta('1 hours'));
             elif key == 'Direct normal illuminance':
                 varname = 'weaIDirNor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time + pd.Timedelta('1 hours'));
             elif key == 'Diffuse horizontal illuminance':
                 varname = 'weaIDifHor';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time);
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.lx, start_time = self.start_time, final_time = self.final_time + pd.Timedelta('1 hours'));
             elif key == 'Zenith luminance':
                 varname = 'weaZLum';
-                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.cd_m2, start_time = self.start_time, final_time = self.final_time);          
+                self.data[varname] = self._dataframe_to_mpcpy_ts_variable(df_epw, key, varname, units.cd_m2, start_time = self.start_time, final_time = self.final_time + pd.Timedelta('1 hours'));
         # Time shift the solar data back 30 minutes by linear interpolation (see Buildings.BoundaryConditions.WeatherData.ReaderTMY3 info)
         for key in self.data.keys():
             if key in ['weaHHorIR', 'weaHGloHor', 'weaHDirNor', 'weaHDifHor', \
@@ -940,7 +940,7 @@ class WeatherFromEPW(_Weather):
                 ts = ts_old.resample('30T').interpolate(method='time');
                 ts = ts.shift(freq = '-30T');
                 ts = ts.resample(rule='H').first();
-                ts = ts.ix[1:].append(ts_old.tail(n=1));
+                ts = ts.ix[1:];
                 self.data[key].set_data(ts);
                      
 class WeatherFromCSV(_Weather, utility._DAQ):
