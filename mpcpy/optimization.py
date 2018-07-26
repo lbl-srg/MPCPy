@@ -529,46 +529,27 @@ class JModelica(_Package, utility._FMU):
         self.other_inputs['pi_e'] = price_data['pi_e'];
         self.other_inputs['pi_p'] = price_data['pi_p'];
         # Set demand charge
+        ts_pi_d = price_data['pi_d'].get_base_data().loc[Optimization.start_time_utc:Optimization.final_time_utc];
+        ts_pi_d = ts_pi_d.resample('1T').fillna('pad')
         # Detect when change
-        df_pi_d = price_data['pi_d'].get_base_data().loc[Optimization.start_time_utc:Optimization.final_time_utc];
-        df_diff = df_pi_d.diff().fillna(1);
-        df_tau = df_diff[df_diff != 0];
-        if len(df_tau) != Optimization.demand_periods:
+        uni_val = ts_pi_d.unique()
+        if len(uni_val) != Optimization.demand_periods:
             raise ValueError('The demand charge price data does have the same number of demand charge periods as indicated by "demand_periods".');
+        # Fill values
+        df = ts_pi_d.to_frame()
         M = 1e9
-        dt = timedelta(minutes=1)
-        for i,time in enumerate(df_tau.index):
-            if len(df_tau.index) == 1:
-                index_new = [Optimization.start_time_utc,
-                             Optimization.final_time_utc];
-                data_new = [0, 0];   
-            elif (i == len(df_tau.index)-1):
-                index_new = [Optimization.start_time_utc,
-                             time-dt,
-                             time,
-                             Optimization.final_time_utc];
-                data_new = [M, M, 0, 0];
-            elif i == 0:
-                next_time = df_tau.index[i+1];
-                index_new = [time,
-                             next_time-dt,
-                             next_time,
-                             Optimization.final_time_utc];
-                data_new = [0,0,M,M];
-            else:
-                next_time = df_tau.index[i+1];
-                index_new = [Optimization.start_time_utc,
-                             time-dt,
-                             time,
-                             next_time-dt,
-                             next_time,
-                             Optimization.final_time_utc];
-                data_new = [M, M, 0, 0, M, M];
-            ts = pd.Series(index=index_new, data=data_new);
+        i = 0
+        print(uni_val)
+        for val in uni_val:  
+            period = 'period_{0}'.format(i)
+            df[period] = M
+            df[period] = df[period].mask(df['pi_d']==val,0)
+            ts = df[period]
             unit = price_data['pi_d'].get_base_unit();
             var = variables.Timeseries('z_hat_{0}'.format(i), ts, unit);
             self.other_inputs['z_hat_{0}'.format(i)] = var;
-            self.opt_problem.set('pi_d_{0}'.format(i), price_data['pi_d'].get_base_data().loc[time]);
+            self.opt_problem.set('pi_d_{0}'.format(i), val);
+            i = i + 1
         if coincedent:
             index_new = [Optimization.start_time_utc,
                          Optimization.final_time_utc];
