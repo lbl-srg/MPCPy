@@ -539,7 +539,6 @@ class JModelica(_Package, utility._FMU):
         df = ts_pi_d.to_frame()
         M = 1e9
         i = 0
-        print(uni_val)
         for val in uni_val:  
             period = 'period_{0}'.format(i)
             df[period] = M
