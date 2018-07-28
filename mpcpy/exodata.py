@@ -155,8 +155,10 @@ Price
 Price data represents price signals from utility or district energy systems 
 for things such as energy consumption, demand, or other services.  Price data 
 object variables are special because they are used for optimization objective 
-functions involving price signals.  Exogenous price data has the following 
-organization:
+functions involving price signals.  Prices are automatically resampled to 1 
+minute intervals in order to ensure that price changes take effect at the 
+appropriate time, as pricing schemes typically take on step-wise formation.
+Exogenous price data has the following organization:
 
 ``price.data = {"Price Variable Name" : mpcpy.Variables.Timeseries}``
 
@@ -743,7 +745,7 @@ class _Price(_Type):
         
         varname = self.variable_map[self._key][0];
         unit = self.variable_map[self._key][1];        
-        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
+        self.data[varname] = self._dataframe_to_mpcpy_ts_variable(self._df.resample('1T').fillna('pad'), self._key, varname, unit, \
                                                                  start_time=self.start_time, final_time=self.final_time, \
                                                                  cleaning_type = self._cleaning_type, \
                                                                  cleaning_args = self._cleaning_args);        

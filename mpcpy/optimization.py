@@ -530,7 +530,6 @@ class JModelica(_Package, utility._FMU):
         self.other_inputs['pi_p'] = price_data['pi_p'];
         # Set demand charge
         ts_pi_d = price_data['pi_d'].get_base_data().loc[Optimization.start_time_utc:Optimization.final_time_utc];
-        ts_pi_d = ts_pi_d.resample('1T').fillna('pad')
         # Detect when change
         uni_val = ts_pi_d.unique()
         if len(uni_val) != Optimization.demand_periods:
