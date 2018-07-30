@@ -536,7 +536,8 @@ class EnergyPlusDemand(TestCaseMPCPy):
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
         price_variable_map = {'energy' : ('pi_e', units.unit1),
                               'demand' : ('pi_d', units.unit1),
-                              'penalty' : ('pi_p', units.unit1)};
+                              'penalty' : ('pi_p', units.unit1),
+                              'peak_power' : ('P_est', units.unit1)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(start_time, final_time);
         opt_problem.optimize(start_time, final_time, price_data = price.data)
