@@ -96,10 +96,10 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
                 raise TypeError('Demand period needs to be an integer value.')
         else:
             self.demand_periods = 0;
-        if 'coincedent' in kwargs:
-            self.coincedent = kwargs['coincedent']
+        if 'coincident' in kwargs:
+            self.coincident = kwargs['coincident']
         else:
-            self.coincedent = None
+            self.coincident = None
         self.objective_variable_map = objective_variable_map;
         self._problem_type = problem_type();
         self._package_type = package_type(self);
@@ -424,10 +424,10 @@ class EnergyPlusDemandCostMin(_Problem):
         JModelica.extra_inputs['pi_p'] = [];
         for period in range(Optimization.demand_periods):
             JModelica.extra_inputs['z_hat_{0}'.format(period)] = [];
-        if Optimization.coincedent:
+        if Optimization.coincident:
             JModelica.extra_inputs['z_hat_c'] = [];
         JModelica._initalize_mop();
-        JModelica._write_control_mop(Optimization, demand_periods=Optimization.demand_periods, coincedent = Optimization.coincedent);
+        JModelica._write_control_mop(Optimization, demand_periods=Optimization.demand_periods, coincident = Optimization.coincident);
         JModelica._compile_transfer_problem();
         
 class _ParameterEstimate(_Problem):
@@ -525,7 +525,7 @@ class JModelica(_Package, utility._FMU):
         '''
 
         # Treat demand limiting
-        coincedent = Optimization.coincedent
+        coincident = Optimization.coincident
         price_data = kwargs['price_data'];
         self.other_inputs['pi_e'] = price_data['pi_e'];
         self.other_inputs['pi_p'] = price_data['pi_p'];
@@ -560,16 +560,16 @@ class JModelica(_Package, utility._FMU):
             self.opt_problem.set('pi_d_{0}'.format(i), val);
             # Increment to next demand period
             i = i + 1
-        if coincedent:
-            # Create demand limit for coincedent demand
+        if coincident:
+            # Create demand limit for coincident demand
             index_new = [Optimization.start_time_utc,
                          Optimization.final_time_utc];
-            data_new = [coincedent[1], coincedent[1]];
+            data_new = [coincident[1], coincident[1]];
             ts = pd.Series(index=index_new, data=data_new);
             unit = price_data['pi_d'].get_base_unit();
             var = variables.Timeseries('z_hat_c'.format(i), ts, unit);
             self.other_inputs['z_hat_c'.format(i)] = var;
-            self.opt_problem.set('pi_d_c'.format(i), coincedent[0]);
+            self.opt_problem.set('pi_d_c'.format(i), coincident[0]);
         print(df.resample('1H').mean())
         # Solve optimization problem
         self._simulate_initial(Optimization);
@@ -630,7 +630,7 @@ class JModelica(_Package, utility._FMU):
         # Save the model path of the initialization and optimziation models
         self.mopmodelpath = self.Model.modelpath.split('.')[0] + '.' + self.Model.modelpath.split('.')[-1];
         
-    def _write_control_mop(self, Optimization, demand_periods=None, coincedent=None):
+    def _write_control_mop(self, Optimization, demand_periods=None, coincident=None):
         '''Complete the mop file for a control optimization problem.
         
         '''
@@ -643,7 +643,7 @@ class JModelica(_Package, utility._FMU):
                 self.mopfile.write('  optimization ' + self.Model.modelpath.split('.')[-1] + '_optimize (objective = (J(finalTime) + z_0*pi_d_0')
                 for period in range(demand_periods-1):
                     self.mopfile.write(' + z_{0}*pi_d_{0}'.format(period+1));
-                if coincedent:
+                if coincident:
                     self.mopfile.write(' + z_c*pi_d_c')
                 self.mopfile.write('), startTime=start_time, finalTime=final_time)\n');
         # Instantiate optimization model
@@ -656,7 +656,7 @@ class JModelica(_Package, utility._FMU):
             for period in range(demand_periods):
                 self.mopfile.write('    parameter Real z_{0}(free=true, min=0)=1e8;\n'.format(period));
                 self.mopfile.write('    parameter Real pi_d_{0};\n'.format(period));
-            if coincedent:
+            if coincident:
                 self.mopfile.write('    parameter Real z_c(free=true, min=0)=1e8;\n'.format(period));
                 self.mopfile.write('    parameter Real pi_d_c;\n'.format(period));
         # Remove control variables from input_names for optimization    
@@ -695,7 +695,7 @@ class JModelica(_Package, utility._FMU):
         if demand_periods:
             for period in range(demand_periods):
                 self.mopfile.write('    mpc_model.' + Optimization.objective_variable_map['Power'] + ' <= ' + 'z_{0} + z_hat_{0}'.format(period) + ';\n');
-            if coincedent:
+            if coincident:
                 self.mopfile.write('    mpc_model.' + Optimization.objective_variable_map['Power'] + ' <= ' + 'z_c + z_hat_c'.format(period) + ';\n');
         # End optimization portion of package.mop
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_optimize;\n');

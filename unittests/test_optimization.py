@@ -531,7 +531,7 @@ class EnergyPlusDemand(TestCaseMPCPy):
                                                 optimization.JModelica, \
                                                 {'Power':'q_flow','Penalty':None}, \
                                                 constraint_data = self.constraints.data,
-                                                demand_periods=3, coincedent=(0.01774,0));
+                                                demand_periods=3, coincident=(0.01774,1050));
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
         price_variable_map = {'energy' : ('pi_e', units.unit1),
