@@ -537,22 +537,22 @@ class JModelica(_Package, utility._FMU):
         if len(uni_pi_d) != Optimization.demand_periods:
             raise ValueError('The demand charge price data does have the same number of demand charge periods as indicated by "demand_periods".');
         # Fill values
-        df = ts_pi_d.to_frame()
+        self.demand_df = ts_pi_d.to_frame()
         M = 1e9
         i = 0
         for val in uni_pi_d:
             # Mark period
             period = 'period_{0}'.format(i)
             # Get time of demand price
-            val_index = df.index[df['pi_d']==val].tolist()[0]
+            val_index = self.demand_df.index[self.demand_df['pi_d']==val].tolist()[0]
             # Get corresponding estimate of peak power
             P_est = ts_P_est.loc[val_index]
             # Define all periods with Big M
-            df[period] = M
+            self.demand_df[period] = M
             # Define periods with demand limit
-            df[period] = df[period].mask(df['pi_d']==val,P_est)
+            self.demand_df[period] = self.demand_df[period].mask(self.demand_df['pi_d']==val,P_est)
             # Create other_input variable for demand constraint
-            ts = df[period]
+            ts = self.demand_df[period]
             unit = price_data['pi_d'].get_base_unit();
             var = variables.Timeseries('z_hat_{0}'.format(i), ts, unit);
             self.other_inputs['z_hat_{0}'.format(i)] = var;
@@ -570,7 +570,6 @@ class JModelica(_Package, utility._FMU):
             var = variables.Timeseries('z_hat_c'.format(i), ts, unit);
             self.other_inputs['z_hat_c'.format(i)] = var;
             self.opt_problem.set('pi_d_c'.format(i), coincident[0]);
-        print(df.resample('1H').mean())
         # Solve optimization problem
         self._simulate_initial(Optimization);
         self._solve(Optimization);   

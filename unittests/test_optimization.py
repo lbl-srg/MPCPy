@@ -557,6 +557,7 @@ class EnergyPlusDemand(TestCaseMPCPy):
                opt_problem._package_type.res_opt['z_2'],
                opt_problem._package_type.res_opt['z_c'])
         print(dat)
+        print(opt_problem._package_type.demand_df.resample('1H').mean())
         print(opt_problem.get_optimization_statistics())
         
         
