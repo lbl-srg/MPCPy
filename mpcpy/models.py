@@ -846,6 +846,10 @@ class UKF(_Estimate, utility._FMU):
 class RMSE(_Validate):
     '''Validation method that computes the RMSE between estimated and measured data.
     
+    Only modeled values with measurements corresponding to the same time
+    are considered in the calculation of RMSE.  If a measurement is 
+    detected as missing, a warning is printed.
+    
     Yields
     ------
     RMSE : dictionary
@@ -880,7 +884,7 @@ class RMSE(_Validate):
                     summed = summed + diff;
                     length = length + 1;
                 except KeyError:
-                    print('WARNING: Time {0} missing in measured data.'.format(t));
+                    print('WARNING: Time {0} missing in measured data.  Model value at time is {1}.'.format(t,data_est.loc[t]));
             RMSE = np.sqrt(summed/length);
             unit_class = Model.measurements[key]['Measured'].get_base_unit();
             Model.RMSE[key] = variables.Static('RMSE_'+key, RMSE, unit_class);
