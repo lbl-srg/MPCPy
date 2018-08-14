@@ -462,10 +462,6 @@ class _Weather(_Type, utility._FMU):
         
         '''
         
-        # Set file_path for fmu
-        weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
-        fmuname = 'WeatherProcessor_JModelica_v2.fmu';
-        self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
         # Set parameters for fmu
         self.parameter_data = {};
         self.parameter_data['lat'] = {};
@@ -756,6 +752,10 @@ class WeatherFromEPW(_Weather):
     ----------
     epw_file_path : string
         Path of epw file.
+    standard_time : boolean
+        False to localize data timestamps to EPW file location.
+        True to treat data timestamps in standard time.
+        Default is False.
 
     Attributes
     ----------
@@ -772,7 +772,7 @@ class WeatherFromEPW(_Weather):
        
     '''
 
-    def __init__(self, epw_file_path):
+    def __init__(self, epw_file_path, standard_time = False):
         '''Constructor of epw weather exodata object.
 
         '''
@@ -780,9 +780,19 @@ class WeatherFromEPW(_Weather):
         self.name = 'weather_from_epw';
         self.file_path = epw_file_path;
         self._read_lat_lon_timZon_from_epw();
-        self.tz = tzwhere.tzwhere();
-        self.tz_name = self.tz.tzNameAt(self.lat.display_data(), self.lon.display_data());        
+        # Treat standard time
+        self.standard_time = standard_time;
+        if self.standard_time:
+            self.tz_name = 'utc';
+        else:
+            self.tz = tzwhere.tzwhere();
+            self.tz_name = self.tz.tzNameAt(self.lat.display_data(), self.lon.display_data());        
         self.data = {};
+        # Set file_path for process fmu
+        weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
+        fmuname = 'WeatherProcessor_JModelica_v2.fmu';
+        self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
+        # Define process variables
         self.process_variables = ['weaTBlaSky', \
                                   'weaTWetBul', \
                                   'weaHDifHor', \
@@ -853,26 +863,29 @@ class WeatherFromEPW(_Weather):
         df_epw.set_index(new_index, inplace=True);
         df_epw.index.name = 'Time';
         # Treat daylight savings time
-        try:
+        if self.standard_time:
             df_epw = df_epw.tz_localize(self.tz_name);
-        except pytz_exceptions.NonExistentTimeError as time_nonexist:
-            time_nonexist = pd.to_datetime(time_nonexist.args[0])
-            if time_nonexist.month == 3:
-                df_epw_st = df_epw[df_epw.index < time_nonexist];
-                df_epw_dst = df_epw[df_epw.index >= time_nonexist];
-                df_epw_dst = df_epw_dst.shift(periods = 1, freq = 'H');
-                df_epw = pd.concat([df_epw_st, df_epw_dst], axis = 0);
-        try:
-            df_epw = df_epw.tz_localize(self.tz_name);
-        except pytz_exceptions.AmbiguousTimeError as time_ambiguous:
-            time_ambiguous = pd.to_datetime(time_ambiguous.args[0].split("'")[1])
-            if time_ambiguous.month == 11:
-                df_epw_dst = df_epw[df_epw.index < time_ambiguous].tz_localize(self.tz_name);
-                df_epw_st = df_epw[(df_epw.index > time_ambiguous + relativedelta(hours = 1))].shift(periods = -1, freq = 'H').tz_localize(self.tz_name);
-                df_epw_amb = df_epw[(df_epw.index >= time_ambiguous) & (df_epw.index <= time_ambiguous + relativedelta(hours = 1))];
-                df_epw_amb_0 = df_epw_amb.iloc[0:1].tz_localize(self.tz_name, ambiguous = np.array([True]));
-                df_epw_amb_1 = df_epw_amb.iloc[1:2].shift(periods = -1, freq = 'H').tz_localize(self.tz_name, ambiguous = np.array([False]));
-                df_epw = pd.concat([df_epw_dst, df_epw_amb_0, df_epw_amb_1, df_epw_st], axis = 0);
+        else:
+            try:
+                df_epw = df_epw.tz_localize(self.tz_name);
+            except pytz_exceptions.NonExistentTimeError as time_nonexist:
+                time_nonexist = pd.to_datetime(time_nonexist.args[0])
+                if time_nonexist.month == 3:
+                    df_epw_st = df_epw[df_epw.index < time_nonexist];
+                    df_epw_dst = df_epw[df_epw.index >= time_nonexist];
+                    df_epw_dst = df_epw_dst.shift(periods = 1, freq = 'H');
+                    df_epw = pd.concat([df_epw_st, df_epw_dst], axis = 0);
+            try:
+                df_epw = df_epw.tz_localize(self.tz_name);
+            except pytz_exceptions.AmbiguousTimeError as time_ambiguous:
+                time_ambiguous = pd.to_datetime(time_ambiguous.args[0].split("'")[1])
+                if time_ambiguous.month == 11:
+                    df_epw_dst = df_epw[df_epw.index < time_ambiguous].tz_localize(self.tz_name);
+                    df_epw_st = df_epw[(df_epw.index > time_ambiguous + relativedelta(hours = 1))].shift(periods = -1, freq = 'H').tz_localize(self.tz_name);
+                    df_epw_amb = df_epw[(df_epw.index >= time_ambiguous) & (df_epw.index <= time_ambiguous + relativedelta(hours = 1))];
+                    df_epw_amb_0 = df_epw_amb.iloc[0:1].tz_localize(self.tz_name, ambiguous = np.array([True]));
+                    df_epw_amb_1 = df_epw_amb.iloc[1:2].shift(periods = -1, freq = 'H').tz_localize(self.tz_name, ambiguous = np.array([False]));
+                    df_epw = pd.concat([df_epw_dst, df_epw_amb_0, df_epw_amb_1, df_epw_st], axis = 0);
         #  Retrieve data (not all is retrieved)
         for key in header:
             # Convert to mpcpy standard
@@ -952,6 +965,8 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         Path of csv file.
     variable_map : dictionary
         {"Column Header Name" : ("Weather Variable Name", mpcpy.Units.unit)}.
+    geography : [numeric, numeric]
+        List of [Latitude, Longitude] in degrees.
 
     Attributes
     ----------
@@ -962,13 +977,13 @@ class WeatherFromCSV(_Weather, utility._DAQ):
     lon : numeric
         Longitude in degrees.
     tz_name : string
-        Timezone name.  
+        Timezone name.
     file_path : string
         Path of csv file.        
 
     '''
     
-    def __init__(self, csv_file_path, variable_map, **kwargs):
+    def __init__(self, csv_file_path, variable_map, geography, **kwargs):
         '''Constructor of csv weather exodata object.
         
         '''
@@ -977,18 +992,22 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         self.file_path = csv_file_path;  
         self.data = {};   
         # Dictionary of format {'csvHeader' : ('weaVarName', mpcpyUnit)}
-        self.variable_map = variable_map;          
+        self.variable_map = variable_map;
+        self.geography = geography;
         # Process Variables
         if 'process_variables' in kwargs:
+            # Set file_path for process fmu
+            weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
+            fmuname = 'WeatherProcessor_JModelica_v2.fmu';
+            self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
+            # Set process variables
             self.process_variables = kwargs['process_variables'];
         else:
             self.process_variables = None;
         # Common kwargs
+        kwargs['geography'] = geography
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
-        # Assert geography
-        assert(bool(self.lat) == True);
-        assert(bool(self.lon) == True);
            
     def _collect_data(self, start_time, final_time):
         '''Collect data from csv file into data dictionary.
@@ -1012,6 +1031,8 @@ class WeatherFromDF(_Weather, utility._DAQ):
         DataFrame of data.  The index must be a datetime object.
     variable_map : dictionary
         {"Column Header Name" : ("Weather Variable Name", mpcpy.Units.unit)}.
+    geography : [numeric, numeric]
+        List of [Latitude, Longitude] in degrees.
 
     Attributes
     ----------
@@ -1026,7 +1047,7 @@ class WeatherFromDF(_Weather, utility._DAQ):
 
     '''
     
-    def __init__(self, df, variable_map, **kwargs):
+    def __init__(self, df, variable_map, geography, **kwargs):
         '''Constructor of DataFrame weather exodata object.
         
         '''
@@ -1035,18 +1056,22 @@ class WeatherFromDF(_Weather, utility._DAQ):
         self._df = df;  
         self.data = {};   
         # Dictionary of format {'dfHeader' : ('weaVarName', mpcpyUnit)}
-        self.variable_map = variable_map;          
+        self.variable_map = variable_map;
+        self.geography = geography
         # Process Variables
         if 'process_variables' in kwargs:
+            # Set file_path for process fmu
+            weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
+            fmuname = 'WeatherProcessor_JModelica_v2.fmu';
+            self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
+            # Set process variables
             self.process_variables = kwargs['process_variables'];
         else:
             self.process_variables = None;
         # Common kwargs
+        kwargs['geography'] = geography
         self._parse_daq_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
-        # Assert geography
-        assert(bool(self.lat) == True);
-        assert(bool(self.lon) == True);
         # Set time index from default or user-specified time header
         try:
             self._df = self._df.tz_localize(self.tz_name);   

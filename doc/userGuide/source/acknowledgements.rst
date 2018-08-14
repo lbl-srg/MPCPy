@@ -10,4 +10,5 @@ Thank you to all who have provided guidance on the development of this program. 
 - Krzysztof Arendt, University of Southern Denmark
 - David H. Blum, Lawrence Berkeley National Laboratory
 - Ruoxi Jia, University of California, Berkeley
+- Lisa Rivalin, Engie Axima
 - Michael Wetter, Lawrence Berkeley National Laboratory
