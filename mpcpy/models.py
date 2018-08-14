@@ -880,7 +880,7 @@ class RMSE(_Validate):
                     summed = summed + diff;
                     length = length + 1;
                 except KeyError:
-                    print('Time {0} missing in measured data.'.format(t));
+                    print('WARNING: Time {0} missing in measured data.'.format(t));
             RMSE = np.sqrt(summed/length);
             unit_class = Model.measurements[key]['Measured'].get_base_unit();
             Model.RMSE[key] = variables.Static('RMSE_'+key, RMSE, unit_class);
