@@ -53,6 +53,8 @@ Classes
 
 .. autoclass:: mpcpy.systems.RealFromCSV
     :members: collect_measurements, display_measurements, get_base_measurements
+.. autoclass:: mpcpy.systems.RealFromDF
+    :members: collect_measurements, display_measurements, get_base_measurements
 
 """
 
