@@ -339,6 +339,34 @@ class RealfromCSV(TestCaseMPCPy):
         df_test = self.building.get_base_measurements('Measured');
         self.check_df(df_test, 'collect_measurements_base.csv');
         
+class RealfromDF(TestCaseMPCPy):
+    #%% DF
+    def setUp(self):
+        # Setup building measurement collection from df
+        self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'building', 'OccData.csv'));
+        time = pd.to_datetime(self.df['Date']);
+        self.df.set_index(time, inplace=True);         
+        # Measurements
+        self.measurements = {};
+        self.measurements['occupancy'] = {'Sample' : variables.Static('occupancy_sample', 300, units.s)};
+        self.measurement_variable_map = {'Total People Count for the whole building (+)' : ('occupancy', units.unit1)};                        
+        # Instantiate building measurement source
+        self.building = systems.RealFromDF(self.df,
+                                           self.measurements, 
+                                           self.measurement_variable_map);
+                                            
+    def test_collect_measurements(self):
+        # Simulation time
+        start_time = '2/1/2013';
+        final_time = '2/20/2013 23:55';
+        # Get training measurement data
+        self.building.collect_measurements(start_time, final_time);
+        # Check references
+        df_test = self.building.display_measurements('Measured');
+        self.check_df(df_test, 'collect_measurements_display.csv');
+        df_test = self.building.get_base_measurements('Measured');
+        self.check_df(df_test, 'collect_measurements_base.csv');
+        
 #%% Main        
 if __name__ == '__main__':
     unittest.main()
