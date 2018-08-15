@@ -141,6 +141,18 @@ class _Real(_System):
 
         self._set_time_interval(start_time, final_time);
         self._collect_data();
+
+    def _translate_variable_map(self):
+        '''Translate csv column to measurement dictionary.
+        
+        '''
+
+        varname = self.variable_map[self._key][0];
+        unit = self.variable_map[self._key][1];
+        self.measurements[varname]['Measured'] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
+                                                                                      start_time=self.start_time, final_time=self.final_time, \
+                                                                                      cleaning_type = self._cleaning_type, \
+                                                                                      cleaning_args = self._cleaning_args);
         
 #%% Source implementations
 class EmulationFromFMU(_Emulation, utility._FMU):
@@ -239,7 +251,7 @@ class RealFromCSV(_Real, utility._DAQ):
     '''
 
     def __init__(self, csv_file_path, measurements, variable_map, **kwargs):
-        '''Constructor of a system fmu simulation source.
+        '''Constructor of a system csv source.
         
         '''
 
@@ -255,16 +267,58 @@ class RealFromCSV(_Real, utility._DAQ):
         
         '''
 
-        self._read_timeseries_from_csv();
+        self._read_timeseries_from_csv();            
+                                                                                      
+class RealFromDF(_Real, utility._DAQ):
+    '''System measured data located in DataFrame.
 
-    def _translate_variable_map(self):
-        '''Translate csv column to measurement dictionary.
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        DataFrame of data.  The index must be a datetime object.
+    measurements : dictionary
+        {"Measurement Name" : {"Sample" : mpcpy.Variables.Static}}.
+    variable_map : dictionary
+        {"Column Header Name" : ("Measurement Variable Name", mpcpy.Units.unit)}.
+    tz_name : string, optional
+        Name of timezone according to the package ``tzwhere``.  If 
+        ``'from_geography'``, then geography kwarg is required.
+    geography : list or tuple, optional
+        List or tuple with (latitude, longitude) in degrees. 
+
+    Attributes
+    ----------
+    measurements : dictionary
+        {"Measurement Variable Name" : {{"Measurement Key_" : mpcpy.Variables.Timeseries/Static}}.
+    df : pandas DataFrame object
+        DataFrame of data.
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
+
+    '''
+
+    def __init__(self, df, measurements, variable_map, **kwargs):
+        '''Constructor of a system df source.
         
         '''
 
-        varname = self.variable_map[self._key][0];
-        unit = self.variable_map[self._key][1];
-        self.measurements[varname]['Measured'] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
-                                                                                      start_time=self.start_time, final_time=self.final_time, \
-                                                                                      cleaning_type = self._cleaning_type, \
-                                                                                      cleaning_args = self._cleaning_args);             
+        self.name = 'real_from_df';
+        self._df = df;
+        self.measurements = measurements; 
+        self.variable_map = variable_map;
+        self._parse_daq_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);   
+        # Set time index from default or user-specified time header
+        try:
+            self._df = self._df.tz_localize(self.tz_name);   
+        except TypeError:
+            raise TypeError('Problem with dataframe index.  Check that it is a datetime index and is not already tz aware.')          
+                   
+    def _collect_data(self):
+        '''Collect data from df into measurement dictionary.
+        
+        '''
+
+        self._read_timeseries_from_df();
