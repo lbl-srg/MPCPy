@@ -52,3 +52,4 @@ doc/userGuide/build
 # mop files in resources
 #########################
 resources/model/*.mop
+unittests/resources/model/*.mop
