@@ -185,7 +185,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
         
-    def estimate(self, start_time, final_time, measurement_variable_list, global_start=0):
+    def estimate(self, start_time, final_time, measurement_variable_list):
         '''Estimate the parameters of the model.
         
         The estimation of the parameters is based on the data in the 
@@ -203,15 +203,6 @@ class Modelica(_Model, utility._FMU, utility._Building):
             List of strings defining for which variables defined in the 
             measurements dictionary attirubute the estimation will 
             try to minimize the error.
-        global_start : int, optional
-            Number of iterations of a global start algorithm where multiple
-            estimations are preformed with different initial guesses within
-            the ranges of each free parameter provided.  The algorithm
-            uses latin hypercube sampling to choose the initial parameter
-            guess values for each iteration.
-            If 0, the global start algorithm is disabled and the values in
-            the parameter_data dictionary are used as initial guesses.
-            Default is 0.
 
         Yields
         ------
