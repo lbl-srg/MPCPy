@@ -74,6 +74,7 @@ from occupant.occupancy.queueing.parameter_inference_given_segments import param
 from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
+import pyDOE as doe
 
 #%% Model Class
 class _Model(utility._mpcpyPandas, utility._Measurements):
@@ -185,7 +186,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
         
-    def estimate(self, start_time, final_time, measurement_variable_list):
+    def estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=0):
         '''Estimate the parameters of the model.
         
         The estimation of the parameters is based on the data in the 
@@ -203,6 +204,19 @@ class Modelica(_Model, utility._FMU, utility._Building):
             List of strings defining for which variables defined in the 
             measurements dictionary attirubute the estimation will 
             try to minimize the error.
+        global_start : int, optional
+            Number of iterations of a global start algorithm where multiple
+            estimations are preformed with different initial guesses within
+            the ranges of each free parameter provided.  The algorithm
+            uses latin hypercube sampling to choose the initial parameter
+            guess values for each iteration.
+            If 0, the global start algorithm is disabled and the values in
+            the parameter_data dictionary are used as initial guesses.
+            Default is 0.
+        seed : numeric, optional
+            Seed of the global start algorithm for the random selection
+            of initial value guesses.
+            Default is 0.
 
         Yields
         ------
@@ -228,7 +242,63 @@ class Modelica(_Model, utility._FMU, utility._Building):
         # Perform parameter estimation
         self._set_time_interval(start_time, final_time);
         self.measurement_variable_list = measurement_variable_list;
-        self._estimate_method._estimate(self);
+        # Without global start
+        if not global_start:
+            self._estimate_method._estimate(self);
+        # With global start
+        else:
+            # Detect free parameters
+            free_pars = [];
+            for par in self.parameter_data.keys():
+                if self.parameter_data[par]['Free'].display_data():
+                    free_pars.append(par)
+            # Create lhs sample for all parameters
+            np.random.seed(seed)  # Random seed for LHS initialization
+            n_free_pars = len(free_pars);
+            lhs = doe.lhs(n_free_pars, samples=global_start, criterion='c');
+            # Scale and store lhs samples for parameters between min and max bounds
+            par_vals = {};
+            for par, i in zip(free_pars, range(n_free_pars)):
+                par_min = self.parameter_data[par]['Minimum'].display_data();
+                par_max = self.parameter_data[par]['Maximum'].display_data();                                
+                par_vals[par] = lhs[:,i]*(par_max-par_min)+par_min;
+            print(par_vals)
+            # Estimate for each lhs sample
+            J = float('inf');
+            par_best = {};
+            df_par = pd.DataFrame()
+            self.all_est = pd.DataFrame(columns=free_pars + ['error'])
+            for i in range(global_start):
+                # Set lhs sample values for each parameter
+                for par in par_vals.keys():
+                    self.parameter_data[par]['Value'].set_data(par_vals[par][i]);
+                    # Save for initial_guess
+                    df_par.loc[i, par] = par_vals[par][i]
+                self._estimate_method._estimate(self);
+                self.validate(start_time, final_time, 'validate', plot = 0);
+                # Save RMSE for initial_guess
+                df_par.loc[i,'error'] = 0
+                for key in self.RMSE:
+                    df_par.loc[i,'error'] = df_par.loc[i,'error'] + self.RMSE[key].display_data();
+                # Compare objective, if less, save best par values
+                J_curr = self._estimate_method.opt_problem.get_optimization_statistics()[2]
+                if J_curr < J:
+                    J = J_curr;
+                    for par in free_pars:
+                        par_best[par] = self.parameter_data[par]['Value'].display_data();
+                # Save for all estimates
+                current_est = {}
+                for par in free_pars:
+                    current_est[par] = self.parameter_data[par]['Value'].display_data()
+                current_est['error'] = 0
+                for key in self.RMSE:
+                    current_est['error'] = current_est['error'] + self.RMSE[key].display_data();
+                self.all_est.loc[i] = current_est
+            # Set best parameters in model
+            for par in par_vals.keys():
+                self.parameter_data[par]['Value'].set_data(par_best[par]);
+        
+        
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
         '''Validate the estimated parameters of the model.
