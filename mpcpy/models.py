@@ -266,7 +266,6 @@ class Modelica(_Model, utility._FMU, utility._Building):
                 par_min = self.parameter_data[par]['Minimum'].display_data();
                 par_max = self.parameter_data[par]['Maximum'].display_data();                                
                 par_vals[par] = lhs[:,i]*(par_max-par_min)+par_min;
-            print(par_vals)
             # Estimate for each lhs sample
             J = float('inf');
             par_best = {};
