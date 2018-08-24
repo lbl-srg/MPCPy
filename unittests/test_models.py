@@ -132,6 +132,29 @@ class SimpleRC(TestCaseMPCPy):
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
             self.model_no_params.estimate(self.start_time, self.final_time, []);
+            
+    def test_estimate_error_nomeasurements(self):
+        '''Test error raised if measurement_variable_list not in measurements dictionary.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';
+        # Set parameters
+        parameter_data = {};
+        parameter_data['C'] = {};
+        parameter_data['C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
+        parameter_data['C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
+        parameter_data['C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
+        parameter_data['C']['Free'] = variables.Static('C_Free', True, units.boolean);
+        # Instantiate model
+        self.model_no_meas = models.Modelica(models.JModelica, \
+                                               models.RMSE, \
+                                               self.measurements, \
+                                               moinfo = (mopath, modelpath, {}), \
+                                               parameter_data = parameter_data);
+        # Check error raised with no free parameters
+        with self.assertRaises(ValueError):
+            self.model_no_meas.estimate(self.start_time, self.final_time, ['wrong_meas']);
+
 
 #%%    
 class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
