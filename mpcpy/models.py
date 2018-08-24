@@ -236,6 +236,10 @@ class Modelica(_Model, utility._FMU, utility._Building):
         if not free:
             # If none free raise error
             raise ValueError('No parameters set as "Free" in parameter_data dictionary. Cannot run parameter estimation.');
+        # Check for measurements
+        for meas in measurement_variable_list:
+            if meas not in self.measurements.keys():
+                raise ValueError('Measurement {0} defined in measurement_variable_list not defined in measurements dictionary.'.format(meas))
         # Check for continue
         if start_time == 'continue':
             raise ValueError('"continue" is not a valid entry for start_time for parameter estimation problems.')
