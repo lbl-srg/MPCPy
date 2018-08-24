@@ -344,7 +344,9 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
+        self.check_df(df_test, 'estimate_RMSE_global_start.csv', timeseries=False);
+        df_test = self.model.all_est
+        self.check_df(df_test, 'estimate_allest_global_start.csv', timeseries=False);
         # Instantiate validate building
         self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
                                             self.measurements, 
@@ -361,7 +363,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
+        self.check_df(df_test, 'validate_RMSE_global_start.csv', timeseries=False);
         
 class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
     '''Test emulation-based parameter estimation of a model using JModelica.
