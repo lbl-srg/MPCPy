@@ -334,7 +334,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         df_test = self.model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_initial_parameters.csv');
         # Estimate model based on emulated data
-        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=10);
+        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0);
         # Validate model based on estimation data
         self.model.validate(self.start_time_estimation, self.final_time_estimation, \
                             os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation_csv'), plot=0)

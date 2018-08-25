@@ -186,7 +186,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
         
-    def estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=0):
+    def estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=None):
         '''Estimate the parameters of the model.
         
         The estimation of the parameters is based on the data in the 
@@ -213,10 +213,10 @@ class Modelica(_Model, utility._FMU, utility._Building):
             If 0, the global start algorithm is disabled and the values in
             the parameter_data dictionary are used as initial guesses.
             Default is 0.
-        seed : numeric, optional
-            Seed of the global start algorithm for the random selection
+        seed : numeric or None, optional
+            Specific seed of the global start algorithm for the random selection
             of initial value guesses.
-            Default is 0.
+            Default is None.
 
         Yields
         ------
