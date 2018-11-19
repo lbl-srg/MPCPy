@@ -464,10 +464,6 @@ class _Weather(_Type, utility._FMU):
         
         '''
         
-        # Set file_path for fmu
-        weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
-        fmuname = 'WeatherProcessor_JModelica_v2.fmu';
-        self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
         # Set parameters for fmu
         self.parameter_data = {};
         self.parameter_data['lat'] = {};
@@ -794,6 +790,11 @@ class WeatherFromEPW(_Weather):
             self.tz = tzwhere.tzwhere();
             self.tz_name = self.tz.tzNameAt(self.lat.display_data(), self.lon.display_data());        
         self.data = {};
+        # Set file_path for process fmu
+        weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
+        fmuname = 'WeatherProcessor_JModelica_v2.fmu';
+        self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
+        # Define process variables
         self.process_variables = ['weaTBlaSky', \
                                   'weaTWetBul', \
                                   'weaHDifHor', \
@@ -997,6 +998,11 @@ class WeatherFromCSV(_Weather, utility._DAQ):
         self.geography = geography;
         # Process Variables
         if 'process_variables' in kwargs:
+            # Set file_path for process fmu
+            weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
+            fmuname = 'WeatherProcessor_JModelica_v2.fmu';
+            self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
+            # Set process variables
             self.process_variables = kwargs['process_variables'];
         else:
             self.process_variables = None;
@@ -1056,6 +1062,11 @@ class WeatherFromDF(_Weather, utility._DAQ):
         self.geography = geography
         # Process Variables
         if 'process_variables' in kwargs:
+            # Set file_path for process fmu
+            weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
+            fmuname = 'WeatherProcessor_JModelica_v2.fmu';
+            self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
+            # Set process variables
             self.process_variables = kwargs['process_variables'];
         else:
             self.process_variables = None;

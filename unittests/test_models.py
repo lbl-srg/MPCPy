@@ -132,6 +132,29 @@ class SimpleRC(TestCaseMPCPy):
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
             self.model_no_params.estimate(self.start_time, self.final_time, []);
+            
+    def test_estimate_error_nomeasurements(self):
+        '''Test error raised if measurement_variable_list not in measurements dictionary.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';
+        # Set parameters
+        parameter_data = {};
+        parameter_data['C'] = {};
+        parameter_data['C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
+        parameter_data['C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
+        parameter_data['C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
+        parameter_data['C']['Free'] = variables.Static('C_Free', True, units.boolean);
+        # Instantiate model
+        self.model_no_meas = models.Modelica(models.JModelica, \
+                                               models.RMSE, \
+                                               self.measurements, \
+                                               moinfo = (mopath, modelpath, {}), \
+                                               parameter_data = parameter_data);
+        # Check error raised with no free parameters
+        with self.assertRaises(ValueError):
+            self.model_no_meas.estimate(self.start_time, self.final_time, ['wrong_meas']);
+
 
 #%%    
 class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
@@ -143,6 +166,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         ## Setup building fmu emulation
         self.building_source_file_path_est = os.path.join(self.get_unittest_path(), 'resources', 'building', 'RealMeasurements_est.csv');
         self.building_source_file_path_val = os.path.join(self.get_unittest_path(), 'resources', 'building', 'RealMeasurements_val.csv');
+        self.building_source_file_path_val_missing = os.path.join(self.get_unittest_path(), 'resources', 'building', 'RealMeasurements_val_missing.csv');
         self.zone_names = ['wes', 'hal', 'eas'];
         self.weather_path = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
         self.internal_path = os.path.join(self.get_unittest_path(), 'resources', 'internal', 'sampleCSV.csv');
@@ -195,15 +219,6 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
                                             self.measurements, 
                                             self.measurement_variable_map, 
                                             tz_name = self.weather.tz_name);
-        # Instantiate validate building
-        self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
-                                            self.measurements, 
-                                            self.measurement_variable_map, 
-                                            tz_name = self.weather.tz_name);
-
-    def test_estimate_and_validate(self):
-        '''Test the estimation of a model's coefficients based on measured data.'''
-        plt.close('all');
         # Exogenous collection time
         self.start_time_exodata = '1/1/2015';
         self.final_time_exodata = '1/30/2015';
@@ -218,12 +233,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         # Exodata
         self.weather.collect_data(self.start_time_exodata, self.final_time_exodata);
         self.internal.collect_data(self.start_time_exodata, self.final_time_exodata);
-        self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
-        # Set exodata to building emulation
-        self.building_est.weather_data = self.weather.data;
-        self.building_est.internal_data = self.internal.data;
-        self.building_est.control_data = self.control.data;
-        self.building_est.tz_name = self.weather.tz_name;       
+        self.control.collect_data(self.start_time_exodata, self.final_time_exodata);  
         # Collect measurement data
         self.building_est.collect_measurements(self.start_time_estimation, self.final_time_estimation);
         # Instantiate model
@@ -239,6 +249,10 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
                                      tz_name = self.weather.tz_name);                 
         # Simulate model with initial guess
         self.model.simulate(self.start_time_estimation, self.final_time_estimation)
+        
+    def test_estimate_and_validate(self):
+        '''Test the estimation of a model's coefficients based on measured data.'''
+        plt.close('all');
         # Check references
         df_test = self.model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_initial_parameters.csv');
@@ -254,6 +268,11 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
+        # Instantiate validate building
+        self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
+                                            self.measurements, 
+                                            self.measurement_variable_map, 
+                                            tz_name = self.weather.tz_name);
         # Validate on validation data
         self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
         self.model.measurements = self.building_val.measurements;
@@ -266,6 +285,47 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
+
+    def test_estimate_and_validate_missing_measurements(self):
+        '''Test the estimation of a model's coefficients based on measured data.
+        
+        Some of the validation measurement data is missing.
+        
+        '''
+        
+        plt.close('all');
+        # Check references
+        df_test = self.model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_initial_parameters.csv');
+        # Estimate model based on emulated data
+        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
+        # Validate model based on estimation data
+        self.model.validate(self.start_time_estimation, self.final_time_estimation, \
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation_csv'), plot=0)
+        # Check references
+        RMSE = {};
+        for key in self.model.RMSE.keys():
+            RMSE[key] = {};
+            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+        df_test = pd.DataFrame(data = RMSE);
+        self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
+        # Instantiate validate building
+        self.building_val = systems.RealFromCSV(self.building_source_file_path_val_missing,
+                                            self.measurements, 
+                                            self.measurement_variable_map, 
+                                            tz_name = self.weather.tz_name);
+        # Validate on validation data
+        self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
+        self.model.measurements = self.building_val.measurements;
+        self.model.validate(self.start_time_validation, self.final_time_validation, \
+                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation_csv'), plot=0);
+        # Check references
+        RMSE = {};
+        for key in self.model.RMSE.keys():
+            RMSE[key] = {};
+            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+        df_test = pd.DataFrame(data = RMSE);
+        self.check_df(df_test, 'validate_RMSE_missing.csv', timeseries=False);
         
 class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
     '''Test emulation-based parameter estimation of a model using JModelica.
