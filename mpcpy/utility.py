@@ -436,9 +436,8 @@ class _FMU(_mpcpyPandas):
                 self.fmu_target = kwargs['target'];
             else:
                 self.fmu_target = 'me';
-            self.fmupath = compile_fmu(self.modelpath, \
-                                       self.mopath, \
-                                       compiler_options = {'extra_lib_dirs':self.libraries}, 
+            self.fmupath = compile_fmu(self.modelpath,
+                                       [self.mopath] + self.libraries,
                                        version = self.fmu_version,
                                        target = self.fmu_target);
             self.fmu = load_fmu(self.fmupath);
