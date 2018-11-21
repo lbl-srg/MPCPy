@@ -154,6 +154,13 @@ class SimpleRC(TestCaseMPCPy):
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
             self.model_no_meas.estimate(self.start_time, self.final_time, ['wrong_meas']);
+            
+    def test_instantiate_error_incompatible_estimation(self):
+        '''Test error raised if estimation method is incompatible with model.'''
+        # Set model path
+        fmupath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
+        with self.assertRaises(ValueError):
+            self.model = models.Modelica(models.JModelica, models.RMSE, {}, fmupath=fmupath);
 
 
 #%%    

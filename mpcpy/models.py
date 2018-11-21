@@ -180,10 +180,14 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self.measurements = measurements;
         self._create_fmu(kwargs);
         self.input_names = self._get_input_names();                                       
-        self.set_estimate_method(estimate_method);
-        self.set_validate_method(validate_method);
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
+        # Check estimation method compatible with model
+        if estimate_method is JModelica:
+            if self.mopath is None:
+                raise ValueError('Must supply modelica file to use JModelica estimation method.  Cannot only use FMU.  If only looking to simulate the fmu, use systems.EmulationFromFMU object.')
+        self.set_estimate_method(estimate_method);
+        self.set_validate_method(validate_method);
         
     def estimate(self, start_time, final_time, measurement_variable_list):
         '''Estimate the parameters of the model.
@@ -682,13 +686,13 @@ class JModelica(_Estimate):
         '''
 
         self.name = 'Jmo';        
+        self.opt_problem = optimization.Optimization(Model, optimization._ParameterEstimate, optimization.JModelica, {});
         
     def _estimate(self, Model):
         '''Perform estimation using JModelica optimization.
 
         '''
 
-        self.opt_problem = optimization.Optimization(Model, optimization._ParameterEstimate, optimization.JModelica, {});
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
         
 
