@@ -94,8 +94,8 @@ class TestCaseMPCPy(unittest.TestCase):
                 df_ref.index = pd.to_datetime(df_ref.index);
                 df_ref = df_ref.tz_localize('UTC');
             # Test index
-            i_ref = df_ref.index.values;
-            i_test = df_test.index.values;
+            i_ref = df_ref.index;
+            i_test = df_test.index;
             self._check_index(i_test, i_ref)
             # Test keys
             k_ref = list(df_ref);
@@ -152,9 +152,9 @@ class TestCaseMPCPy(unittest.TestCase):
         
         Parameters
         ----------
-        i_test : list-like
+        i_test : pandas DataFrame index
             Index of test.
-        i_ref : list-like
+        i_ref : pandas DataFrame index
             Index of reference.
             
         '''
@@ -162,8 +162,15 @@ class TestCaseMPCPy(unittest.TestCase):
         # Test length
         self.assertTrue(len(i_ref)==len(i_test), 'Index test failed beacuse of differing number of values.');
         # Test values
-        for i in range(len(i_ref)):
-            self.assertTrue(i_ref[i]==i_test[i], 'Index test failed at reference index value {0}.'.format(i_ref[i]));
+        # If datetime, convert to unix time and check values
+        if isinstance(i_ref, pd.DatetimeIndex):
+            df_i_ref = pd.DataFrame(data=[i.timestamp() for i in i_ref])
+            df_i_test = pd.DataFrame(data=[i.timestamp() for i in i_test])
+            self._check_values(df_i_test, df_i_ref, datetimeindex=True)
+        # Otherwise, check with assert
+        else:
+            for i in range(len(i_ref)):
+                self.assertTrue(i_ref[i]==i_test[i], 'Index test failed at reference index value {0}.'.format(i_ref[i]));
     
     def _check_keys(self, k_test, k_ref):
         '''Test the keys of the test against the reference.
@@ -183,7 +190,7 @@ class TestCaseMPCPy(unittest.TestCase):
         for i in range(len(k_ref)):
             self.assertTrue(k_ref[i] in k_test, 'Key test failed at reference key value {0}.'.format(k_ref[i]));
     
-    def _check_values(self, df_test, df_ref):
+    def _check_values(self, df_test, df_ref, datetimeindex=False):
         '''Test the values of the test against the reference.
         
         Parameters
@@ -192,6 +199,9 @@ class TestCaseMPCPy(unittest.TestCase):
             Data of test.
         df_ref : pandas DataFrame
             Data of reference.
+        datetimeindex : bool, optional
+            True if checking date time index values.
+            Default is False.
 
         '''
 
@@ -230,31 +240,36 @@ class TestCaseMPCPy(unittest.TestCase):
                 try:
                     self.assertTrue(err_max <= tol)
                 except AssertionError:
-                    try:
-                        plt.figure()
-                        # Plot reference
-                        plt.plot(y_ref, '-ob', 
-                                        label = 'ref', 
-                                        linewidth = 3,
-                                        markersize = 8)
-                        # Plot test
-                        plt.plot(y_test, '-or', 
-                                         label = 'test',
-                                         linewidth = 1.5,
-                                         markersize = 4)
-                        # Plot location of max error
-                        plt.plot(i_max, y_test[i_max], 'og', 
-                                                       label = 'location of max error', 
-                                                       markerfacecolor='none',
-                                                       markersize = 12.0, 
-                                                       markeredgewidth = 3)
-                        # Save plot
-                        plt.legend()
-                        fig_path = self.ref_file_path[:-4]+'_'+key+'.png'
-                        plt.savefig(fig_path)
+                    # If not an index
+                    if not datetimeindex:
+                        try:
+                            plt.figure()
+                            # Plot reference
+                            plt.plot(y_ref, '-ob', 
+                                            label = 'ref', 
+                                            linewidth = 3,
+                                            markersize = 8)
+                            # Plot test
+                            plt.plot(y_test, '-or', 
+                                             label = 'test',
+                                             linewidth = 1.5,
+                                             markersize = 4)
+                            # Plot location of max error
+                            plt.plot(i_max, y_test[i_max], 'og', 
+                                                           label = 'location of max error', 
+                                                           markerfacecolor='none',
+                                                           markersize = 12.0, 
+                                                           markeredgewidth = 3)
+                            # Save plot
+                            plt.legend()
+                            fig_path = self.ref_file_path[:-4]+'_'+key+'.png'
+                            plt.savefig(fig_path)
+                            # Fail test
+                            self.assertTrue(False, 'Value test failed with max error {0} for key {1} and reference index {2}.  Check {3} for plot of all values for key.'.format(err_max, key, df_ref.index.values[i_max], fig_path))
+                        except tk.TclError,e:
+                            # Fail test with no graphic
+                            self.assertTrue(False, 'Value test failed with max error {0} for key {1} and reference index {2}.  Plot not created due to following error:\n{3}.'.format(err_max, key, df_ref.index.values[i_max]),e)
+                    else:
                         # Fail test
-                        self.assertTrue(False, 'Value test failed with max error {0} for key {1} and reference index {2}.  Check {3} for plot of all values for key.'.format(err_max, key, df_ref.index.values[i_max], fig_path))
-                    except tk.TclError,e:
-                        # Fail test with no graphic
-                        self.assertTrue(False, 'Value test failed with max error {0} for key {1} and reference index {2}.  Plot not created due to following error:\n{3}.'.format(err_max, key, df_ref.index.values[i_max]),e)
-                        
+                        fail_time = str(pd.to_datetime(df_ref.get_values()[i_max]))
+                        self.assertTrue(False, 'Index test failed with max error {0} at reference index time {1}.'.format(err_max, fail_time))
