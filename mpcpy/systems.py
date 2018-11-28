@@ -169,7 +169,7 @@ class EmulationFromFMU(_Emulation, utility._FMU):
     moinfo : tuple or list, required if not fmupath
         (mopath, modelpath, libraries).  `mopath` is the path to the modelica file.
         `modelpath` is the path to the model to be compiled within the package specified in the modelica file.
-        `libraries` is a list of paths directing to extra libraries required to compile the fmu.
+        `libraries` is a list of paths directing to extra libraries required to compile the fmu.  If no extra libraries, is None or empty list.
     zone_names : list, optional
         List of zone name strings.
     weather_data : dictionary, optional

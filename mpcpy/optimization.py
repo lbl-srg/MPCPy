@@ -806,17 +806,19 @@ class JModelica(_Package, utility._FMU):
         
         '''
         
-        # Compile the optimization initializaiton model                                             
+        # Compile the optimization initializaiton model
+        if self.Model.libraries is None:
+            file_paths = [self.moppath]
+        else:
+            file_paths = [self.moppath] + self.Model.libraries
         self.fmupath = compile_fmu(self.mopmodelpath + '_initialize', \
-                                   self.moppath, \
-                                   compiler_options = {'extra_lib_dirs':self.Model.libraries});
+                                   file_paths);
         kwargs = {};
         kwargs['fmupath'] = self.fmupath;
         self._create_fmu(kwargs);
         # Transfer optimization problem to casADi                         
         self.opt_problem = transfer_optimization_problem(self.mopmodelpath + '_optimize', \
-                                                         self.moppath, \
-                                                         compiler_options = {'extra_lib_dirs':self.Model.libraries});
+                                                         file_paths);
                                                          
     def _get_optimization_options(self):
         '''Get the JModelica optimization options in a dictionary.
