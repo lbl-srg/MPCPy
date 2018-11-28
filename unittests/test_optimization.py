@@ -57,7 +57,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
@@ -69,6 +69,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         opt_problem.optimize(self.start_time, self.final_time);
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
+        df_test.to_csv('/home/dhbubu/git/mpcpy/MPCPy/unittests/optimize_measurements_test.csv')
         self.check_df(df_test, 'optimize_measurements.csv');
         df_test = model.control_data['q_flow'].display_data().to_frame();
         df_test.index.name = 'Time'
@@ -122,7 +123,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data, \
                                 parameter_data = parameter_data);
         # Instantiate optimization problem
@@ -158,7 +159,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
@@ -182,7 +183,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
@@ -206,7 +207,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
@@ -242,7 +243,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
@@ -268,7 +269,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
@@ -299,7 +300,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data, 
                                 parameter_data = parameter_data);
         # Instantiate optimization problem
@@ -333,7 +334,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Add initial constraint
         self.constraints.data['T_db']['Initial'] = variables.Static('T_db_initial', 21, units.degC);
@@ -363,7 +364,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
@@ -385,7 +386,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
@@ -412,7 +413,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         model = models.Modelica(models.JModelica, \
                                 models.RMSE, \
                                 self.measurements, \
-                                moinfo = (self.mopath, modelpath, {}), \
+                                moinfo = (self.mopath, modelpath, []), \
                                 control_data = self.controls.data);
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
@@ -456,7 +457,7 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         ## Setup model
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
         self.modelpath = 'LBNL71T_MPC.MPC';
-        self.libraries = os.environ.get('MODELICAPATH');
+        self.libraries = ['/home/dhbubu/git/buildings/modelica-buildings/Buildings'];
         self.estimate_method = models.JModelica; 
         self.validation_method = models.RMSE;
         self.zone_names = ['wes', 'hal', 'eas'];                   

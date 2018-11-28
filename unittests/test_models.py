@@ -44,7 +44,7 @@ class SimpleRC(TestCaseMPCPy):
         self.model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
-                                     moinfo = (mopath, modelpath, {}), \
+                                     moinfo = (mopath, modelpath, []), \
                                      control_data = controls.data);
         # Simulate model
         self.model.simulate(self.start_time, self.final_time);
@@ -68,7 +68,7 @@ class SimpleRC(TestCaseMPCPy):
         self.model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
-                                     moinfo = (mopath, modelpath, {}), \
+                                     moinfo = (mopath, modelpath, []), \
                                      control_data = controls.data);
         # Simulate model
         self.model.simulate(self.start_time, self.final_time);
@@ -96,7 +96,7 @@ class SimpleRC(TestCaseMPCPy):
         self.model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
-                                     moinfo = (mopath, modelpath, {}));
+                                     moinfo = (mopath, modelpath, []));
         # Simulate model
         self.model.simulate(self.start_time, self.final_time);
         # Check references
@@ -112,7 +112,7 @@ class SimpleRC(TestCaseMPCPy):
         self.model_no_params = models.Modelica(models.JModelica, \
                                                models.RMSE, \
                                                self.measurements, \
-                                               moinfo = (mopath, modelpath, {}));
+                                               moinfo = (mopath, modelpath, []));
         # Check error raised with no parameters
         with self.assertRaises(ValueError):
             self.model_no_params.estimate(self.start_time, self.final_time, []);
@@ -127,7 +127,7 @@ class SimpleRC(TestCaseMPCPy):
         self.model_no_free = models.Modelica(models.JModelica, \
                                                models.RMSE, \
                                                self.measurements, \
-                                               moinfo = (mopath, modelpath, {}), \
+                                               moinfo = (mopath, modelpath, []), \
                                                parameter_data = parameter_data);
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
@@ -149,7 +149,7 @@ class SimpleRC(TestCaseMPCPy):
         self.model_no_meas = models.Modelica(models.JModelica, \
                                                models.RMSE, \
                                                self.measurements, \
-                                               moinfo = (mopath, modelpath, {}), \
+                                               moinfo = (mopath, modelpath, []), \
                                                parameter_data = parameter_data);
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
@@ -202,7 +202,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         ## Setup model
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
         self.modelpath = 'LBNL71T_MPC.MPC';
-        self.libraries = os.environ.get('MODELICAPATH');
+        self.libraries = ['/home/dhbubu/git/buildings/modelica-buildings/Buildings'];
         self.estimate_method = models.JModelica; 
         self.validation_method = models.RMSE;
         # Instantiate exo data sources
@@ -363,7 +363,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         ## Setup model
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
         self.modelpath = 'LBNL71T_MPC.MPC';
-        self.libraries = os.environ.get('MODELICAPATH');
+        self.libraries = ['/home/dhbubu/git/buildings/modelica-buildings/Buildings'];
         self.estimate_method = models.JModelica; 
         self.validation_method = models.RMSE;
         # Instantiate exo data sources
@@ -497,7 +497,7 @@ class EstimateFromUKF(TestCaseMPCPy):
         # Set model paths
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_nostart';
-        self.moinfo = (mopath, modelpath, {})
+        self.moinfo = (mopath, modelpath, [])
         # Gather parameters
         parameter_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Parameters.csv');
         self.parameters = exodata.ParameterFromCSV(parameter_csv_filepath);

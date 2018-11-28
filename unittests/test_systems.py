@@ -156,7 +156,7 @@ class EmulationFromFMU(TestCaseMPCPy):
         # Set model paths
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_nostart';
-        moinfo = (mopath, modelpath, {});
+        moinfo = (mopath, modelpath, []);
         # Gather control inputs
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
@@ -194,7 +194,7 @@ class EmulationFromFMU(TestCaseMPCPy):
         # Set model paths
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_nostart';
-        moinfo = (mopath, modelpath, {});
+        moinfo = (mopath, modelpath, []);
         # Gather control inputs
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
@@ -232,7 +232,7 @@ class EmulationFromFMU(TestCaseMPCPy):
         # Set model paths
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_nostart';
-        moinfo = (mopath, modelpath, {});
+        moinfo = (mopath, modelpath, []);
         # Gather control inputs
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
@@ -270,7 +270,7 @@ class EmulationFromFMU(TestCaseMPCPy):
         # Set model paths
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_nostart';
-        moinfo = (mopath, modelpath, {});
+        moinfo = (mopath, modelpath, []);
         # Gather control inputs
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
