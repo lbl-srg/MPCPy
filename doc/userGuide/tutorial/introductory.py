@@ -215,7 +215,7 @@ Modelica (.mo) file, the path of the model within the .mo file, and a list of
 paths of any required libraries other than the Modelica Standard.  
 For this example, there are no additional libraries.
 
->>> moinfo = ('Tutorial.mo', 'Tutorial.RC', {})
+>>> moinfo = ('Tutorial.mo', 'Tutorial.RC', [])
 
 Ultimately, the modelica model is compiled into an FMU.  If the emulation model
 is already an FMU, than an fmupath can be specified instead of the modelica 
@@ -368,7 +368,7 @@ Finally, let's view the estimated parameter values:
 
 >>> for key in model.parameter_data.keys():
 ...     print(key, "%.2f" % model.parameter_data[key]['Value'].display_data())
-('heatCapacitor.C', '119828.30')
+('heatCapacitor.C', '119892.26')
 ('thermalResistor.R', '0.01')
 
 
@@ -460,12 +460,12 @@ constraints were satisfied.  The intermediate points are a result of the
 direct collocation method used by JModelica.
 
 >>> opt_problem.display_measurements('Simulated').applymap('{:.2f}'.format) # doctest: +ELLIPSIS
-                                    Qflow   Tzone
-Time                                             
-2017-01-02 06:00:00+00:00          669.93  298.15
-2017-01-02 06:09:18.183693+00:00  1512.95  293.15
-2017-01-02 06:38:41.816307+00:00  2599.01  293.15
-2017-01-02 07:00:00+00:00         1888.28  293.15
+                                       Qflow   Tzone
+Time                                                
+2017-01-02 06:00:00+00:00             669.11  298.15
+2017-01-02 06:09:18.183692598+00:00  1512.56  293.15
+2017-01-02 06:38:41.816307402+00:00  2599.14  293.15
+2017-01-02 07:00:00+00:00            1887.98  293.15
 -etc-
 
 Finally, we can simulate the model using the optimized control trajectory.
@@ -473,19 +473,19 @@ Note that the ``model.control_data`` dictionary is updated by the
 ``opt_problem.optimize()`` function.
 
 >>> model.control_data['Qflow'].display_data().loc[pd.to_datetime('1/2/2017  06:00:00'):pd.to_datetime('1/3/2017 06:00:00')].map('{:.2f}'.format) # doctest: +ELLIPSIS
-2017-01-02 06:00:00+00:00            669.93
-2017-01-02 06:09:18.183693+00:00    1512.95
-2017-01-02 06:38:41.816307+00:00    2599.01
-2017-01-02 07:00:00+00:00           1888.28
+2017-01-02 06:00:00+00:00               669.11
+2017-01-02 06:09:18.183692598+00:00    1512.56
+2017-01-02 06:38:41.816307402+00:00    2599.14
+2017-01-02 07:00:00+00:00              1887.98
 -etc-
 >>> model.simulate('1/2/2017', '1/3/2017') # doctest: +ELLIPSIS
 -etc-
 >>> model.display_measurements('Simulated').applymap('{:.2f}'.format) # doctest: +ELLIPSIS
                              Qflow   Tzone
 Time                                      
-2017-01-02 06:00:00+00:00   669.93  293.15
-2017-01-02 07:00:00+00:00  1888.28  291.41
-2017-01-02 08:00:00+00:00  2277.67  293.03
+2017-01-02 06:00:00+00:00   669.11  293.15
+2017-01-02 07:00:00+00:00  1887.98  291.41
+2017-01-02 08:00:00+00:00  2277.65  293.03
 -etc-
 
 Note there is some mismatch between the simulated model output temperature 
@@ -500,18 +500,18 @@ using collocation being an approximation of the true dynamic model.
 >>> opt_problem.optimize('1/2/2017', '1/3/2017', res_control_step=1.0) # doctest: +ELLIPSIS
 -etc-
 >>> model.control_data['Qflow'].display_data().loc[pd.to_datetime('1/2/2017 06:00:00'):pd.to_datetime('1/3/2017 06:00:00')].map('{:.2f}'.format) # doctest: +ELLIPSIS
-2017-01-02 06:00:00+00:00     669.93
-2017-01-02 06:00:01+00:00     671.66
-2017-01-02 06:00:02+00:00     673.38
+2017-01-02 06:00:00+00:00     669.11
+2017-01-02 06:00:01+00:00     670.83
+2017-01-02 06:00:02+00:00     672.56
 -etc-
 >>> model.simulate('1/2/2017', '1/3/2017') # doctest: +ELLIPSIS
 -etc-
 >>> model.display_measurements('Simulated').applymap('{:.2f}'.format) # doctest: +ELLIPSIS
                              Qflow   Tzone
 Time                                      
-2017-01-02 06:00:00+00:00   669.93  293.15
-2017-01-02 07:00:00+00:00  1888.28  292.67
-2017-01-02 08:00:00+00:00  2277.67  293.13
+2017-01-02 06:00:00+00:00   669.11  293.15
+2017-01-02 07:00:00+00:00  1887.98  292.67
+2017-01-02 08:00:00+00:00  2277.65  293.12
 -etc-
 
 """
