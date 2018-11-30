@@ -69,7 +69,6 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         opt_problem.optimize(self.start_time, self.final_time);
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
-        df_test.to_csv('/home/dhbubu/git/mpcpy/MPCPy/unittests/optimize_measurements_test.csv')
         self.check_df(df_test, 'optimize_measurements.csv');
         df_test = model.control_data['q_flow'].display_data().to_frame();
         df_test.index.name = 'Time'
