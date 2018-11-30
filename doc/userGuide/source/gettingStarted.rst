@@ -12,21 +12,21 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
     - using pip, install the following packages:
 
-	    matplotlib >= 2.0.2
+	    matplotlib >= 2.2.3
 
-	    numpy >= 1.13.1
+	    numpy >= 1.15.4
 
-	    pandas >= 0.20.3
+	    pandas >= 0.23.4
 
-	    python-dateutil >= 2.6.1
+	    python-dateutil >= 2.7.5
 
-	    pytz >= 2017.2
+	    pytz >= 2018.7
 
-	    scikit-learn >= 0.18.2
+	    scikit-learn >= 0.20.1
 
-	    sphinx >= 1.6.3
+	    sphinx >= 1.8.2
 
-	    numpydoc >= 0.7.0
+	    numpydoc >= 0.8.0
 
 	    tzwhere **=** 2.3
 
@@ -36,7 +36,7 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
 	    > sudo apt-get install libgeos-dev
 
-3. Install JModelica 2.0 (for Modelica compiling, optimization, and fmu simulation)
+3. Install JModelica 2.4 (for Modelica compiling, optimization, and fmu simulation)
 
 4. Create JModelica environmental variables
 
