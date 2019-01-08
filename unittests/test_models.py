@@ -80,8 +80,8 @@ class SimpleRC(TestCaseMPCPy):
         self.model.estimate(self.start_time, self.final_time, ['T_db'])
         # Check references
         data = [self.model.parameter_data['heatCapacitor.C']['Value'].display_data()]
-        index = ['C']
-        df_test = pd.DataFrame(data=data, index=index)
+        index = ['heatCapacitor.C']
+        df_test = pd.DataFrame(data=data, index=index, columns=['Value'])
         self.check_df(df_test, 'estimate_one_par.csv', timeseries=False)
 
     def test_estimate_two_par(self):
@@ -116,7 +116,7 @@ class SimpleRC(TestCaseMPCPy):
         # Check references
         data = [self.model.parameter_data['heatCapacitor.C']['Value'].display_data(),
                 self.model.parameter_data['thermalResistor.R']['Value'].display_data(),]
-        index = ['C', 'R']
+        index = ['heatCapacitor.C', 'thermalResistor.R']
         df_test = pd.DataFrame(data=data, index=index, columns=['Value'])
         self.check_df(df_test, 'estimate_two_par.csv', timeseries=False)
 
