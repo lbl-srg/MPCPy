@@ -82,14 +82,10 @@ class TestFMITarget(TestCaseMPCPy):
                 fmupath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
                 building = systems.EmulationFromFMU({}, fmupath = fmupath);
                 self.assertEqual(building.fmu_target, None);
-                model = models.Modelica(models.JModelica, models.RMSE, {}, fmupath=fmupath);
-                self.assertEqual(model.fmu_target, None);
             else:
                 fmupath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple_RC_{0}_2.fmu'.format(target));
                 building = systems.EmulationFromFMU({}, fmupath = fmupath);
                 self.assertEqual(building.fmu_target, target);
-                model = models.Modelica(models.JModelica, models.RMSE, {}, fmupath=fmupath);
-                self.assertEqual(model.fmu_target, target);
         
 class TestGetInputNames(TestCaseMPCPy):
     def setUp(self):
