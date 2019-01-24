@@ -727,42 +727,44 @@ class JModelica(_Package, utility._FMU):
         fmu_variable_units = self._get_fmu_variable_units();
         # Update model control data
         for key in self.Model.control_data.keys():
-            # Get optimal control data
-            opt_input = self.res_opt.get_opt_input()
-            opt_input_traj = opt_input[1]
-            i = opt_input[0].index(key)
-            data = []
-            # Create data
-            for t in time:
-                data.append(opt_input_traj(t)[i])
-            timedelta = pd.to_timedelta(time, 's');
-            timeindex = self._global_start_time_utc + timedelta;
-            ts_opt = pd.Series(data = data, index = timeindex).tz_localize('UTC');
-            # Get old control data
-            ts_old = self.Model.control_data[key].get_base_data();
-            # Remove rows with updated data
-            first = (ts_old.index == self.start_time_utc).tolist().index(True)
-            if ts_old.index[-1] >= self.final_time_utc:
-                # If final time is before end of timeseries, replace only
-                # specific location
-                last = (ts_old.index == self.final_time_utc).tolist().index(True)
-                drop_list = ts_old.index[first:last+1]
-            else:
-                # If final time is after end of timeseries, add control to end
-                drop_list = ts_old.index[first:]
-            ts_old = ts_old.drop(drop_list);
-            # Append opt to old
-            ts = ts_old.append(ts_opt)
-            # Sort by index
-            ts = ts.sort_index()
-            # Update control_data
-            ts.name = key;
-            unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
-            if not unit:
-                unit = units.unit1;
-            self.Model.control_data[key] = variables.Timeseries(key, ts, unit);
-            # Get opt input object tuple (names, collocation polynomials f(t))
-            Optimization.opt_input = opt_input
+            # Check variable is model input
+            if key in self.Model.input_names:
+                # Get optimal control data
+                opt_input = self.res_opt.get_opt_input()
+                opt_input_traj = opt_input[1]
+                i = opt_input[0].index(key)
+                data = []
+                # Create data
+                for t in time:
+                    data.append(opt_input_traj(t)[i])
+                timedelta = pd.to_timedelta(time, 's');
+                timeindex = self._global_start_time_utc + timedelta;
+                ts_opt = pd.Series(data = data, index = timeindex).tz_localize('UTC');
+                # Get old control data
+                ts_old = self.Model.control_data[key].get_base_data();
+                # Remove rows with updated data
+                first = (ts_old.index == self.start_time_utc).tolist().index(True)
+                if ts_old.index[-1] >= self.final_time_utc:
+                    # If final time is before end of timeseries, replace only
+                    # specific location
+                    last = (ts_old.index == self.final_time_utc).tolist().index(True)
+                    drop_list = ts_old.index[first:last+1]
+                else:
+                    # If final time is after end of timeseries, add control to end
+                    drop_list = ts_old.index[first:]
+                ts_old = ts_old.drop(drop_list);
+                # Append opt to old
+                ts = ts_old.append(ts_opt)
+                # Sort by index
+                ts = ts.sort_index()
+                # Update control_data
+                ts.name = key;
+                unit = self._get_unit_class_from_fmu_variable_units('mpc_model.' + key,fmu_variable_units);
+                if not unit:
+                    unit = units.unit1;
+                self.Model.control_data[key] = variables.Timeseries(key, ts, unit);
+                # Get opt input object tuple (names, collocation polynomials f(t))
+                Optimization.opt_input = opt_input
         # Create optimization measurement dictionary
         Optimization.measurements = {};
         for key in Optimization.Model.measurements.keys():
