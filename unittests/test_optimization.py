@@ -445,6 +445,41 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         opt_problem.constraint_data = self.constraints.data
         with self.assertRaises(ValueError):
             opt_problem.optimize('1/11/2017', '1/12/2017');
+            
+    def test_extra_control_data(self):
+        '''Test the optimization of a model where there is extra control data.
+        
+        '''
+        
+        modelpath = 'Simple.RC';   
+        # Gather inputs with extra data
+        start_time_exo = '1/1/2017';
+        final_time_exo = '1/10/2017';
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        control_variable_map = {'q_flow_csv' : ('q_flow', units.W),
+                                'extra_input' : ('not_input', units.W)};
+        self.controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
+        self.controls.collect_data(start_time_exo, final_time_exo);
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);                              
+        # Solve optimization problem with default res_control_step                   
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_measurements.csv');
+        df_test = model.control_data['q_flow'].display_data().to_frame();
+        df_test.index.name = 'Time'
+        self.check_df(df_test, 'optimize_control_default.csv');
         
 #%% Temperature tests
 class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
