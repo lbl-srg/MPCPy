@@ -815,7 +815,7 @@ class _Measurements(object):
         ----------
         measurement_key : string
             The measurement dictionary key for which to get the data for all 
-            of the variables.
+            of the variables where the data exists.
         
         Returns
         -------
@@ -837,7 +837,7 @@ class _Measurements(object):
         ----------
         measurement_key : string
             The measurement dictionary key for which to get the data for all 
-            of the variables.
+            of the variables where the data exists.
         
         Returns
         -------
@@ -859,7 +859,7 @@ class _Measurements(object):
         ----------
         measurement_key : string
             The measurement dictionary key for which to get the data for all 
-            of the variables.
+            of the variables, if the data exists.
 
         Returns
         -------
