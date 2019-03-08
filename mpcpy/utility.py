@@ -196,6 +196,7 @@ class _mpcpyPandas(object):
             except TypeError:
                 self.start_time = start_time;
             self._global_start_time_utc = self.start_time.tz_convert('UTC');
+            print(self._global_start_time_utc)
             self.total_elapsed_seconds = 0
             self._continue = False;
         # Set final time
@@ -870,8 +871,9 @@ class _Measurements(object):
         
         mpcpy_ts_list = [];
         for key in self.measurements.keys():
-            mpcpy_ts_list.append(self.measurements[key][measurement_key])
-        
+            if measurement_key in self.measurements[key].keys():
+                mpcpy_ts_list.append(self.measurements[key][measurement_key])
+                
         return mpcpy_ts_list
        
 #%% Get the MPCPy path
