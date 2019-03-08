@@ -196,7 +196,6 @@ class _mpcpyPandas(object):
             except TypeError:
                 self.start_time = start_time;
             self._global_start_time_utc = self.start_time.tz_convert('UTC');
-            print(self._global_start_time_utc)
             self.total_elapsed_seconds = 0
             self._continue = False;
         # Set final time
