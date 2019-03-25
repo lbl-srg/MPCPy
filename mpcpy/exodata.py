@@ -1600,12 +1600,12 @@ class ConstraintFromCSV(_Constraint, utility._DAQ):
     csv_file_path : string
         Path of csv file.
     variable_map : dictionary
-        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}
 
     Attributes
     ----------
     data : dictionary
-        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}.
+        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
     lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
     lon : mpcpy.variables.Static
@@ -1649,12 +1649,12 @@ class ConstraintFromDF(_Constraint, utility._DAQ):
     df : pandas DataFrame object
         DataFrame of data.  The index must be a datetime object.
     variable_map : dictionary
-        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}
 
     Attributes
     ----------
     data : dictionary
-        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}.
+        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
     lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
     lon : mpcpy.variables.Static
