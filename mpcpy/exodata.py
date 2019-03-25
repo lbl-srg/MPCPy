@@ -761,9 +761,9 @@ class WeatherFromEPW(_Weather):
     ----------
     data : dictionary
         {"Weather Variable Name" : mpcpy.Variables.Timeseries}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.
     tz_name : string
         Timezone name.
@@ -972,9 +972,9 @@ class WeatherFromCSV(_Weather, utility._DAQ):
     ----------
     data : dictionary
         {"Weather Variable Name" : mpcpy.Variables.Timeseries}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.
     tz_name : string
         Timezone name.
@@ -1038,9 +1038,9 @@ class WeatherFromDF(_Weather, utility._DAQ):
     ----------
     data : dictionary
         {"Weather Variable Name" : mpcpy.Variables.Timeseries}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.
     tz_name : string
         Timezone name.  
@@ -1106,9 +1106,9 @@ class InternalFromCSV(_Internal, utility._DAQ):
     ----------
     data : dictionary
         {"Zone Name" : {"Internal Variable Name" : mpcpy.Variables.Timeseries}}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.  
@@ -1160,9 +1160,9 @@ class InternalFromOccupancyModel(_Internal):
     ----------
     data : dictionary
         {"Zone Name" : {"Internal Variable Name" : mpcpy.Variables.Timeseries}}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.        
@@ -1294,9 +1294,9 @@ class ControlFromCSV(_Control, utility._DAQ):
     ----------
     data : dictionary
         {"Control Variable Name" : mpcpy.Variables.Timeseries}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name. 
@@ -1343,9 +1343,9 @@ class ControlFromDF(_Control, utility._DAQ):
     ----------
     data : dictionary
         {"Control Variable Name" : mpcpy.Variables.Timeseries}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.
     tz_name : string
         Timezone name.  
@@ -1396,9 +1396,9 @@ class OtherInputFromCSV(_OtherInput, utility._DAQ):
     ----------
     data : dictionary
         {"Other Input Variable Name" : mpcpy.Variables.Timeseries}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
@@ -1445,9 +1445,9 @@ class OtherInputFromDF(_OtherInput, utility._DAQ):
     ----------
     data : dictionary
         {"Other Input Variable Name" : mpcpy.Variables.Timeseries}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.
     tz_name : string
         Timezone name.  
@@ -1600,15 +1600,15 @@ class ConstraintFromCSV(_Constraint, utility._DAQ):
     csv_file_path : string
         Path of csv file.
     variable_map : dictionary
-        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}
 
     Attributes
     ----------
     data : dictionary
-        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}.
-    lat : numeric
+        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+    lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
@@ -1649,15 +1649,15 @@ class ConstraintFromDF(_Constraint, utility._DAQ):
     df : pandas DataFrame object
         DataFrame of data.  The index must be a datetime object.
     variable_map : dictionary
-        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}
 
     Attributes
     ----------
     data : dictionary
-        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}.
-    lat : numeric
+        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+    lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
@@ -1716,9 +1716,9 @@ class ConstraintFromOccupancyModel(_Constraint):
     ----------
     data : dictionary
         {"State or Control Variable Name" : {"Constraint Variable Type" : mpcpy.Variables.Timeseries/Static}}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.        
@@ -1769,9 +1769,9 @@ class PriceFromCSV(_Price, utility._DAQ):
     ----------
     data : dictionary
         {"Price Variable Name" : mpcpy.Variables.Timeseries}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
@@ -1818,9 +1818,9 @@ class PriceFromDF(_Price, utility._DAQ):
     ----------
     data : dictionary
         {"Price Variable Name" : mpcpy.Variables.Timeseries}.
-    lat : numeric
+    lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
-    lon : numeric
+    lon : mpcpy.variables.Static
         Longitude in degrees.  For timezone.
     tz_name : string
         Timezone name.
