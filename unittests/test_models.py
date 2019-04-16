@@ -418,8 +418,9 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'estimate_RMSE_global_start.csv', timeseries=False);
-        df_test = self.model.all_est
-        self.check_df(df_test, 'estimate_allest_global_start.csv', timeseries=False);
+        # All estimates
+        all_est_test = self.model.all_est
+        self.check_json(all_est_test, 'estimate_allest_global_start.txt');
         # Instantiate validate building
         self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
                                             self.measurements, 
