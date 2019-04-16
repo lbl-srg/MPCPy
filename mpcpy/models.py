@@ -412,6 +412,24 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
         self._validate_method = validate_method(self);
         
+    def get_global_estimate_data(self):
+        '''Get the estimation data if using the global estimation algorithm.
+        
+        Must have completed the estimation using the global algorithm.
+        
+        Returns
+        -------
+        glo_est_data : dictionary
+            Estimation data from each iteration of the global estimation
+            algorithm, including the training RMSE for each measurement
+            variable, initial guess for each parameter, and objective value.
+        
+        '''
+        
+        glo_est_data = self.glo_est_data
+        
+        return glo_est_data
+        
 class Occupancy(_Model):
     '''Class for models of occupancy.
 
