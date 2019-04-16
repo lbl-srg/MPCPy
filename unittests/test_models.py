@@ -19,8 +19,8 @@ import os
 
 #%%
 class SimpleRC(TestCaseMPCPy):
-    '''Test simple model simulate.
-    
+    '''Test simple model simulate and estimate.
+
     '''
 
     def setUp(self):
@@ -53,7 +53,73 @@ class SimpleRC(TestCaseMPCPy):
         self.check_df(df_test, 'simulate_display.csv');
         df_test = self.model.get_base_measurements('Simulated');
         self.check_df(df_test, 'simulate_base.csv');
-        
+
+    def test_estimate_one_par(self):
+        '''Test the estimation of one parameter of a model.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';
+        # Instantiate system
+        system = systems.EmulationFromFMU(self.measurements, \
+                                               moinfo = (mopath, modelpath, {}));
+        system.collect_measurements(self.start_time, self.final_time);
+        # Define parameters
+        parameter_data = {};
+        parameter_data['heatCapacitor.C'] = {};
+        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
+        parameter_data['heatCapacitor.C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
+        parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 1000000, units.J_K);
+        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}), \
+                                     parameter_data = parameter_data);
+        # Estimate models
+        self.model.estimate(self.start_time, self.final_time, ['T_db'])
+        # Check references
+        data = [self.model.parameter_data['heatCapacitor.C']['Value'].display_data()]
+        index = ['heatCapacitor.C']
+        df_test = pd.DataFrame(data=data, index=index, columns=['Value'])
+        self.check_df(df_test, 'estimate_one_par.csv', timeseries=False)
+
+    def test_estimate_two_par(self):
+        '''Test the estimation of two parameters of a model.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_noinputs';
+        # Instantiate system
+        system = systems.EmulationFromFMU(self.measurements, \
+                                               moinfo = (mopath, modelpath, {}));
+        system.collect_measurements(self.start_time, self.final_time);
+        # Define parameters
+        parameter_data = {};
+        parameter_data['heatCapacitor.C'] = {};
+        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
+        parameter_data['heatCapacitor.C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
+        parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 1000000, units.J_K);
+        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
+        parameter_data['thermalResistor.R'] = {};
+        parameter_data['thermalResistor.R']['Value'] = variables.Static('R_Value', 0.02, units.K_W);
+        parameter_data['thermalResistor.R']['Minimum'] = variables.Static('R_Min', 0.001, units.K_W);
+        parameter_data['thermalResistor.R']['Maximum'] = variables.Static('R_Max', 0.1, units.K_W);
+        parameter_data['thermalResistor.R']['Free'] = variables.Static('R_Free', True, units.boolean);
+        # Instantiate model
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}), \
+                                     parameter_data = parameter_data);
+        # Estimate models
+        self.model.estimate(self.start_time, self.final_time, ['T_db'])
+        # Check references
+        data = [self.model.parameter_data['heatCapacitor.C']['Value'].display_data(),
+                self.model.parameter_data['thermalResistor.R']['Value'].display_data(),]
+        index = ['heatCapacitor.C', 'thermalResistor.R']
+        df_test = pd.DataFrame(data=data, index=index, columns=['Value'])
+        self.check_df(df_test, 'estimate_two_par.csv', timeseries=False)
+
     def test_simulate_continue(self):
         '''Test simulation of a model in steps.'''
         # Set model paths
@@ -75,7 +141,7 @@ class SimpleRC(TestCaseMPCPy):
         # Check references
         df_test = self.model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_display.csv');
-        
+
         # Simulate model in 4-hour chunks
         sim_steps = pd.date_range(self.start_time, self.final_time, freq=str('8H'))
         for i in range(len(sim_steps)-1):
@@ -86,7 +152,7 @@ class SimpleRC(TestCaseMPCPy):
             # Check references
             df_test = self.model.display_measurements('Simulated');
             self.check_df(df_test, 'simulate_step{0}.csv'.format(i));
-        
+
     def test_simulate_noinputs(self):
         '''Test simulation of a model with no external inputs.'''
         # Set model paths
@@ -102,7 +168,7 @@ class SimpleRC(TestCaseMPCPy):
         # Check references
         df_test = self.model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_noinputs.csv');
-        
+
     def test_estimate_error_nofreeparameters(self):
         '''Test error raised if no free parameters passed.'''
         # Set model paths
@@ -118,11 +184,11 @@ class SimpleRC(TestCaseMPCPy):
             self.model_no_params.estimate(self.start_time, self.final_time, []);
         # Set parameters
         parameter_data = {};
-        parameter_data['C'] = {};
-        parameter_data['C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
-        parameter_data['C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
-        parameter_data['C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
-        parameter_data['C']['Free'] = variables.Static('C_Free', False, units.boolean);
+        parameter_data['heatCapacitor.C'] = {};
+        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
+        parameter_data['heatCapacitor.C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
+        parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
+        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', False, units.boolean);
         # Instantiate model
         self.model_no_free = models.Modelica(models.JModelica, \
                                                models.RMSE, \
@@ -132,7 +198,7 @@ class SimpleRC(TestCaseMPCPy):
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
             self.model_no_params.estimate(self.start_time, self.final_time, []);
-            
+
     def test_estimate_error_nomeasurements(self):
         '''Test error raised if measurement_variable_list not in measurements dictionary.'''
         # Set model paths
@@ -140,11 +206,11 @@ class SimpleRC(TestCaseMPCPy):
         modelpath = 'Simple.RC_noinputs';
         # Set parameters
         parameter_data = {};
-        parameter_data['C'] = {};
-        parameter_data['C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
-        parameter_data['C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
-        parameter_data['C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
-        parameter_data['C']['Free'] = variables.Static('C_Free', True, units.boolean);
+        parameter_data['heatCapacitor.C'] = {};
+        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_Value', 55000, units.J_K);
+        parameter_data['heatCapacitor.C']['Minimum'] = variables.Static('C_Min', 10000, units.J_K);
+        parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
+        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
         # Instantiate model
         self.model_no_meas = models.Modelica(models.JModelica, \
                                                models.RMSE, \
@@ -154,14 +220,21 @@ class SimpleRC(TestCaseMPCPy):
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
             self.model_no_meas.estimate(self.start_time, self.final_time, ['wrong_meas']);
+            
+    def test_instantiate_error_incompatible_estimation(self):
+        '''Test error raised if estimation method is incompatible with model.'''
+        # Set model path
+        fmupath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
+        with self.assertRaises(ValueError):
+            self.model = models.Modelica(models.JModelica, models.RMSE, {}, fmupath=fmupath);
 
 
-#%%    
+#%%
 class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
     '''Test parameter estimation of a model using JModelica from real csv data.
-    
+
     '''
-    
+
     def setUp(self):
         ## Setup building fmu emulation
         self.building_source_file_path_est = os.path.join(self.get_unittest_path(), 'resources', 'building', 'RealMeasurements_est.csv');
@@ -178,21 +251,21 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
                                       'intLat_hal' : ('hal', 'intLat', units.W_m2), \
                                       'intRad_eas' : ('eas', 'intRad', units.W_m2), \
                                       'intCon_eas' : ('eas', 'intCon', units.W_m2), \
-                                      'intLat_eas' : ('eas', 'intLat', units.W_m2)};        
+                                      'intLat_eas' : ('eas', 'intLat', units.W_m2)};
         self.control_path = os.path.join(self.get_unittest_path(), 'resources', 'building', 'ControlCSV_0.csv');
         self.control_variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                                      'conHeat_hal' : ('conHeat_hal', units.unit1), \
-                                     'conHeat_eas' : ('conHeat_eas', units.unit1)};        
+                                     'conHeat_eas' : ('conHeat_eas', units.unit1)};
         # Measurements
         self.measurements = {};
         self.measurements['wesTdb'] = {'Sample' : variables.Static('wesTdb_sample', 1800, units.s)};
         self.measurements['halTdb'] = {'Sample' : variables.Static('halTdb_sample', 1800, units.s)};
         self.measurements['easTdb'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         self.measurements['wesPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
-        self.measurements['halPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};     
+        self.measurements['halPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         self.measurements['easPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         self.measurements['Ptot'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
-        self.measurement_variable_map = {'wesTdb_mea' : ('wesTdb', units.K), 
+        self.measurement_variable_map = {'wesTdb_mea' : ('wesTdb', units.K),
                                          'halTdb_mea' : ('halTdb', units.K),
                                          'easTdb_mea' : ('easTdb', units.K),
                                          'wesPhvac_mea' : ('wesPhvac', units.W),
@@ -203,12 +276,12 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
         self.modelpath = 'LBNL71T_MPC.MPC';
         self.libraries = os.environ.get('MODELICAPATH');
-        self.estimate_method = models.JModelica; 
+        self.estimate_method = models.JModelica;
         self.validation_method = models.RMSE;
         # Instantiate exo data sources
         self.weather = exodata.WeatherFromEPW(self.weather_path);
         self.internal = exodata.InternalFromCSV(self.internal_path, self.internal_variable_map, tz_name = self.weather.tz_name);
-        self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);   
+        self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);
         # Parameters
         self.parameters = exodata.ParameterFromCSV(os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv'));
         self.parameters.collect_data();
@@ -216,8 +289,8 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.parameters.data['lat']['Value'] = self.weather.lat;
         # Instantiate test building
         self.building_est = systems.RealFromCSV(self.building_source_file_path_est,
-                                            self.measurements, 
-                                            self.measurement_variable_map, 
+                                            self.measurements,
+                                            self.measurement_variable_map,
                                             tz_name = self.weather.tz_name);
         # Exogenous collection time
         self.start_time_exodata = '1/1/2015';
@@ -233,7 +306,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         # Exodata
         self.weather.collect_data(self.start_time_exodata, self.final_time_exodata);
         self.internal.collect_data(self.start_time_exodata, self.final_time_exodata);
-        self.control.collect_data(self.start_time_exodata, self.final_time_exodata);  
+        self.control.collect_data(self.start_time_exodata, self.final_time_exodata);
         # Collect measurement data
         self.building_est.collect_measurements(self.start_time_estimation, self.final_time_estimation);
         # Instantiate model
@@ -246,10 +319,10 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
                                      internal_data = self.internal.data, \
                                      control_data = self.control.data, \
                                      parameter_data = self.parameters.data, \
-                                     tz_name = self.weather.tz_name);                 
+                                     tz_name = self.weather.tz_name);
         # Simulate model with initial guess
         self.model.simulate(self.start_time_estimation, self.final_time_estimation)
-        
+
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
         plt.close('all');
@@ -270,8 +343,8 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
         # Instantiate validate building
         self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
-                                            self.measurements, 
-                                            self.measurement_variable_map, 
+                                            self.measurements,
+                                            self.measurement_variable_map,
                                             tz_name = self.weather.tz_name);
         # Validate on validation data
         self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
@@ -288,11 +361,11 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
 
     def test_estimate_and_validate_missing_measurements(self):
         '''Test the estimation of a model's coefficients based on measured data.
-        
+
         Some of the validation measurement data is missing.
-        
+
         '''
-        
+
         plt.close('all');
         # Check references
         df_test = self.model.display_measurements('Simulated');
@@ -311,8 +384,8 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
         # Instantiate validate building
         self.building_val = systems.RealFromCSV(self.building_source_file_path_val_missing,
-                                            self.measurements, 
-                                            self.measurement_variable_map, 
+                                            self.measurements,
+                                            self.measurement_variable_map,
                                             tz_name = self.weather.tz_name);
         # Validate on validation data
         self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
@@ -326,7 +399,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE_missing.csv', timeseries=False);
-        
+
     def test_estimate_and_validate_global_start(self):
         '''Test the estimation of a model's coefficients based on measured data using global start.'''
         plt.close('all');
@@ -364,12 +437,12 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE_global_start.csv', timeseries=False);
-        
+
 class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
     '''Test emulation-based parameter estimation of a model using JModelica.
-    
+
     '''
-    
+
     def setUp(self):
         ## Setup building fmu emulation
         self.building_source_file_path = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v2.fmu');
@@ -384,44 +457,44 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
                                       'intLat_hal' : ('hal', 'intLat', units.W_m2), \
                                       'intRad_eas' : ('eas', 'intRad', units.W_m2), \
                                       'intCon_eas' : ('eas', 'intCon', units.W_m2), \
-                                      'intLat_eas' : ('eas', 'intLat', units.W_m2)};        
+                                      'intLat_eas' : ('eas', 'intLat', units.W_m2)};
         self.control_path = os.path.join(self.get_unittest_path(), 'resources', 'building', 'ControlCSV_0.csv');
         self.control_variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                                      'conHeat_hal' : ('conHeat_hal', units.unit1), \
-                                     'conHeat_eas' : ('conHeat_eas', units.unit1)};        
+                                     'conHeat_eas' : ('conHeat_eas', units.unit1)};
         # Measurements
         self.measurements = {};
         self.measurements['wesTdb'] = {'Sample' : variables.Static('wesTdb_sample', 1800, units.s)};
         self.measurements['halTdb'] = {'Sample' : variables.Static('halTdb_sample', 1800, units.s)};
         self.measurements['easTdb'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         self.measurements['wesPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
-        self.measurements['halPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};     
+        self.measurements['halPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         self.measurements['easPhvac'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         self.measurements['Ptot'] = {'Sample' : variables.Static('easTdb_sample', 1800, units.s)};
         ## Setup model
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
         self.modelpath = 'LBNL71T_MPC.MPC';
         self.libraries = os.environ.get('MODELICAPATH');
-        self.estimate_method = models.JModelica; 
+        self.estimate_method = models.JModelica;
         self.validation_method = models.RMSE;
         # Instantiate exo data sources
         self.weather = exodata.WeatherFromEPW(self.weather_path);
         self.internal = exodata.InternalFromCSV(self.internal_path, self.internal_variable_map, tz_name = self.weather.tz_name);
-        self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);   
+        self.control = exodata.ControlFromCSV(self.control_path, self.control_variable_map, tz_name = self.weather.tz_name);
         # Parameters
         self.parameters = exodata.ParameterFromCSV(os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv'));
         self.parameters.collect_data();
         self.parameters.data['lat'] = {};
-        self.parameters.data['lat']['Value'] = self.weather.lat;    
+        self.parameters.data['lat']['Value'] = self.weather.lat;
         # Instantiate building
         building_parameters_data = {};
         building_parameters_data['lat'] = {};
-        building_parameters_data['lat']['Value'] = self.weather.lat;  
+        building_parameters_data['lat']['Value'] = self.weather.lat;
         self.building = systems.EmulationFromFMU(self.measurements, \
                                                  fmupath = self.building_source_file_path, \
                                                  zone_names = self.zone_names, \
                                                  parameter_data = building_parameters_data);
-        
+
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
         plt.close('all');
@@ -444,7 +517,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         self.building.weather_data = self.weather.data;
         self.building.internal_data = self.internal.data;
         self.building.control_data = self.control.data;
-        self.building.tz_name = self.weather.tz_name;       
+        self.building.tz_name = self.weather.tz_name;
         # Collect measurement data
         self.building.collect_measurements(self.start_time_estimation, self.final_time_estimation);
         # Instantiate model
@@ -490,13 +563,13 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
 
     def test_estimate_error_continue(self):
         '''Test that an error is thrown for estimation start_time of continue.
-        
+
         '''
-        
+
         plt.close('all');
         # Exogenous collection time
         start_time_exodata = '1/1/2015';
-        final_time_exodata = '1/30/2015';    
+        final_time_exodata = '1/30/2015';
         # Estimation time
         start_time_estimation = 'continue';
         final_time_estimation = '1/4/2015';
@@ -516,7 +589,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
                                      internal_data = self.internal.data, \
                                      control_data = self.control.data, \
                                      parameter_data = self.parameters.data, \
-                                     tz_name = self.weather.tz_name);                 
+                                     tz_name = self.weather.tz_name);
         # Error when estimate model
         with self.assertRaises(ValueError):
             self.model.estimate(start_time_estimation, final_time_estimation, self.measurement_variable_list);
@@ -524,7 +597,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
 #%%
 class EstimateFromUKF(TestCaseMPCPy):
     '''Test the parameter estimation of a model using UKF.
-    
+
     '''
     def setUp(self):
         self.start_time = '1/1/2017';
@@ -551,7 +624,7 @@ class EstimateFromUKF(TestCaseMPCPy):
                                                control_data = self.controls.data);
         # Get measurements
         self.system.collect_measurements(self.start_time, self.final_time);
-        
+
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
         # Instantiate model
@@ -561,7 +634,7 @@ class EstimateFromUKF(TestCaseMPCPy):
                                      moinfo = self.moinfo, \
                                      parameter_data = self.parameters.data, \
                                      control_data = self.controls.data, \
-                                     version = '1.0');                      
+                                     version = '1.0');
         # Estimate
         self.model.estimate(self.start_time, self.final_time, ['T_db']);
         # Validate
@@ -573,7 +646,7 @@ class EstimateFromUKF(TestCaseMPCPy):
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
-        
+
     def test_error_fmu_version(self):
         '''Test error raised if wrong fmu version.'''
         # Check error raised with wrong fmu version (2.0 instead of 1.0)
@@ -586,32 +659,32 @@ class EstimateFromUKF(TestCaseMPCPy):
                                          parameter_data = self.parameters.data, \
                                          control_data = self.controls.data, \
                                          version = '2.0');
-            
+
 #%% Occupancy tests
 class OccupancyFromQueueing(TestCaseMPCPy):
     '''Test the occupancy model using a queueing approach.
-    
+
     '''
-    
+
     def setUp(self):
         # Testing time
         self.start_time = '3/8/2013';
-        self.final_time = '3/15/2013 23:59';   
+        self.final_time = '3/15/2013 23:59';
         # Setup building measurement collection from csv
-        self.csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'OccData.csv');   
+        self.csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'OccData.csv');
         # Measurements
         self.measurements = {};
         self.measurements['occupancy'] = {'Sample' : variables.Static('occupancy_sample', 300, units.s)};
-        self.measurement_variable_map = {'Total People Count for the whole building (+)' : ('occupancy', units.unit1)};                        
+        self.measurement_variable_map = {'Total People Count for the whole building (+)' : ('occupancy', units.unit1)};
         # Instantiate building measurement source
         self.building = systems.RealFromCSV(self.csv_filepath, \
-                                            self.measurements, 
+                                            self.measurements,
                                             self.measurement_variable_map,
                                             time_header = 'Date');
         # Where to save ref occupancy model
         self.occupancy_model_file = self.get_ref_path() + os.sep +'occupancy_model_estimated.txt';
-        
-        
+
+
     def test_estimate(self):
         '''Test the estimation method.'''
         plt.close('all');
@@ -635,7 +708,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
                 pass;
             with open(self.occupancy_model_file, 'w') as f:
                 pickle.dump(self.occupancy, f);
-            
+
     def test_simulate(self):
         '''Test occupancy prediction.'''
         plt.close('all');
@@ -653,13 +726,13 @@ class OccupancyFromQueueing(TestCaseMPCPy):
 
     def test_validate(self):
         '''Test occupancy prediction comparison with measured data.'''
-        plt.close('all');          
+        plt.close('all');
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
             self.occupancy = pickle.load(f);
         # Collect validation measurements
-        self.building.collect_measurements(self.start_time, self.final_time);             
-        # Set valiation measurements in occupancy model        
+        self.building.collect_measurements(self.start_time, self.final_time);
+        # Set valiation measurements in occupancy model
         self.occupancy.measurements = self.building.measurements;
         # Validate occupancy model with simulation options
         simulate_options = self.occupancy.get_simulate_options();
@@ -675,17 +748,17 @@ class OccupancyFromQueueing(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.occupancy.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);        
-        
+        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
+
     def test_get_load(self):
         '''Test generation of occupancy load data using occupancy prediction.'''
-        plt.close('all');      
+        plt.close('all');
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
-            self.occupancy = pickle.load(f);        
+            self.occupancy = pickle.load(f);
         # Simulate occupancy model
         simulate_options = self.occupancy.get_simulate_options();
-        simulate_options['iter_num'] = 5;  
+        simulate_options['iter_num'] = 5;
         np.random.seed(1);
         self.occupancy.simulate(self.start_time, self.final_time);
         load = self.occupancy.get_load(100);
@@ -693,30 +766,30 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         df_test = load.to_frame(name='load');
         df_test.index.name = 'Time';
         self.check_df(df_test, 'get_load.csv');
-        
+
     def test_get_constraint(self):
         '''Test generation of occupancy constraint data using occupancy prediction.'''
-        plt.close('all');      
+        plt.close('all');
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
-            self.occupancy = pickle.load(f);        
+            self.occupancy = pickle.load(f);
         # Simulate occupancy model
         simulate_options = self.occupancy.get_simulate_options();
         simulate_options['iter_num'] = 5;
-        np.random.seed(1);         
+        np.random.seed(1);
         self.occupancy.simulate(self.start_time, self.final_time);
         constraint = self.occupancy.get_constraint(20, 25);
         # Check references
         df_test = constraint.to_frame(name='constraint');
         df_test.index.name = 'Time';
         self.check_df(df_test, 'get_constraint.csv');
-        
+
     def test_error_points_per_day(self):
         '''Test occupancy prediction.'''
         plt.close('all');
         # Time
         self.start_time = '3/1/2013';
-        self.final_time = '3/7/2013 23:59';        
+        self.final_time = '3/7/2013 23:59';
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
             self.occupancy = pickle.load(f);
@@ -725,7 +798,7 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Estimate occupancy model parameters and expect error
         with self.assertRaises(ValueError):
             np.random.seed(1);
-            self.occupancy.estimate(self.start_time, self.final_time);    
-    
+            self.occupancy.estimate(self.start_time, self.final_time);
+
 if __name__ == '__main__':
     unittest.main()
