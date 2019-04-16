@@ -272,35 +272,31 @@ class Modelica(_Model, utility._FMU, utility._Building):
                 par_vals[par] = lhs[:,i]*(par_max-par_min)+par_min;
             # Estimate for each lhs sample
             J = float('inf');
-            par_best = {};
-            df_par = pd.DataFrame()
-            self.all_est = pd.DataFrame(columns=free_pars + ['error'])
+            par_best = dict();
+            all_est = dict()
             for i in range(global_start):
                 # Set lhs sample values for each parameter
                 for par in par_vals.keys():
                     self.parameter_data[par]['Value'].set_data(par_vals[par][i]);
                     # Save for initial_guess
-                    df_par.loc[i, par] = par_vals[par][i]
+                    all_est[i] = dict()
+                    all_est[i][par] = par_vals[par][i]
+                # Make estimate for iteration
                 self._estimate_method._estimate(self);
+                # Validate estimate for iteration
                 self.validate(start_time, final_time, 'validate', plot = 0);
                 # Save RMSE for initial_guess
-                df_par.loc[i,'error'] = 0
                 for key in self.RMSE:
-                    df_par.loc[i,'error'] = df_par.loc[i,'error'] + self.RMSE[key].display_data();
+                    all_est[i]['RMSE_{0}'.format(key)] = self.RMSE[key].display_data();
                 # Compare objective, if less, save best par values
                 J_curr = self._estimate_method.opt_problem.get_optimization_statistics()[2]
+                all_est[i]['J'] = J_curr
                 if J_curr < J:
                     J = J_curr;
                     for par in free_pars:
                         par_best[par] = self.parameter_data[par]['Value'].display_data();
-                # Save for all estimates
-                current_est = {}
-                for par in free_pars:
-                    current_est[par] = self.parameter_data[par]['Value'].display_data()
-                current_est['error'] = 0
-                for key in self.RMSE:
-                    current_est['error'] = current_est['error'] + self.RMSE[key].display_data();
-                self.all_est.loc[i] = current_est
+                # Save all estimates
+                self.all_est = all_est
             # Set best parameters in model
             for par in par_vals.keys():
                 self.parameter_data[par]['Value'].set_data(par_best[par]);
