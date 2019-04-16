@@ -190,7 +190,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self.set_estimate_method(estimate_method);
         self.set_validate_method(validate_method);
         
-    def estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=None):
+    def estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=None, use_initial_values=True):
         '''Estimate the parameters of the model.
         
         The estimation of the parameters is based on the data in the 
@@ -202,7 +202,9 @@ class Modelica(_Model, utility._FMU, utility._Building):
         free parameter provided.  The algorithm uses latin hypercube sampling 
         to choose the initial parameter guess values for each iteration and 
         the iteration with the lowest estimation problem objective value is 
-        chosen.
+        chosen.  A user-provided guess is included by default using initial
+        values given to parameter data of the model, though this option can be 
+        turned off to use only sampled initial guesses.
         
         Parameters
         ----------
@@ -224,6 +226,9 @@ class Modelica(_Model, utility._FMU, utility._Building):
             Specific seed of the global start algorithm for the random selection
             of initial value guesses.
             Default is None.
+        use_initial_values : boolean, optional
+            True to include initial parameter values in the estimation iterations.
+            Default is True.
 
         Yields
         ------
@@ -268,38 +273,46 @@ class Modelica(_Model, utility._FMU, utility._Building):
             n_free_pars = len(free_pars);
             lhs = doe.lhs(n_free_pars, samples=global_start, criterion='c');
             # Scale and store lhs samples for parameters between min and max bounds
-            par_vals = {};
+            par_vals = dict();
             for par, i in zip(free_pars, range(n_free_pars)):
                 par_min = self.parameter_data[par]['Minimum'].display_data();
                 par_max = self.parameter_data[par]['Maximum'].display_data();                                
-                par_vals[par] = lhs[:,i]*(par_max-par_min)+par_min;
-            # Estimate for each lhs sample
+                par_vals[par] = (lhs[:,i]*(par_max-par_min)+par_min).tolist();
+                # Add initial value guesses if wanted
+                if use_initial_values:
+                    par_vals[par].append(self.parameter_data[par]['Value'].display_data())
+            # Estimate for each sample
             J = float('inf');
             par_best = dict();
-            all_est = dict()
-            for i in range(global_start):
+            glo_est_data = dict()
+            if use_initial_values:
+                iterations = range(global_start+1)
+            else:
+                iterations = range(global_start)
+            for i in iterations:
+                # Create dictionary to save all estimation iteration data
+                glo_est_data[i] = dict()
                 # Set lhs sample values for each parameter
                 for par in par_vals.keys():
+                    # Use latin hypercube selections
                     self.parameter_data[par]['Value'].set_data(par_vals[par][i]);
-                    # Save for initial_guess
-                    all_est[i] = dict()
-                    all_est[i][par] = par_vals[par][i]
+                    glo_est_data[i][par] = par_vals[par][i]
                 # Make estimate for iteration
                 self._estimate_method._estimate(self);
                 # Validate estimate for iteration
                 self.validate(start_time, final_time, 'validate', plot = 0);
                 # Save RMSE for initial_guess
                 for key in self.RMSE:
-                    all_est[i]['RMSE_{0}'.format(key)] = self.RMSE[key].display_data();
+                    glo_est_data[i]['RMSE_{0}'.format(key)] = self.RMSE[key].display_data();
                 # Compare objective, if less, save best par values
                 J_curr = self._estimate_method.opt_problem.get_optimization_statistics()[2]
-                all_est[i]['J'] = J_curr
+                glo_est_data[i]['J'] = J_curr
                 if J_curr < J:
                     J = J_curr;
                     for par in free_pars:
                         par_best[par] = self.parameter_data[par]['Value'].display_data();
                 # Save all estimates
-                self.all_est = all_est
+                self.glo_est_data = glo_est_data
             # Set best parameters in model
             for par in par_vals.keys():
                 self.parameter_data[par]['Value'].set_data(par_best[par]);
