@@ -197,6 +197,13 @@ class Modelica(_Model, utility._FMU, utility._Building):
         ``'Measured'`` key in the measurements dictionary attribute, 
         the parameter_data dictionary attribute, and any exodata inputs.
         
+        An optional global start algorithm where multiple estimations are 
+        preformed with different initial guesses within the ranges of each 
+        free parameter provided.  The algorithm uses latin hypercube sampling 
+        to choose the initial parameter guess values for each iteration and 
+        the iteration with the lowest estimation problem objective value is 
+        chosen.
+        
         Parameters
         ----------
         start_time : string
@@ -209,11 +216,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
             measurements dictionary attirubute the estimation will 
             try to minimize the error.
         global_start : int, optional
-            Number of iterations of a global start algorithm where multiple
-            estimations are preformed with different initial guesses within
-            the ranges of each free parameter provided.  The algorithm
-            uses latin hypercube sampling to choose the initial parameter
-            guess values for each iteration.
+            Number of iterations of a global start algorithm.
             If 0, the global start algorithm is disabled and the values in
             the parameter_data dictionary are used as initial guesses.
             Default is 0.

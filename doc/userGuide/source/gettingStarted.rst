@@ -30,6 +30,8 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
 	    tzwhere **=** 2.3
 
+         pyDOE >= 0.3.8
+
 2. Install libgeos-dev with command:
 
 	.. code-block:: text
