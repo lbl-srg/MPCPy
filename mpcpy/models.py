@@ -199,12 +199,20 @@ class Modelica(_Model, utility._FMU, utility._Building):
         
         An optional global start algorithm where multiple estimations are 
         preformed with different initial guesses within the ranges of each 
-        free parameter provided.  The algorithm uses latin hypercube sampling 
+        free parameter provided.  It is implemented as tested in 
+        Blum et al. (2019).  The algorithm uses latin hypercube sampling 
         to choose the initial parameter guess values for each iteration and 
         the iteration with the lowest estimation problem objective value is 
         chosen.  A user-provided guess is included by default using initial
         values given to parameter data of the model, though this option can be 
         turned off to use only sampled initial guesses.
+        
+        Blum, D.H., Arendt, K., Rivalin, L., Piette, M.A., Wetter, M., and 
+        Veje, C.T. (2019). "Practical factors of envelope model setup and 
+        their effects on the performance of model predictive control for 
+        building heating, ventilating, and air conditioning systems." 
+        Applied Energy 236, 410-425. 
+        https://doi.org/10.1016/j.apenergy.2018.11.093
         
         Parameters
         ----------
