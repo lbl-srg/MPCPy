@@ -29,6 +29,11 @@ class SimpleRC(TestCaseMPCPy):
         # Set measurements
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        
+    def tearDown(self):
+        del self.start_time
+        del self.final_time
+        del self.measurements
 
     def test_simulate(self):
         '''Test simulation of a model.'''
@@ -41,17 +46,17 @@ class SimpleRC(TestCaseMPCPy):
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         controls.collect_data(self.start_time, self.final_time);
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
                                      control_data = controls.data);
         # Simulate model
-        self.model.simulate(self.start_time, self.final_time);
+        model.simulate(self.start_time, self.final_time);
         # Check references
-        df_test = self.model.display_measurements('Simulated');
+        df_test = model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_display.csv');
-        df_test = self.model.get_base_measurements('Simulated');
+        df_test = model.get_base_measurements('Simulated');
         self.check_df(df_test, 'simulate_base.csv');
 
     def test_estimate_one_par(self):
@@ -71,15 +76,15 @@ class SimpleRC(TestCaseMPCPy):
         parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 1000000, units.J_K);
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
                                      parameter_data = parameter_data);
         # Estimate models
-        self.model.estimate(self.start_time, self.final_time, ['T_db'])
+        model.estimate(self.start_time, self.final_time, ['T_db'])
         # Check references
-        data = [self.model.parameter_data['heatCapacitor.C']['Value'].display_data()]
+        data = [model.parameter_data['heatCapacitor.C']['Value'].display_data()]
         index = ['heatCapacitor.C']
         df_test = pd.DataFrame(data=data, index=index, columns=['Value'])
         self.check_df(df_test, 'estimate_one_par.csv', timeseries=False)
@@ -106,16 +111,16 @@ class SimpleRC(TestCaseMPCPy):
         parameter_data['thermalResistor.R']['Maximum'] = variables.Static('R_Max', 0.1, units.K_W);
         parameter_data['thermalResistor.R']['Free'] = variables.Static('R_Free', True, units.boolean);
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
                                      parameter_data = parameter_data);
         # Estimate models
-        self.model.estimate(self.start_time, self.final_time, ['T_db'])
+        model.estimate(self.start_time, self.final_time, ['T_db'])
         # Check references
-        data = [self.model.parameter_data['heatCapacitor.C']['Value'].display_data(),
-                self.model.parameter_data['thermalResistor.R']['Value'].display_data(),]
+        data = [model.parameter_data['heatCapacitor.C']['Value'].display_data(),
+                model.parameter_data['thermalResistor.R']['Value'].display_data(),]
         index = ['heatCapacitor.C', 'thermalResistor.R']
         df_test = pd.DataFrame(data=data, index=index, columns=['Value'])
         self.check_df(df_test, 'estimate_two_par.csv', timeseries=False)
@@ -131,26 +136,26 @@ class SimpleRC(TestCaseMPCPy):
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         controls.collect_data(self.start_time, self.final_time);
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
                                      control_data = controls.data);
         # Simulate model
-        self.model.simulate(self.start_time, self.final_time);
+        model.simulate(self.start_time, self.final_time);
         # Check references
-        df_test = self.model.display_measurements('Simulated');
+        df_test = model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_display.csv');
 
         # Simulate model in 4-hour chunks
         sim_steps = pd.date_range(self.start_time, self.final_time, freq=str('8H'))
         for i in range(len(sim_steps)-1):
             if i == 0:
-                self.model.simulate(sim_steps[i], sim_steps[i+1]);
+                model.simulate(sim_steps[i], sim_steps[i+1]);
             else:
-                self.model.simulate('continue', sim_steps[i+1]);
+                model.simulate('continue', sim_steps[i+1]);
             # Check references
-            df_test = self.model.display_measurements('Simulated');
+            df_test = model.display_measurements('Simulated');
             self.check_df(df_test, 'simulate_step{0}.csv'.format(i));
 
     def test_simulate_noinputs(self):
@@ -159,14 +164,14 @@ class SimpleRC(TestCaseMPCPy):
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_noinputs';
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}));
         # Simulate model
-        self.model.simulate(self.start_time, self.final_time);
+        model.simulate(self.start_time, self.final_time);
         # Check references
-        df_test = self.model.display_measurements('Simulated');
+        df_test = model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_noinputs.csv');
 
     def test_estimate_error_nofreeparameters(self):
@@ -175,13 +180,13 @@ class SimpleRC(TestCaseMPCPy):
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_noinputs';
         # Instantiate model
-        self.model_no_params = models.Modelica(models.JModelica, \
+        model_no_params = models.Modelica(models.JModelica, \
                                                models.RMSE, \
                                                self.measurements, \
                                                moinfo = (mopath, modelpath, {}));
         # Check error raised with no parameters
         with self.assertRaises(ValueError):
-            self.model_no_params.estimate(self.start_time, self.final_time, []);
+            model_no_params.estimate(self.start_time, self.final_time, []);
         # Set parameters
         parameter_data = {};
         parameter_data['heatCapacitor.C'] = {};
@@ -190,14 +195,14 @@ class SimpleRC(TestCaseMPCPy):
         parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', False, units.boolean);
         # Instantiate model
-        self.model_no_free = models.Modelica(models.JModelica, \
+        model_no_free = models.Modelica(models.JModelica, \
                                                models.RMSE, \
                                                self.measurements, \
                                                moinfo = (mopath, modelpath, {}), \
                                                parameter_data = parameter_data);
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
-            self.model_no_params.estimate(self.start_time, self.final_time, []);
+            model_no_params.estimate(self.start_time, self.final_time, []);
 
     def test_estimate_error_nomeasurements(self):
         '''Test error raised if measurement_variable_list not in measurements dictionary.'''
@@ -212,21 +217,21 @@ class SimpleRC(TestCaseMPCPy):
         parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
         # Instantiate model
-        self.model_no_meas = models.Modelica(models.JModelica, \
+        model_no_meas = models.Modelica(models.JModelica, \
                                                models.RMSE, \
                                                self.measurements, \
                                                moinfo = (mopath, modelpath, {}), \
                                                parameter_data = parameter_data);
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
-            self.model_no_meas.estimate(self.start_time, self.final_time, ['wrong_meas']);
+            model_no_meas.estimate(self.start_time, self.final_time, ['wrong_meas']);
             
     def test_instantiate_error_incompatible_estimation(self):
         '''Test error raised if estimation method is incompatible with model.'''
         # Set model path
         fmupath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
         with self.assertRaises(ValueError):
-            self.model = models.Modelica(models.JModelica, models.RMSE, {}, fmupath=fmupath);
+            model = models.Modelica(models.JModelica, models.RMSE, {}, fmupath=fmupath);
 
 
 #%%
@@ -322,6 +327,15 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
                                      tz_name = self.weather.tz_name);
         # Simulate model with initial guess
         self.model.simulate(self.start_time_estimation, self.final_time_estimation)
+        
+    def tearDown(self):
+        del self.model
+        del self.building_est
+        del self.weather
+        del self.internal
+        del self.control
+        del self.parameters
+        del self.measurements
 
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
@@ -456,6 +470,14 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
                                                  fmupath = self.building_source_file_path, \
                                                  zone_names = self.zone_names, \
                                                  parameter_data = building_parameters_data);
+                                                 
+    def tearDown(self):
+        del self.building
+        del self.weather
+        del self.internal
+        del self.control
+        del self.parameters
+        del self.measurements
 
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
@@ -561,6 +583,7 @@ class EstimateFromUKF(TestCaseMPCPy):
     '''Test the parameter estimation of a model using UKF.
 
     '''
+
     def setUp(self):
         self.start_time = '1/1/2017';
         self.final_time = '1/10/2017';
@@ -586,11 +609,17 @@ class EstimateFromUKF(TestCaseMPCPy):
                                                control_data = self.controls.data);
         # Get measurements
         self.system.collect_measurements(self.start_time, self.final_time);
+        
+    def tearDown(self):
+        del self.system
+        del self.controls
+        del self.parameters
+        del self.measurements
 
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
         # Instantiate model
-        self.model = models.Modelica(models.UKF, \
+        model = models.Modelica(models.UKF, \
                                      models.RMSE, \
                                      self.system.measurements, \
                                      moinfo = self.moinfo, \
@@ -598,14 +627,14 @@ class EstimateFromUKF(TestCaseMPCPy):
                                      control_data = self.controls.data, \
                                      version = '1.0');
         # Estimate
-        self.model.estimate(self.start_time, self.final_time, ['T_db']);
+        model.estimate(self.start_time, self.final_time, ['T_db']);
         # Validate
-        self.model.validate(self.start_time, self.final_time, 'validate', plot = 0);
+        model.validate(self.start_time, self.final_time, 'validate', plot = 0);
         # Check references
         RMSE = {};
-        for key in self.model.RMSE.keys():
+        for key in model.RMSE.keys():
             RMSE[key] = {};
-            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
+            RMSE[key]['Value'] = model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
 
@@ -614,7 +643,7 @@ class EstimateFromUKF(TestCaseMPCPy):
         # Check error raised with wrong fmu version (2.0 instead of 1.0)
         with self.assertRaises(ValueError):
             # Instantiate model
-            self.model = models.Modelica(models.UKF, \
+            model = models.Modelica(models.UKF, \
                                          models.RMSE, \
                                          self.system.measurements, \
                                          moinfo = self.moinfo, \
@@ -646,6 +675,9 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Where to save ref occupancy model
         self.occupancy_model_file = self.get_ref_path() + os.sep +'occupancy_model_estimated.txt';
 
+    def tearDown(self):
+        del self.building
+        del self.measurements
 
     def test_estimate(self):
         '''Test the estimation method.'''
@@ -656,34 +688,34 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         # Collect measurements
         self.building.collect_measurements(start_time, final_time);
         # Instantiate occupancy model
-        self.occupancy = models.Occupancy(models.QueueModel, self.building.measurements);
+        occupancy = models.Occupancy(models.QueueModel, self.building.measurements);
         # Estimate occupancy model parameters
         np.random.seed(1);
-        self.occupancy.estimate(start_time, final_time);
+        occupancy.estimate(start_time, final_time);
         try:
             with open(self.occupancy_model_file, 'r') as f:
-                self.occupancy = pickle.load(f);
+                occupancy = pickle.load(f);
         except IOError:
             try:
                 os.makedirs(self.get_ref_path());
             except OSError:
                 pass;
             with open(self.occupancy_model_file, 'w') as f:
-                pickle.dump(self.occupancy, f);
+                pickle.dump(occupancy, f);
 
     def test_simulate(self):
         '''Test occupancy prediction.'''
         plt.close('all');
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
-            self.occupancy = pickle.load(f);
+            occupancy = pickle.load(f);
         # Simulate occupancy model
         np.random.seed(1);
-        self.occupancy.simulate(self.start_time, self.final_time);
+        occupancy.simulate(self.start_time, self.final_time);
         # Check references
-        df_test = self.occupancy.display_measurements('Simulated');
+        df_test = occupancy.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_display.csv');
-        df_test = self.occupancy.get_base_measurements('Simulated');
+        df_test = occupancy.get_base_measurements('Simulated');
         self.check_df(df_test, 'simulate_base.csv');
 
     def test_validate(self):
@@ -691,24 +723,24 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         plt.close('all');
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
-            self.occupancy = pickle.load(f);
+            occupancy = pickle.load(f);
         # Collect validation measurements
         self.building.collect_measurements(self.start_time, self.final_time);
         # Set valiation measurements in occupancy model
-        self.occupancy.measurements = self.building.measurements;
+        occupancy.measurements = self.building.measurements;
         # Validate occupancy model with simulation options
-        simulate_options = self.occupancy.get_simulate_options();
+        simulate_options = occupancy.get_simulate_options();
         simulate_options['iter_num'] = 5;
-        self.occupancy.set_simulate_options(simulate_options);
+        occupancy.set_simulate_options(simulate_options);
         np.random.seed(1);
-        self.occupancy.validate(self.start_time, self.final_time, \
+        occupancy.validate(self.start_time, self.final_time, \
                                 os.path.join(self.get_unittest_path(), 'outputs', \
                                              'occupancy_model_validate'));
         # Check references
         RMSE = {};
-        for key in self.occupancy.RMSE.keys():
+        for key in occupancy.RMSE.keys():
             RMSE[key] = {};
-            RMSE[key]['Value'] = self.occupancy.RMSE[key].display_data();
+            RMSE[key]['Value'] = occupancy.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
 
@@ -717,13 +749,13 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         plt.close('all');
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
-            self.occupancy = pickle.load(f);
+            occupancy = pickle.load(f);
         # Simulate occupancy model
-        simulate_options = self.occupancy.get_simulate_options();
+        simulate_options = occupancy.get_simulate_options();
         simulate_options['iter_num'] = 5;
         np.random.seed(1);
-        self.occupancy.simulate(self.start_time, self.final_time);
-        load = self.occupancy.get_load(100);
+        occupancy.simulate(self.start_time, self.final_time);
+        load = occupancy.get_load(100);
         # Check references
         df_test = load.to_frame(name='load');
         df_test.index.name = 'Time';
@@ -734,13 +766,13 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         plt.close('all');
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
-            self.occupancy = pickle.load(f);
+            occupancy = pickle.load(f);
         # Simulate occupancy model
-        simulate_options = self.occupancy.get_simulate_options();
+        simulate_options = occupancy.get_simulate_options();
         simulate_options['iter_num'] = 5;
         np.random.seed(1);
-        self.occupancy.simulate(self.start_time, self.final_time);
-        constraint = self.occupancy.get_constraint(20, 25);
+        occupancy.simulate(self.start_time, self.final_time);
+        constraint = occupancy.get_constraint(20, 25);
         # Check references
         df_test = constraint.to_frame(name='constraint');
         df_test.index.name = 'Time';
@@ -754,13 +786,13 @@ class OccupancyFromQueueing(TestCaseMPCPy):
         self.final_time = '3/7/2013 23:59';
         # Load occupancy model
         with open(self.occupancy_model_file, 'r') as f:
-            self.occupancy = pickle.load(f);
+            occupancy = pickle.load(f);
         # Change occupant measurements to not be whole number in points per day
-        self.occupancy.measurements['occupancy']['Sample'] = variables.Static('occupancy_sample', 299, units.s);
+        occupancy.measurements['occupancy']['Sample'] = variables.Static('occupancy_sample', 299, units.s);
         # Estimate occupancy model parameters and expect error
         with self.assertRaises(ValueError):
             np.random.seed(1);
-            self.occupancy.estimate(self.start_time, self.final_time);
+            occupancy.estimate(self.start_time, self.final_time);
 
 if __name__ == '__main__':
     unittest.main()
