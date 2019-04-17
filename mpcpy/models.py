@@ -74,6 +74,7 @@ from occupant.occupancy.queueing.parameter_inference_given_segments import param
 from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
+import pyDOE as doe
 
 #%% Model Class
 class _Model(utility._mpcpyPandas, utility._Measurements):
@@ -189,12 +190,29 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self.set_estimate_method(estimate_method);
         self.set_validate_method(validate_method);
         
-    def estimate(self, start_time, final_time, measurement_variable_list):
+    def estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=None, use_initial_values=True):
         '''Estimate the parameters of the model.
         
         The estimation of the parameters is based on the data in the 
         ``'Measured'`` key in the measurements dictionary attribute, 
         the parameter_data dictionary attribute, and any exodata inputs.
+        
+        An optional global start algorithm where multiple estimations are 
+        preformed with different initial guesses within the ranges of each 
+        free parameter provided.  It is implemented as tested in 
+        Blum et al. (2019).  The algorithm uses latin hypercube sampling 
+        to choose the initial parameter guess values for each iteration and 
+        the iteration with the lowest estimation problem objective value is 
+        chosen.  A user-provided guess is included by default using initial
+        values given to parameter data of the model, though this option can be 
+        turned off to use only sampled initial guesses.
+        
+        Blum, D.H., Arendt, K., Rivalin, L., Piette, M.A., Wetter, M., and 
+        Veje, C.T. (2019). "Practical factors of envelope model setup and 
+        their effects on the performance of model predictive control for 
+        building heating, ventilating, and air conditioning systems." 
+        Applied Energy 236, 410-425. 
+        https://doi.org/10.1016/j.apenergy.2018.11.093
         
         Parameters
         ----------
@@ -207,6 +225,18 @@ class Modelica(_Model, utility._FMU, utility._Building):
             List of strings defining for which variables defined in the 
             measurements dictionary attirubute the estimation will 
             try to minimize the error.
+        global_start : int, optional
+            Number of iterations of a global start algorithm.
+            If 0, the global start algorithm is disabled and the values in
+            the parameter_data dictionary are used as initial guesses.
+            Default is 0.
+        seed : numeric or None, optional
+            Specific seed of the global start algorithm for the random selection
+            of initial value guesses.
+            Default is None.
+        use_initial_values : boolean, optional
+            True to include initial parameter values in the estimation iterations.
+            Default is True.
 
         Yields
         ------
@@ -236,7 +266,66 @@ class Modelica(_Model, utility._FMU, utility._Building):
         # Perform parameter estimation
         self._set_time_interval(start_time, final_time);
         self.measurement_variable_list = measurement_variable_list;
-        self._estimate_method._estimate(self);
+        # Without global start
+        if not global_start:
+            self._estimate_method._estimate(self);
+        # With global start
+        else:
+            # Detect free parameters
+            free_pars = [];
+            for par in self.parameter_data.keys():
+                if self.parameter_data[par]['Free'].display_data():
+                    free_pars.append(par)
+            # Create lhs sample for all parameters
+            np.random.seed(seed)  # Random seed for LHS initialization
+            n_free_pars = len(free_pars);
+            lhs = doe.lhs(n_free_pars, samples=global_start, criterion='c');
+            # Scale and store lhs samples for parameters between min and max bounds
+            par_vals = dict();
+            for par, i in zip(free_pars, range(n_free_pars)):
+                par_min = self.parameter_data[par]['Minimum'].display_data();
+                par_max = self.parameter_data[par]['Maximum'].display_data();                                
+                par_vals[par] = (lhs[:,i]*(par_max-par_min)+par_min).tolist();
+                # Add initial value guesses if wanted
+                if use_initial_values:
+                    par_vals[par].append(self.parameter_data[par]['Value'].display_data())
+            # Estimate for each sample
+            J = float('inf');
+            par_best = dict();
+            glo_est_data = dict()
+            if use_initial_values:
+                iterations = range(global_start+1)
+            else:
+                iterations = range(global_start)
+            for i in iterations:
+                # Create dictionary to save all estimation iteration data
+                glo_est_data[i] = dict()
+                # Set lhs sample values for each parameter
+                for par in par_vals.keys():
+                    # Use latin hypercube selections
+                    self.parameter_data[par]['Value'].set_data(par_vals[par][i]);
+                    glo_est_data[i][par] = par_vals[par][i]
+                # Make estimate for iteration
+                self._estimate_method._estimate(self);
+                # Validate estimate for iteration
+                self.validate(start_time, final_time, 'validate', plot = 0);
+                # Save RMSE for initial_guess
+                for key in self.RMSE:
+                    glo_est_data[i]['RMSE_{0}'.format(key)] = self.RMSE[key].display_data();
+                # Compare objective, if less, save best par values
+                J_curr = self._estimate_method.opt_problem.get_optimization_statistics()[2]
+                glo_est_data[i]['J'] = J_curr
+                if J_curr < J:
+                    J = J_curr;
+                    for par in free_pars:
+                        par_best[par] = self.parameter_data[par]['Value'].display_data();
+                # Save all estimates
+                self.glo_est_data = glo_est_data
+            # Set best parameters in model
+            for par in par_vals.keys():
+                self.parameter_data[par]['Value'].set_data(par_best[par]);
+        
+        
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
         '''Validate the estimated parameters of the model.
@@ -330,6 +419,24 @@ class Modelica(_Model, utility._FMU, utility._Building):
         '''
 
         self._validate_method = validate_method(self);
+        
+    def get_global_estimate_data(self):
+        '''Get the estimation data if using the global estimation algorithm.
+        
+        Must have completed the estimation using the global algorithm.
+        
+        Returns
+        -------
+        glo_est_data : dictionary
+            Estimation data from each iteration of the global estimation
+            algorithm, including the training RMSE for each measurement
+            variable, initial guess for each parameter, and objective value.
+        
+        '''
+        
+        glo_est_data = self.glo_est_data
+        
+        return glo_est_data
         
 class Occupancy(_Model):
     '''Class for models of occupancy.
