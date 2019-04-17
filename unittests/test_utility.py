@@ -25,6 +25,12 @@ class TestEmulationFromFMU(TestCaseMPCPy):
         # instantiate building fmu v2.0
         fmupath_2 = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v2.fmu');
         self.building_2 = systems.EmulationFromFMU({}, fmupath = fmupath_2, parameter_data = self.parameter_data);
+        
+    def tearDown(self):
+        del self.parameter_data
+        del self.building_1
+        del self.building_2
+        
     def test_fmu_version(self):
         # fmu 1.0
         self.assertEqual(self.building_1.fmu_version, '1.0');
@@ -115,61 +121,61 @@ class TestSimulateFMU(TestCaseMPCPy):
     def test_simulate_me_1(self):
         '''Test simulation me 1.0.'''
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = self.moinfo, 
                                      version = '1.0',
                                      target = 'me');
         # Simulate model
-        self.model.simulate(self.start_time, self.final_time);
+        model.simulate(self.start_time, self.final_time);
         # Check references
-        df_test = self.model.display_measurements('Simulated');
+        df_test = model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_fmu_me.csv');
 
     def test_simulate_cs_1(self):
         '''Test simulation cs 1.0.'''
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = self.moinfo, 
                                      version = '1.0',
                                      target = 'cs');
         # Simulate model
-        self.model.simulate(self.start_time, self.final_time);
+        model.simulate(self.start_time, self.final_time);
         # Check references
-        df_test = self.model.display_measurements('Simulated');
+        df_test = model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_fmu_cs.csv');
         
     def test_simulate_me_2(self):
         '''Test simulation me 2.0.'''
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = self.moinfo, 
                                      version = '2.0',
                                      target = 'me');
         # Simulate model
-        self.model.simulate(self.start_time, self.final_time);
+        model.simulate(self.start_time, self.final_time);
         # Check references
-        df_test = self.model.display_measurements('Simulated');     
+        df_test = model.display_measurements('Simulated');     
         self.check_df(df_test, 'simulate_fmu_me.csv');
         
     def test_simulate_cs_2(self):
         '''Test simulation cs 2.0.'''
         # Instantiate model
-        self.model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelica, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = self.moinfo, 
                                      version = '2.0',
                                      target = 'cs');
         # Simulate model
-        self.model.simulate(self.start_time, self.final_time);
+        model.simulate(self.start_time, self.final_time);
         # Check references
-        df_test = self.model.display_measurements('Simulated');
+        df_test = model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_fmu_cs.csv');
 
 if __name__ == '__main__':

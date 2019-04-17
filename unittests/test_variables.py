@@ -20,6 +20,10 @@ class Static(unittest.TestCase):
     def setUp(self):
         '''Instantiate static variable.'''
         self.var = variables.Static('var1', 20, units.degC);
+        
+    def tearDown(self):
+        del self.var
+        
     def test_instantiation(self):
         '''Test Instantiation.'''
         self.assertEqual(self.var.name, 'var1');
@@ -84,7 +88,18 @@ class Timeseries(unittest.TestCase):
         self.time  = pd.date_range(self.start, self.end, freq='H');
         self.dataC_pd = pd.Series(data = self.dataC, index = self.time);
         self.dataF_pd = pd.Series(data = self.dataF, index = self.time);  
-        self.var = variables.Timeseries('var1', self.dataC_pd, units.degC);        
+        self.var = variables.Timeseries('var1', self.dataC_pd, units.degC);
+        
+    def tearDown(self):
+        del self.dataC
+        del self.dataF
+        del self.start
+        del self.end
+        del self.time
+        del self.dataC_pd
+        del self.dataF_pd
+        del self.var
+
     def test_instantiation(self):        
         '''Test Instantiation.'''
         self.assertEqual(self.var.name, 'var1');
@@ -141,18 +156,24 @@ class Operations_Static(unittest.TestCase):
         '''Instantiate static variables.'''
         self.a = variables.Static('a', 5, units.degC)
         self.b = variables.Static('b', 10, units.degC)
+        
+    def tearDown(self):
+        del self.a
+        del self.b
+
     def test_add(self):
         '''Add static variables.'''
-        self.c = self.a + self.b;
-        self.assertEqual('ab', self.c.name);
-        self.assertIs(self.c.get_display_unit(), units.degC);
-        self.assertEqual(self.c.display_data(), 15);
+        c = self.a + self.b;
+        self.assertEqual('ab', c.name);
+        self.assertIs(c.get_display_unit(), units.degC);
+        self.assertEqual(c.display_data(), 15);
+
     def test_subtract(self):        
         '''Subtract static variables.'''
-        self.d = self.a - self.b;
-        self.assertEqual('ab', self.d.name);
-        self.assertIs(self.d.get_display_unit(), units.degC);
-        self.assertEqual(self.d.display_data(), -5);
+        d = self.a - self.b;
+        self.assertEqual('ab', d.name);
+        self.assertIs(d.get_display_unit(), units.degC);
+        self.assertEqual(d.display_data(), -5);
         
 class Operations_Timeseries(unittest.TestCase):
     '''Tests for timeseries addition and subtraction.
@@ -167,21 +188,30 @@ class Operations_Timeseries(unittest.TestCase):
         self.time  = pd.date_range(self.start, self.end, freq='H');
         self.dataC_pd = pd.Series(data = self.dataC, index = self.time);
         self.e = variables.Timeseries('e', self.dataC_pd, units.degC);
+
+    def tearDown(self):
+        del self.dataC
+        del self.start
+        del self.end
+        del self.time
+        del self.dataC_pd
+        del self.e
+
     def test_add_static(self):
         '''Add static and timeseries variables.'''   
-        self.a = variables.Static('a', 5, units.degC)         
-        self.f = self.a + self.e;
-        self.assertEqual('ae', self.f.name);
-        self.assertIs(self.f.get_display_unit(), units.degC);
+        a = variables.Static('a', 5, units.degC)         
+        f = a + self.e;
+        self.assertEqual('ae', f.name);
+        self.assertIs(f.get_display_unit(), units.degC);
         for i in range(len(self.dataC)):
-            self.assertEqual(self.f.display_data().get_values()[i], 5 + self.dataC[i]);
+            self.assertEqual(f.display_data().get_values()[i], 5 + self.dataC[i]);
     def test_add_timeseries(self):            
         '''Add timeseries variables.'''             
-        self.g = self.e + self.e;
-        self.assertEqual('ee', self.g.name);
-        self.assertIs(self.g.get_display_unit(), units.degC);
+        g = self.e + self.e;
+        self.assertEqual('ee', g.name);
+        self.assertIs(g.get_display_unit(), units.degC);
         for i in range(len(self.dataC)):
-            self.assertEqual(self.g.display_data().get_values()[i], 2*self.dataC[i]);
+            self.assertEqual(g.display_data().get_values()[i], 2*self.dataC[i]);
             
 class Cleaning(unittest.TestCase):
     '''Tests for cleaning methods.
@@ -192,13 +222,18 @@ class Cleaning(unittest.TestCase):
         '''Create test data.'''
         self.time = pd.date_range('9/1/2015 00:00:00', '9/1/2015 03:00:00', freq = 'H');
         self.ts_calm = pd.Series(data = np.array([2,4,'calm',8]), index = self.time);
+        
+    def tearDown(self):
+        del self.time
+        del self.ts_calm
+        
     def test_replace(self):
         '''Replace 'calm' with 0.5 mph in timeseries variable.'''
-        self.var = variables.Timeseries('var', self.ts_calm, units.mph, \
+        var = variables.Timeseries('var', self.ts_calm, units.mph, \
                                         cleaning_type = variables.Timeseries.cleaning_replace,
                                         cleaning_args = ('calm',0.5));
-        self.assertAlmostEqual(self.var.get_base_data().get_values()[2], 0.22352, places = 3);
-        self.assertAlmostEqual(self.var.display_data().get_values()[2], 0.5, places = 3);
+        self.assertAlmostEqual(var.get_base_data().get_values()[2], 0.22352, places = 3);
+        self.assertAlmostEqual(var.display_data().get_values()[2], 0.5, places = 3);
 
 if __name__ == '__main__':
     unittest.main()
