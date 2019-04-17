@@ -27,6 +27,9 @@ class WeatherFromEPW(TestCaseMPCPy):
                                          'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
         self.weather = exodata.WeatherFromEPW(self.epw_filepath);
         
+    def tearDown(self):
+        del self.weather
+        
     def test_instantiate(self):
         self.assertEqual(self.weather.name, 'weather_from_epw');
         self.assertEqual(self.weather.file_path, self.epw_filepath);
@@ -78,6 +81,11 @@ class WeatherFromCSV(TestCaseMPCPy):
                              'Humidity' : ('weaRelHum', units.percent), \
                              'Sea Level PressureIn' : ('weaPAtm', units.inHg), \
                              'WindDirDegrees' : ('weaWinDir', units.deg)};
+                             
+    def tearDown(self):
+        del self.csv_filepath
+        del self.geography
+        del self.variable_map
                              
     def test_instantiate(self):
         weather = exodata.WeatherFromCSV(self.csv_filepath, \
@@ -179,6 +187,11 @@ class WeatherFromDF(TestCaseMPCPy):
                              'Sea Level PressureIn' : ('weaPAtm', units.inHg), \
                              'WindDirDegrees' : ('weaWinDir', units.deg)};
                              
+    def tearDown(self):
+        del self.df
+        del self.geography
+        del self.variable_map
+                             
     def test_instantiate(self):
         time = pd.to_datetime(self.df['DateUTC']);
         self.df.set_index(time, inplace=True);
@@ -275,8 +288,8 @@ class InternalFromCSV(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        self.csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'internal', 'sampleCSV.csv');
-        self.variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'internal', 'sampleCSV.csv');
+        variable_map = {'intRad_wes' : ('wes', 'intRad', units.W_m2), \
                              'intCon_wes' : ('wes', 'intCon', units.W_m2), \
                              'intLat_wes' : ('wes', 'intLat', units.W_m2), \
                              'intRad_hal' : ('hal', 'intRad', units.W_m2), \
@@ -286,8 +299,11 @@ class InternalFromCSV(TestCaseMPCPy):
                              'intCon_eas' : ('eas', 'intCon', units.W_m2), \
                              'intLat_eas' : ('eas', 'intLat', units.W_m2)};
         # Instantiate internal object
-        self.internal = exodata.InternalFromCSV(self.csv_filepath, \
-                                                self.variable_map);
+        self.internal = exodata.InternalFromCSV(csv_filepath, \
+                                                variable_map);
+                                                
+    def tearDown(self):
+        del self.internal
 
     def test_collect_data(self):
         start_time = '1/2/2015';
@@ -325,6 +341,9 @@ class InternalFromOccupancyModel(TestCaseMPCPy):
             occupancy_model_list.append(copy.deepcopy(occupancy_model));
         # Instantiate internal object
         self.internal = exodata.InternalFromOccupancyModel(zone_list, load_list, units.W_m2, occupancy_model_list);
+        
+    def tearDown(self):
+        del self.internal
 
     def test_collect_data(self):
         start_time = '4/2/2013';
@@ -348,7 +367,10 @@ class ControlFromCSV(TestCaseMPCPy):
                         'conHeat_eas' : ('conHeat_eas', units.unit1)};
         # Instantiate control object
         self.control = exodata.ControlFromCSV(csv_filepath, \
-                                              variable_map); 
+                                              variable_map);
+                                            
+    def tearDown(self):
+        del self.control
 
     def test_collect_data(self):
         start_time = '1/1/2015 13:00:00';
@@ -371,17 +393,21 @@ class ControlFromDF(TestCaseMPCPy):
         self.variable_map = {'conHeat_wes' : ('conHeat_wes', units.unit1), \
                         'conHeat_hal' : ('conHeat_hal', units.unit1), \
                         'conHeat_eas' : ('conHeat_eas', units.unit1)};
+                        
+    def tearDown(self):
+        del self.df
+        del self.variable_map
 
     def test_collect_data(self):
         start_time = '1/1/2015 13:00:00';
         final_time = '1/2/2015';
         # Instantiate control object
-        self.control = exodata.ControlFromDF(self.df, \
+        control = exodata.ControlFromDF(self.df, \
                                              self.variable_map); 
         # Get control data
-        self.control.collect_data(start_time, final_time);
+        control.collect_data(start_time, final_time);
         # Check reference
-        df_test = self.control.display_data();
+        df_test = control.display_data();
         self.check_df(df_test, 'collect_data.csv');
         
     def test_collect_data_tz_handling(self):
@@ -418,6 +444,9 @@ class OtherInputFromCSV(TestCaseMPCPy):
         # Instantiate other input object
         self.otherinput = exodata.OtherInputFromCSV(csv_filepath, \
                                                     variable_map);
+                                                    
+    def tearDown(self):
+        del self.otherinput
 
     def test_collect_data(self):
         start_time = '1/1/2015 00:00:00';
@@ -438,6 +467,10 @@ class OtherInputFromDF(TestCaseMPCPy):
         time = pd.to_datetime(self.df['Time']);
         self.df.set_index(time, inplace=True);
         self.variable_map = {'T' : ('Tamb', units.degC)};
+        
+    def tearDown(self):
+        del self.df
+        del self.variable_map
 
     def test_collect_data(self):
         start_time = '1/1/2015 00:00:00';
@@ -483,6 +516,9 @@ class ParameterFromCSV(TestCaseMPCPy):
         csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv');
         # Instantiate weather object
         self.parameters = exodata.ParameterFromCSV(csv_filepath);
+        
+    def tearDown(self):
+        del self.parameters
 
     def test_collect_data(self):
         # Get parameter data
@@ -501,6 +537,9 @@ class ParameterFromDF(TestCaseMPCPy):
         df = pd.read_csv(csv_filepath, index_col = 'Name')
         # Instantiate weather object
         self.parameters = exodata.ParameterFromDF(df);
+        
+    def tearDown(self):
+        del self.parameters
 
     def test_collect_data(self):
         # Get parameter data
@@ -532,6 +571,9 @@ class ConstraintFromCSV(TestCaseMPCPy):
         # Instantiate weather object
         self.constraints = exodata.ConstraintFromCSV(csv_filepath, \
                                                      variable_map);
+                                                     
+    def tearDown(self):
+        del self.constraints
 
     def test_collect_data(self):
         start_time = '1/1/2015 13:00:00';
@@ -563,6 +605,10 @@ class ConstraintFromDF(TestCaseMPCPy):
                         'conHeat_hal_max' : ('conHeat_hal', 'LTE', units.unit1), \
                         'conHeat_eas_min' : ('conHeat_eas', 'GTE', units.unit1), \
                         'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
+
+    def tearDown(self):
+        del self.df
+        del self.variable_map
 
     def test_collect_data(self):
         start_time = '1/1/2015 13:00:00';
@@ -625,6 +671,9 @@ class ConstraintFromOccupancyModel(TestCaseMPCPy):
         # Instantiate constraint object
         self.constraints = exodata.ConstraintFromOccupancyModel(state_variable_list, values_list, constraint_type_list, unit_list, occupancy_model);
 
+    def tearDown(self):
+        del self.constraints
+
     def test_collect_data(self):
         start_time = '3/2/2012';
         final_time = '3/4/2012';
@@ -646,6 +695,9 @@ class PriceFromCSV(TestCaseMPCPy):
         # Instantiate weather object
         self.prices = exodata.PriceFromCSV(csv_filepath, \
                                            variable_map);
+                                           
+    def tearDown(self):
+        del self.prices
 
     def test_print(self):
         start_time = '1/1/2015 13:00:00';
@@ -666,6 +718,10 @@ class PriceFromDF(TestCaseMPCPy):
         time = pd.to_datetime(self.df['Time']);
         self.df.set_index(time, inplace=True);
         self.variable_map = {'pi_e' : ('pi_e', units.unit1)};
+
+    def tearDown(self):
+        del self.df
+        del self.variable_map
 
     def test_print(self):
         start_time = '1/1/2015 13:00:00';
@@ -708,8 +764,12 @@ class Type(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        self.epw_filepath = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
-        self.weather = exodata.WeatherFromEPW(self.epw_filepath);
+        epw_filepath = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'USA_IL_Chicago-OHare.Intl.AP.725300_TMY3.epw');
+        self.weather = exodata.WeatherFromEPW(epw_filepath);
+
+    def tearDown(self):
+        del self.weather
+
     def test_set_time_interval(self):
         '''Test this method sets the time metrics properly in the exodata source.'''
         # Set start and final time
