@@ -52,6 +52,13 @@ class EmulationFromFMU(TestCaseMPCPy):
         self.parameter_data['lat'] = {};
         self.parameter_data['lat']['Value'] = self.weather.lat;
         
+    def tearDown(self):
+        del self.measurements
+        del self.weather
+        del self.internal
+        del self.control
+        del self.parameter_data
+        
     def test_collect_measurements(self):
         start_time = '1/1/2015';
         final_time = '1/4/2015';
@@ -327,6 +334,10 @@ class RealfromCSV(TestCaseMPCPy):
                                             self.measurement_variable_map,
                                             time_header = 'Date');
                                             
+    def tearDown(self):
+        del self.measurements
+        del self.building
+                                            
     def test_collect_measurements(self):
         # Simulation time
         start_time = '2/1/2013';
@@ -354,6 +365,10 @@ class RealfromDF(TestCaseMPCPy):
         self.building = systems.RealFromDF(self.df,
                                            self.measurements, 
                                            self.measurement_variable_map);
+                                           
+    def tearDown(self):
+        del self.measurements
+        del self.building
                                             
     def test_collect_measurements(self):
         # Simulation time
