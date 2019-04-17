@@ -356,13 +356,13 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
         # Instantiate validate building
-        self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
+        building_val = systems.RealFromCSV(self.building_source_file_path_val,
                                             self.measurements,
                                             self.measurement_variable_map,
                                             tz_name = self.weather.tz_name);
         # Validate on validation data
-        self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
-        self.model.measurements = self.building_val.measurements;
+        building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
+        self.model.measurements = building_val.measurements;
         self.model.validate(self.start_time_validation, self.final_time_validation, \
                             os.path.join(self.get_unittest_path(), 'outputs', 'model_validation_csv'), plot=0);
         # Check references
@@ -397,13 +397,13 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
         # Instantiate validate building
-        self.building_val = systems.RealFromCSV(self.building_source_file_path_val_missing,
+        building_val = systems.RealFromCSV(self.building_source_file_path_val_missing,
                                             self.measurements,
                                             self.measurement_variable_map,
                                             tz_name = self.weather.tz_name);
         # Validate on validation data
-        self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
-        self.model.measurements = self.building_val.measurements;
+        building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
+        self.model.measurements = building_val.measurements;
         self.model.validate(self.start_time_validation, self.final_time_validation, \
                             os.path.join(self.get_unittest_path(), 'outputs', 'model_validation_csv'), plot=0);
         # Check references
