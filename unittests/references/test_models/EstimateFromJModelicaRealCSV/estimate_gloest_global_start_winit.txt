@@ -1,6 +1,7 @@
 {
     "0": {
         "J": 83545.62360219464,
+        "Message": "Solve_Succeeded",
         "RMSE_Ptot": 0.0,
         "RMSE_easPhvac": 0.0,
         "RMSE_easTdb": 0.4266612648715232,
@@ -38,6 +39,7 @@
     },
     "1": {
         "J": 83545.62196961531,
+        "Message": "Solve_Succeeded",
         "RMSE_Ptot": 0.0,
         "RMSE_easPhvac": 0.0,
         "RMSE_easTdb": 0.42646024918561876,
@@ -75,6 +77,7 @@
     },
     "2": {
         "J": 83545.62363246038,
+        "Message": "Solve_Succeeded",
         "RMSE_Ptot": 0.0,
         "RMSE_easPhvac": 0.0,
         "RMSE_easTdb": 0.42646199157442205,
@@ -112,6 +115,7 @@
     },
     "3": {
         "J": 83545.62607360209,
+        "Message": "Solve_Succeeded",
         "RMSE_Ptot": 0.0,
         "RMSE_easPhvac": 0.0,
         "RMSE_easTdb": 0.42654211730433017,
@@ -149,6 +153,7 @@
     },
     "4": {
         "J": 82504.71331372051,
+        "Message": "Solve_Succeeded",
         "RMSE_Ptot": 0.0,
         "RMSE_easPhvac": 0.0,
         "RMSE_easTdb": 0.4227060770674679,
@@ -186,6 +191,7 @@
     },
     "5": {
         "J": 83545.62955162404,
+        "Message": "Solve_Succeeded",
         "RMSE_Ptot": 0.0,
         "RMSE_easPhvac": 0.0,
         "RMSE_easTdb": 0.42658834129913564,
@@ -223,6 +229,7 @@
     },
     "6": {
         "J": 83545.62346184537,
+        "Message": "Solve_Succeeded",
         "RMSE_Ptot": 0.0,
         "RMSE_easPhvac": 0.0,
         "RMSE_easTdb": 0.42653909495258213,
@@ -260,6 +267,7 @@
     },
     "7": {
         "J": 82504.70093981933,
+        "Message": "Solve_Succeeded",
         "RMSE_Ptot": 0.0,
         "RMSE_easPhvac": 0.0,
         "RMSE_easTdb": 0.4226573359013033,
@@ -294,5 +302,6 @@
         "wineas.r_win": 0.3,
         "winwes.g": 0.75,
         "winwes.r_win": 0.3
-    }
+    },
+    "J_Best": 82504.70093981933
 }
