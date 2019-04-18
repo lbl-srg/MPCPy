@@ -312,18 +312,22 @@ class Modelica(_Model, utility._FMU, utility._Building):
                 # Save RMSE for initial_guess
                 for key in self.RMSE:
                     glo_est_data[i]['RMSE_{0}'.format(key)] = self.RMSE[key].display_data();
-                # Compare objective, if less, save best par values
+                # If solve succeeded, compare objective and if less, save best par values
+                solver_message = self._estimate_method.opt_problem.get_optimization_statistics()[0]
                 J_curr = self._estimate_method.opt_problem.get_optimization_statistics()[2]
+                #glo_est_data[i]['Message'] = solver_message
                 glo_est_data[i]['J'] = J_curr
-                if J_curr < J:
+                if ((J_curr < J) and (J_curr > 0.0)) or ((J_curr < J) and (solver_message == 'Solve_Succeeded')):
                     J = J_curr;
                     for par in free_pars:
                         par_best[par] = self.parameter_data[par]['Value'].display_data();
-                # Save all estimates
-                self.glo_est_data = glo_est_data
-            # Set best parameters in model
-            for par in par_vals.keys():
-                self.parameter_data[par]['Value'].set_data(par_best[par]);
+            # Save all estimates
+            #glo_est_data['J_Best'] = J
+            self.glo_est_data = glo_est_data
+            # Set best parameters in model if found
+            if par_best:
+                for par in par_vals.keys():
+                    self.parameter_data[par]['Value'].set_data(par_best[par]);
         
         
         
