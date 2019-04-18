@@ -345,33 +345,8 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.check_df(df_test, 'simulate_initial_parameters.csv');
         # Estimate model based on emulated data
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
-        # Validate model based on estimation data
-        self.model.validate(self.start_time_estimation, self.final_time_estimation, \
-                            os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation_csv'), plot=0)
-        # Check references
-        RMSE = {};
-        for key in self.model.RMSE.keys():
-            RMSE[key] = {};
-            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
-        df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'estimate_RMSE.csv', timeseries=False);
-        # Instantiate validate building
-        building_val = systems.RealFromCSV(self.building_source_file_path_val,
-                                            self.measurements,
-                                            self.measurement_variable_map,
-                                            tz_name = self.weather.tz_name);
-        # Validate on validation data
-        building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
-        self.model.measurements = building_val.measurements;
-        self.model.validate(self.start_time_validation, self.final_time_validation, \
-                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation_csv'), plot=0);
-        # Check references
-        RMSE = {};
-        for key in self.model.RMSE.keys():
-            RMSE[key] = {};
-            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
-        df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
+        # Finish test
+        self._finish_estimate_validate('')
 
     def test_estimate_and_validate_missing_measurements(self):
         '''Test the estimation of a model's coefficients based on measured data.
@@ -419,42 +394,32 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         plt.close('all');
         # Estimate model based on emulated data
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0, use_initial_values=True);
-        # Validate model based on estimation data
-        self.model.validate(self.start_time_estimation, self.final_time_estimation, \
-                            os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation_csv'), plot=0)
-        # Check references
-        RMSE = {};
-        for key in self.model.RMSE.keys():
-            RMSE[key] = {};
-            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
-        df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'estimate_RMSE_global_start_winit.csv', timeseries=False);
-        # All estimates
-        glo_est_data_test = self.model.get_global_estimate_data()
-        self.check_json(glo_est_data_test, 'estimate_gloest_global_start_winit.txt');
-        # Instantiate validate building
-        self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
-                                            self.measurements, 
-                                            self.measurement_variable_map, 
-                                            tz_name = self.weather.tz_name);
-        # Validate on validation data
-        self.building_val.collect_measurements(self.start_time_validation, self.final_time_validation);
-        self.model.measurements = self.building_val.measurements;
-        self.model.validate(self.start_time_validation, self.final_time_validation, \
-                            os.path.join(self.get_unittest_path(), 'outputs', 'model_validation_csv'), plot=0);
-        # Check references
-        RMSE = {};
-        for key in self.model.RMSE.keys():
-            RMSE[key] = {};
-            RMSE[key]['Value'] = self.model.RMSE[key].display_data();
-        df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'validate_RMSE_global_start_winit.csv', timeseries=False);
+        # Finish test
+        self._finish_estimate_validate('_global_start_winit')
         
     def test_estimate_and_validate_global_start_woinit(self):
         '''Test the estimation of a model's coefficients based on measured data using global start and no user-defined initial value.'''
         plt.close('all');
         # Estimate model based on emulated data
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0, use_initial_values=False);
+        # Finish test
+        self._finish_estimate_validate('_global_start_woinit')
+        
+    def test_estimate_and_validate_global_start_maxexceeded(self):
+        '''Test the estimation of a model's coefficients based on measured data using global start and maximum cpu time and iterations.'''
+        plt.close('all');
+        # Set maximum cpu time for JModelica
+        opt_options = self.model._estimate_method.opt_problem.get_optimization_options();
+        opt_options['IPOPT_options']['max_cpu_time'] = 60;
+        opt_options['IPOPT_options']['max_iter'] = 100;
+        self.model._estimate_method.opt_problem.set_optimization_options(opt_options);
+        # Estimate model based on emulated data
+        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0, use_initial_values=True);
+        # Finish test
+        self._finish_estimate_validate('_global_start_maxexceeded')
+        
+    def _finish_estimate_validate(self,tag):
+        '''Internal method for finishing the estimate and valudate tests.'''
         # Validate model based on estimation data
         self.model.validate(self.start_time_estimation, self.final_time_estimation, \
                             os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation_csv'), plot=0)
@@ -464,10 +429,13 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'estimate_RMSE_global_start_woinit.csv', timeseries=False);
-        # All estimates
-        glo_est_data_test = self.model.get_global_estimate_data()
-        self.check_json(glo_est_data_test, 'estimate_gloest_global_start_woinit.txt');
+        self.check_df(df_test, 'estimate_RMSE{0}.csv'.format(tag), timeseries=False);
+        # All estimates if global estimate
+        try:
+            glo_est_data_test = self.model.get_global_estimate_data()
+            self.check_json(glo_est_data_test, 'estimate_gloest{0}.txt'.format(tag));
+        except:
+            pass
         # Instantiate validate building
         self.building_val = systems.RealFromCSV(self.building_source_file_path_val,
                                             self.measurements, 
@@ -484,7 +452,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
             RMSE[key] = {};
             RMSE[key]['Value'] = self.model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
-        self.check_df(df_test, 'validate_RMSE_global_start_woinit.csv', timeseries=False);
+        self.check_df(df_test, 'validate_RMSE{0}.csv'.format(tag), timeseries=False);
 
 class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
     '''Test emulation-based parameter estimation of a model using JModelica.
