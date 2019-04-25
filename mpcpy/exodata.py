@@ -696,7 +696,7 @@ class _Parameter(_Type):
         
         # Check parameter exists already
         if name not in self.data.keys():
-            raise KeyError('{0} not found in parameters.'.format(name))
+            raise KeyError('{0} not found in parameters.  Use append_data() to add new parameter'.format(name))
         # Set data
         else:
             if value is not None:
@@ -711,6 +711,40 @@ class _Parameter(_Type):
                 self.data[name]['Covariance'].set_data(covariance) 
             if new_name is not None:
                 self.data[new_name] = self.data.pop(name)
+
+    def append_data(self, name, value, free, minimum, maximum, covariance, unit):                
+        '''Append a new parameter to existing parameters.
+
+        Parameters
+        ----------
+        name : str
+            Name of parameter.
+        value : float | int
+            Value for the parameter.
+        free : boolean
+            True if parameter is free for parameter estimation.
+        minimum : float | int
+            Minimum for the parameter.
+        maximum : float | int
+            Maximum for the parameter.
+        covariance : float | int
+            Covariance for the parameter.
+        unit : mpcpy Units object
+            Unit of parameter.
+            
+        '''
+        
+        # Check parameter doesn't already exist
+        if name in self.data.keys():
+            raise KeyError('{0} already found in parameters.  Use set_data() to change data.'.format(name))
+        # Set data
+        else:
+            self.data[name] = dict()
+            self.data[name]['Value'] = variables.Static(name+'_val', value, unit)
+            self.data[name]['Free'] = variables.Static(name+'_free', free, unit)
+            self.data[name]['Minimum'] = variables.Static(name+'_min', minimum, unit)
+            self.data[name]['Maximum'] = variables.Static(name+'_max', maximum, unit)
+            self.data[name]['Covariance'] = variables.Static(name+'_cov', covariance, unit)
 
 ## Constraints       
 class _Constraint(_Type):
