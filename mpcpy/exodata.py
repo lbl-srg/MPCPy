@@ -663,6 +663,49 @@ class _Parameter(_Type):
         
         return df;    
         
+    def set_data(self, name, value=None, free=None, minimum=None, maximum=None, covariance=None):
+        '''Set new data for existing parameter.
+        
+        All data must be in display units of parameter.
+        
+        Parameters
+        ----------
+        name : str
+            Name of parameter for which to set data.
+        value : float | int, optional
+            Set a new value for the parameter.
+            Default is None.
+        free : boolean, optional
+            True if parameter is free for parameter estimation.
+            Default is None.
+        minimum : float | int, optional
+            Set a new minimum for the parameter.
+            Default is None.
+        maximum : float | int, optional
+            Set a new maximum for the parameter.
+            Default is None.
+        covariance : float | int, optional
+            Set a new covariance for the parameter.
+            Default is None.
+            
+        '''
+        
+        # Check parameter exists already
+        if name not in self.data.keys():
+            raise KeyError('{0} not found in parameters.'.format(name))
+        # Set data
+        else:
+            if value is not None:
+                self.data[name]['Value'].set_data(value)
+            if free is not None:
+                self.data[name]['Free'].set_data(free)
+            if minimum is not None:
+                self.data[name]['Minimum'].set_data(minimum)
+            if maximum is not None:
+                self.data[name]['Maximum'].set_data(maximum)
+            if covariance is not None:
+                self.data[name]['Covariance'].set_data(covariance)            
+
 ## Constraints       
 class _Constraint(_Type):
     '''Mix-in class for constraint exogenous data.
