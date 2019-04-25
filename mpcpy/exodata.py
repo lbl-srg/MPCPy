@@ -233,10 +233,10 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.ParameterFromCSV
-    :members: collect_data, display_data, get_base_data 
+    :members: collect_data, display_data, get_base_data, set_data, append_data 
     
 .. autoclass:: mpcpy.exodata.ParameterFromDF
-    :members: collect_data, display_data, get_base_data 
+    :members: collect_data, display_data, get_base_data, set_data, append_data 
     
 """
 
@@ -663,6 +663,89 @@ class _Parameter(_Type):
         
         return df;    
         
+    def set_data(self, name, value=None, free=None, minimum=None, maximum=None, covariance=None, new_name=None):
+        '''Set new data for existing parameter.
+        
+        All data must be in display units of parameter.
+        No changes are made to arguments that are None.
+        
+        Parameters
+        ----------
+        name : str
+            Name of parameter for which to set data.
+        value : float | int, optional
+            Set a new value for the parameter.
+            Default is None.
+        free : boolean, optional
+            True if parameter is free for parameter estimation.
+            Default is None.
+        minimum : float | int, optional
+            Set a new minimum for the parameter.
+            Default is None.
+        maximum : float | int, optional
+            Set a new maximum for the parameter.
+            Default is None.
+        covariance : float | int, optional
+            Set a new covariance for the parameter.
+            Default is None.
+        new_name : str, optional
+            Set a new name for the parameter.
+            Default is None.
+            
+        '''
+        
+        # Check parameter exists already
+        if name not in self.data.keys():
+            raise KeyError('{0} not found in parameters.  Use append_data() to add new parameter'.format(name))
+        # Set data
+        else:
+            if value is not None:
+                self.data[name]['Value'].set_data(value)
+            if free is not None:
+                self.data[name]['Free'].set_data(free)
+            if minimum is not None:
+                self.data[name]['Minimum'].set_data(minimum)
+            if maximum is not None:
+                self.data[name]['Maximum'].set_data(maximum)
+            if covariance is not None:
+                self.data[name]['Covariance'].set_data(covariance) 
+            if new_name is not None:
+                self.data[new_name] = self.data.pop(name)
+
+    def append_data(self, name, value, free, minimum, maximum, covariance, unit):                
+        '''Append a new parameter to existing parameters.
+
+        Parameters
+        ----------
+        name : str
+            Name of parameter.
+        value : float | int
+            Value for the parameter.
+        free : boolean
+            True if parameter is free for parameter estimation.
+        minimum : float | int
+            Minimum for the parameter.
+        maximum : float | int
+            Maximum for the parameter.
+        covariance : float | int
+            Covariance for the parameter.
+        unit : mpcpy Units object
+            Unit of parameter.
+            
+        '''
+        
+        # Check parameter doesn't already exist
+        if name in self.data.keys():
+            raise KeyError('{0} already found in parameters.  Use set_data() to change data.'.format(name))
+        # Set data
+        else:
+            self.data[name] = dict()
+            self.data[name]['Value'] = variables.Static(name+'_val', value, unit)
+            self.data[name]['Free'] = variables.Static(name+'_free', free, units.boolean)
+            self.data[name]['Minimum'] = variables.Static(name+'_min', minimum, unit)
+            self.data[name]['Maximum'] = variables.Static(name+'_max', maximum, unit)
+            self.data[name]['Covariance'] = variables.Static(name+'_cov', covariance, unit)
+
 ## Constraints       
 class _Constraint(_Type):
     '''Mix-in class for constraint exogenous data.

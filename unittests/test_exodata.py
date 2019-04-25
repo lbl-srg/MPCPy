@@ -516,17 +516,123 @@ class ParameterFromCSV(TestCaseMPCPy):
         csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv');
         # Instantiate weather object
         self.parameters = exodata.ParameterFromCSV(csv_filepath);
+        # Get parameter data
+        self.parameters.collect_data()
         
     def tearDown(self):
         del self.parameters
 
     def test_collect_data(self):
-        # Get parameter data
-        self.parameters.collect_data();
         # Check reference
         df_test = self.parameters.display_data();
         self.check_df(df_test, 'collect_data.csv', timeseries=False);
+
+class ParameterSet(TestCaseMPCPy):
+    '''Test setting parameter data.
+    
+    '''
+    
+    def setUp(self):
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv');
+        # Instantiate weather object
+        self.parameters = exodata.ParameterFromCSV(csv_filepath);
+        # Get parameter data
+        self.parameters.collect_data()
         
+    def tearDown(self):
+        del self.parameters
+        
+    def test_set_data_value(self):
+        # Set value only
+        self.parameters.set_data('adjeas.c_bou', value=20000.0)
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'set_data_value.csv', timeseries=False);
+        
+    def test_set_data_free(self):
+        # Set free only
+        self.parameters.set_data('adjeas.c_bou', free=False)
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'set_data_free.csv', timeseries=False);
+        
+    def test_set_data_min(self):
+        # Set min only
+        self.parameters.set_data('adjeas.c_bou', minimum=10000.0)
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'set_data_min.csv', timeseries=False);
+        
+    def test_set_data_max(self):
+        # Set max only
+        self.parameters.set_data('adjeas.c_bou', maximum=30000.0)
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'set_data_max.csv', timeseries=False);
+        
+    def test_set_data_cov(self):
+        # Set cov only
+        self.parameters.set_data('adjeas.c_bou', covariance=0.1)
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'set_data_cov.csv', timeseries=False);
+        
+    def test_set_data_name(self):
+        # Set name only
+        self.parameters.set_data('adjeas.c_bou', new_name='c_bou')
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'set_data_name.csv', timeseries=False);
+        
+    def test_set_data_all(self):
+        # Set all data
+        self.parameters.set_data('adjeas.c_bou', 
+                                 value=20000.0,
+                                 free=False,
+                                 minimum=10000.0, 
+                                 maximum=30000.0,
+                                 covariance=0.1,
+                                 new_name='c_bou')
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'set_data_all.csv', timeseries=False);
+        
+    def test_set_data_keyerror(self):
+        # Set cov only
+        with self.assertRaises(KeyError): 
+            self.parameters.set_data('c_bou', value=20000.0)
+            
+class ParameterAppend(TestCaseMPCPy):
+    '''Test appending parameter data.
+    
+    '''
+    
+    def setUp(self):
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv');
+        # Instantiate weather object
+        self.parameters = exodata.ParameterFromCSV(csv_filepath);
+        # Get parameter data
+        self.parameters.collect_data()
+        
+    def tearDown(self):
+        del self.parameters
+        
+    def test_set_data_all(self):
+        # Set all data
+        self.parameters.append_data('c_bou', 
+                                    value=20000.0,
+                                    free=False,
+                                    minimum=10000.0, 
+                                    maximum=30000.0,
+                                    covariance=0.1,
+                                    unit=units.J_m2K)
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'append_data.csv', timeseries=False);
+        
+    def test_set_data_keyerror(self):
+        # Set cov only
+        with self.assertRaises(KeyError): 
+            self.parameters.append_data('adjeas.c_bou', 
+                                        value=20000.0,
+                                        free=False,
+                                        minimum=10000.0, 
+                                        maximum=30000.0,
+                                        covariance=0.1,
+                                        unit=units.J_kgK)
+
 class ParameterFromDF(TestCaseMPCPy):
     '''Test the collection of parameter data from a pandas DataFrame object.
     
