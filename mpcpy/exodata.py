@@ -741,7 +741,7 @@ class _Parameter(_Type):
         else:
             self.data[name] = dict()
             self.data[name]['Value'] = variables.Static(name+'_val', value, unit)
-            self.data[name]['Free'] = variables.Static(name+'_free', free, unit)
+            self.data[name]['Free'] = variables.Static(name+'_free', free, units.boolean)
             self.data[name]['Minimum'] = variables.Static(name+'_min', minimum, unit)
             self.data[name]['Maximum'] = variables.Static(name+'_max', maximum, unit)
             self.data[name]['Covariance'] = variables.Static(name+'_cov', covariance, unit)
