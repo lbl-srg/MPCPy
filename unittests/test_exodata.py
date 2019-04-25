@@ -569,6 +569,12 @@ class ParameterSet(TestCaseMPCPy):
         df_test = self.parameters.display_data();
         self.check_df(df_test, 'set_data_cov.csv', timeseries=False);
         
+    def test_set_data_name(self):
+        # Set name only
+        self.parameters.set_data('adjeas.c_bou', new_name='c_bou')
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'set_data_name.csv', timeseries=False);
+        
     def test_set_data_all(self):
         # Set all data
         self.parameters.set_data('adjeas.c_bou', 
@@ -576,7 +582,8 @@ class ParameterSet(TestCaseMPCPy):
                                  free=False,
                                  minimum=10000.0, 
                                  maximum=30000.0,
-                                 covariance=0.1)
+                                 covariance=0.1,
+                                 new_name='c_bou')
         df_test = self.parameters.display_data();
         self.check_df(df_test, 'set_data_all.csv', timeseries=False);
         

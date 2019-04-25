@@ -663,10 +663,11 @@ class _Parameter(_Type):
         
         return df;    
         
-    def set_data(self, name, value=None, free=None, minimum=None, maximum=None, covariance=None):
+    def set_data(self, name, value=None, free=None, minimum=None, maximum=None, covariance=None, new_name=None):
         '''Set new data for existing parameter.
         
         All data must be in display units of parameter.
+        No changes are made to arguments that are None.
         
         Parameters
         ----------
@@ -687,6 +688,9 @@ class _Parameter(_Type):
         covariance : float | int, optional
             Set a new covariance for the parameter.
             Default is None.
+        new_name : str, optional
+            Set a new name for the parameter.
+            Default is None.
             
         '''
         
@@ -704,7 +708,9 @@ class _Parameter(_Type):
             if maximum is not None:
                 self.data[name]['Maximum'].set_data(maximum)
             if covariance is not None:
-                self.data[name]['Covariance'].set_data(covariance)            
+                self.data[name]['Covariance'].set_data(covariance) 
+            if new_name is not None:
+                self.data[new_name] = self.data.pop(name)
 
 ## Constraints       
 class _Constraint(_Type):
