@@ -233,10 +233,10 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.ParameterFromCSV
-    :members: collect_data, display_data, get_base_data 
+    :members: collect_data, display_data, get_base_data, set_data, append_data 
     
 .. autoclass:: mpcpy.exodata.ParameterFromDF
-    :members: collect_data, display_data, get_base_data 
+    :members: collect_data, display_data, get_base_data, set_data, append_data 
     
 """
 
