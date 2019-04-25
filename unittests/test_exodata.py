@@ -539,6 +539,9 @@ class ParameterSet(TestCaseMPCPy):
         # Get parameter data
         self.parameters.collect_data()
         
+    def tearDown(self):
+        del self.parameters
+        
     def test_set_data_value(self):
         # Set value only
         self.parameters.set_data('adjeas.c_bou', value=20000.0)
@@ -591,6 +594,44 @@ class ParameterSet(TestCaseMPCPy):
         # Set cov only
         with self.assertRaises(KeyError): 
             self.parameters.set_data('c_bou', value=20000.0)
+            
+class ParameterAppend(TestCaseMPCPy):
+    '''Test appending parameter data.
+    
+    '''
+    
+    def setUp(self):
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_Parameters.csv');
+        # Instantiate weather object
+        self.parameters = exodata.ParameterFromCSV(csv_filepath);
+        # Get parameter data
+        self.parameters.collect_data()
+        
+    def tearDown(self):
+        del self.parameters
+        
+    def test_set_data_all(self):
+        # Set all data
+        self.parameters.append_data('c_bou', 
+                                    value=20000.0,
+                                    free=False,
+                                    minimum=10000.0, 
+                                    maximum=30000.0,
+                                    covariance=0.1,
+                                    unit=units.J_m2K)
+        df_test = self.parameters.display_data();
+        self.check_df(df_test, 'append_data.csv', timeseries=False);
+        
+    def test_set_data_keyerror(self):
+        # Set cov only
+        with self.assertRaises(KeyError): 
+            self.parameters.append_data('adjeas.c_bou', 
+                                        value=20000.0,
+                                        free=False,
+                                        minimum=10000.0, 
+                                        maximum=30000.0,
+                                        covariance=0.1,
+                                        unit=units.J_kgK)
 
 class ParameterFromDF(TestCaseMPCPy):
     '''Test the collection of parameter data from a pandas DataFrame object.
