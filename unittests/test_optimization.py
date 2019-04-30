@@ -29,12 +29,12 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         # Set .mo path
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         # Gather inputs
-        start_time_exo = '1/1/2017';
-        final_time_exo = '1/10/2017';
+        self.start_time_exo = '1/1/2017';
+        self.final_time_exo = '1/10/2017';
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
-        self.controls.collect_data(start_time_exo, final_time_exo);
+        self.controls.collect_data(self.start_time_exo, self.final_time_exo);
         # Set measurements
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
@@ -45,7 +45,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                    'T_db_min' : ('T_db', 'GTE', units.K), \
                                    'T_db_max' : ('T_db', 'LTE', units.K)};
         self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
-        self.constraints.collect_data(start_time_exo, final_time_exo);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
         
     def tearDown(self):
         del self.start_time
@@ -115,6 +115,39 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         df_test.index.name = 'Time'
         # Check references
         self.check_df(df_test, 'optimize_opt_input.csv');
+        
+    def test_optimize_slack_constraints(self):
+        '''Test the optimization of a model with slack constraints.
+        
+        '''
+        # Regather constraints       
+        constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints_Slack.csv');
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'sGTE', units.K), \
+                                   'T_db_max' : ('T_db', 'sLTE', units.K)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
+        modelpath = 'Simple.RC';
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);                              
+        # Solve optimization problem with default res_control_step                   
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_measurements_slack_constraints.csv');
+        df_test = model.control_data['q_flow'].display_data().to_frame();
+        df_test.index.name = 'Time'
+        self.check_df(df_test, 'optimize_control_default_slack_constraints.csv');
         
     def test_set_problem_type(self):
         '''Test the dynamic setting of a problem type.
