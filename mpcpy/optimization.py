@@ -338,7 +338,10 @@ class EnergyMin(_Problem):
         '''
 
         JModelica.Model = Optimization.Model;
+        JModelica._create_slack_variables(Optimization);
         JModelica.objective = 'mpc_model.' + Optimization.objective_variable;
+        for var in JModelica.slack_vars.keys():
+            JModelica.objective = JModelica.objective + ' + 1000*({0})'.format(JModelica.slack_vars[var]['Expression'])
         JModelica.extra_inputs = {};
         JModelica._initalize_mop();
         JModelica._write_control_mop(Optimization);
@@ -363,7 +366,10 @@ class EnergyCostMin(_Problem):
         '''
 
         JModelica.Model = Optimization.Model;
+        JModelica._create_slack_variables(Optimization)
         JModelica.objective = 'mpc_model.' + Optimization.objective_variable + '*pi_e';
+        for var in JModelica.slack_vars.keys():
+            JModelica.objective = JModelica.objective + ' + ({0})'.format(JModelica.slack_vars[var]['Expression'])
         JModelica.extra_inputs = {};
         JModelica.extra_inputs['pi_e'] = [];
         JModelica._initalize_mop();
@@ -391,6 +397,7 @@ class _ParameterEstimate(_Problem):
         '''
 
         JModelica.Model = Optimization.Model;
+        JModelica._create_slack_variables(Optimization)
         JModelica.objective = '0';
         JModelica.extra_inputs = {};
         JModelica._initalize_mop();
@@ -487,7 +494,6 @@ class JModelica(_Package, utility._FMU):
                 self.mopfile.write(line);
         mofile.close();
         # Add initialization model to package.mop (must be same name as model in optimization)
-
         self.mopfile.write('\n');
         self.mopfile.write('  model ' + self.Model.modelpath.split('.')[-1] + '_initialize\n');
         package = self.Model.modelpath.split('.')[1:];
@@ -502,11 +508,14 @@ class JModelica(_Package, utility._FMU):
             self._init_input_names.append(key);
             self.other_inputs[key] = self.extra_inputs[key];
             self.mopfile.write('    input Real ' + key+';\n');
+        # Add slack variable inputs required for optimization probelm (initial guess is 0 by default)
+        for key_new in self.slack_vars.keys():
+            self.mopfile.write('    input Real ' + self.slack_vars[key_new]['SlackVar']+';\n');           
         # Instantiate cost function
         self.mopfile.write('    Real J(start = 0, fixed=true);\n');
         # Define cost function
         self.mopfile.write('  equation\n');
-        self.mopfile.write('    der(J) = '+self.objective+';\n');
+        self.mopfile.write('    der(J) = '+self.objective+';\n');  
         # End initalization model
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_initialize;\n');
         # Save the model path of the initialization and optimziation models
@@ -536,7 +545,7 @@ class JModelica(_Package, utility._FMU):
                     key_new = key.replace('.', '_') + '_' + field;
                     self.opt_input_names.append(key_new);
                     self.other_inputs[key_new] = Optimization.constraint_data[key][field];
-                    self.mopfile.write('    input Real ' + key_new + ';\n');
+                    self.mopfile.write('    input Real ' + key_new + ';\n');                    
         # Define constraint_data
         self.mopfile.write('  constraint\n');
         for key in Optimization.constraint_data.keys():
@@ -546,16 +555,22 @@ class JModelica(_Package, utility._FMU):
                     self.mopfile.write('    mpc_model.' + key + ' >= ' + key_new + ';\n');
                 elif field == 'dGTE':
                     self.mopfile.write('    der(mpc_model.' + key + ') >= ' + key_new + ';\n');
+                elif field == 'sGTE':
+                    self.mopfile.write('    mpc_model.' + key + ' + ' + self.slack_vars[key_new]['SlackVar'] + ' >= ' + key_new + ';\n')
                 elif field == 'LTE':
                     self.mopfile.write('    mpc_model.' + key + ' <= ' + key_new + ';\n');
                 elif field == 'dLTE':
                     self.mopfile.write('    der(mpc_model.' + key + ') <= ' + key_new + ';\n');
+                elif field == 'sLTE':
+                    self.mopfile.write('    mpc_model.' + key + ' - ' + self.slack_vars[key_new]['SlackVar'] + ' <= ' + key_new + ';\n')
                 elif field == 'Initial':
                     self.mopfile.write('    mpc_model.' + key + '(startTime)=' + str(Optimization.constraint_data[key][field].get_base_data()) + ';\n');
                 elif field == 'Final':
                     self.mopfile.write('    mpc_model.' + key + '(finalTime)=' + str(Optimization.constraint_data[key][field].get_base_data()) + ';\n');
                 elif field == 'Cyclic':
                     self.mopfile.write('    mpc_model.' + key + '(startTime)=mpc_model.' + key + '(finalTime);\n');
+        for key_new in self.slack_vars.keys():
+            self.mopfile.write('   ' + self.slack_vars[key_new]['SlackVar'] + ' >= 0;\n');
         # End optimization portion of package.mop
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_optimize;\n');
         # End package.mop and save
@@ -862,3 +877,31 @@ class JModelica(_Package, utility._FMU):
         '''
 
         return self.res_opt.get_solver_statistics();
+        
+    def _create_slack_variables(self, Optimization):
+        '''Create slack variables and their expressions.
+        
+        Dictionary of slack variable information
+        {<slack_variable_name> : {'Input':<input_name>, 'Expression':<objective expression>}}
+        
+        Parameters
+        ----------
+        Optimization : MPCPy Optimization object
+        
+        '''
+        
+        n_s = 0
+        slack_vars = dict()
+        for key in Optimization.constraint_data.keys():
+            for field in Optimization.constraint_data[key]:
+                if field == 'sGTE' or field == 'sLTE':
+                    key_new = key.replace('.', '_') + '_' + field;
+                    slack_var = 's{0}'.format(n_s)
+                    if field == 'sGTE':
+                        exp = '{0}'.format(slack_var)
+                    elif field == 'sLTE':
+                        exp = '{0}'.format(slack_var)
+                    slack_vars[key_new] = {'SlackVar': slack_var, 'Expression':exp}
+                    n_s = n_s + 1
+
+        self.slack_vars = slack_vars
