@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 This module contains the classes for testing the exodata of mpcpy.
 
@@ -672,8 +671,8 @@ class ConstraintFromCSV(TestCaseMPCPy):
                         'conHeat_wes_max' : ('conHeat_wes', 'LTE', units.unit1), \
                         'conHeat_hal_min' : ('conHeat_hal', 'GTE', units.unit1), \
                         'conHeat_hal_max' : ('conHeat_hal', 'LTE', units.unit1), \
-                        'conHeat_eas_min' : ('conHeat_eas', 'GTE', units.unit1), \
-                        'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
+                        'conHeat_eas_min' : ('conHeat_eas', 'sGTE', units.unit1, 100), \
+                        'conHeat_eas_max' : ('conHeat_eas', 'sLTE', units.unit1, 200)};
         # Instantiate weather object
         self.constraints = exodata.ConstraintFromCSV(csv_filepath, \
                                                      variable_map);
@@ -709,8 +708,8 @@ class ConstraintFromDF(TestCaseMPCPy):
                         'conHeat_wes_max' : ('conHeat_wes', 'LTE', units.unit1), \
                         'conHeat_hal_min' : ('conHeat_hal', 'GTE', units.unit1), \
                         'conHeat_hal_max' : ('conHeat_hal', 'LTE', units.unit1), \
-                        'conHeat_eas_min' : ('conHeat_eas', 'GTE', units.unit1), \
-                        'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
+                        'conHeat_eas_min' : ('conHeat_eas', 'sGTE', units.unit1, 100), \
+                        'conHeat_eas_max' : ('conHeat_eas', 'sLTE', units.unit1, 200)};
 
     def tearDown(self):
         del self.df
@@ -763,19 +762,17 @@ class ConstraintFromOccupancyModel(TestCaseMPCPy):
         # Load occupancy models
         with open(os.path.join(self.get_unittest_path(), 'references', 'test_models',\
                                'OccupancyFromQueueing', 'occupancy_model_estimated.txt'), 'r') as f:
-            occupancy_model = pickle.load(f);
+            self.occupancy_model = pickle.load(f);
         # Define state variables and values
-        state_variable_list = ['wesTdb', 'wesTdb', 'easTdb', 'easTdb', 'halTdb', 'halTdb'];
-        values_list = [[25,30], [20,15], [25+273.15, 30+273.15], [20+273.15, 15+273.15], [25,30], [20,15]];
-        constraint_type_list = ['LTE', 'GTE', 'LTE', 'GTE', 'LTE', 'GTE'];
-        unit_list = [units.degC, units.degC, units.K, units.K, units.degC, units.degC]
+        self.state_variable_list = ['wesTdb', 'wesTdb', 'easTdb', 'easTdb', 'halTdb', 'halTdb'];
+        self.values_list = [[25,30], [20,15], [25+273.15, 30+273.15], [20+273.15, 15+273.15], [25,30], [20,15]];
+        self.constraint_type_list = ['LTE', 'GTE', 'LTE', 'GTE', 'LTE', 'GTE'];
+        self.unit_list = [units.degC, units.degC, units.K, units.K, units.degC, units.degC]
         # Simulate occupancy model
-        simulate_options = occupancy_model.get_simulate_options();
+        simulate_options = self.occupancy_model.get_simulate_options();
         simulate_options['iter_num'] = 5;
         np.random.seed(1); # start with same seed for random number generation
-        occupancy_model.simulate(start_time_occupancy, final_time_occupancy);
-        # Instantiate constraint object
-        self.constraints = exodata.ConstraintFromOccupancyModel(state_variable_list, values_list, constraint_type_list, unit_list, occupancy_model);
+        self.occupancy_model.simulate(start_time_occupancy, final_time_occupancy);
 
     def tearDown(self):
         del self.constraints
@@ -783,12 +780,21 @@ class ConstraintFromOccupancyModel(TestCaseMPCPy):
     def test_collect_data(self):
         start_time = '3/2/2012';
         final_time = '3/4/2012';
+        # Instantiate constraint object
+        self.constraints = exodata.ConstraintFromOccupancyModel(self.state_variable_list, self.values_list, self.constraint_type_list, self.unit_list, self.occupancy_model);
         # Get constraint data
         self.constraints.collect_data(start_time, final_time);
         # Check reference
         df_test = self.constraints.display_data();
-        self.check_df(df_test, 'collect_data.csv');         
+        self.check_df(df_test, 'collect_data.csv');
 
+    def test_collect_data_slack_constraints(self):
+        # Reset constraint data
+        self.constraint_type_list = ['sLTE', 'GTE', 'LTE', 'GTE', 'LTE', 'GTE'];
+        # Instantiate constraint object
+        with self.assertRaises(TypeError):
+            self.constraints = exodata.ConstraintFromOccupancyModel(self.state_variable_list, self.values_list, self.constraint_type_list, self.unit_list, self.occupancy_model);
+        self.constraints = None
 #%% Prices Tests
 class PriceFromCSV(TestCaseMPCPy):
     '''Test the collection of control data from a CSV file.

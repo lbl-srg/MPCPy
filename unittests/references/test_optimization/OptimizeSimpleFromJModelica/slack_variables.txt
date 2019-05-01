@@ -1,0 +1,10 @@
+{
+    "T_db_sGTE": {
+        "Variable": "s1",
+        "Weight": 1000.0
+    },
+    "T_db_sLTE": {
+        "Variable": "s0",
+        "Weight": 500.0
+    }
+}
