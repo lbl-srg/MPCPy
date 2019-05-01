@@ -182,17 +182,22 @@ an optimization solution must abide.  Constraint data object variables are
 included in the optimization problem formulation.  Exogenous constraint data 
 has the following organization:
 
-``constraints.data = {"State or Control Variable Name" : {"Constraint Variable Type" : mpcpy.Variables.Timeseries/Static}}``
+``constraints.data = {"State or Control Variable Name" : {"Constraint Variable Type" : {"Value" : mpcpy.Variables.Timeseries/Static,
+                                                                                        "Weight" : mpcpy.Variables.Static or None}}}``
 
 The state or control variable name must match those that are in the model.  
 The constraint variable types should be chosen from the following list:
 
 - LTE - less than or equal to (Timeseries)
+- sLTE - less than or equal to with slack variable (Timeseries)
 - GTE - greater than or equal to (Timeseries)
+- sGTE - greater than or equal to with slack variable (Timeseries)
 - E - equal to (Timeseries)
 - Initial - initial value (Static)
 - Final - final value (Static)
 - Cyclic - initial value equals final value (Static - Boolean)
+
+Note that the "Weight" is only used for sLTE and sGTE.
 
 Classes
 =======
@@ -765,8 +770,8 @@ class _Constraint(_Type):
         mpcpy_ts_list = [];
         for state in self.data.keys():
             for key in self.data[state].keys():
-                if self.data[state][key].variability == 'Timeseries':
-                    mpcpy_ts_list.append(self.data[state][key]);
+                if self.data[state][key]['Value'].variability == 'Timeseries':
+                    mpcpy_ts_list.append(self.data[state][key]['Value']);
                     
         return mpcpy_ts_list
         
@@ -778,18 +783,22 @@ class _Constraint(_Type):
         state = self.variable_map[self._key][0];
         key = self.variable_map[self._key][1];
         varname = state + '_' + key;
-        unit = self.variable_map[self._key][2];        
+        unit = self.variable_map[self._key][2];
         try:
-            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
+            self.data[state][key] = {'Value' : self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
-                                                                       cleaning_args = self._cleaning_args);
+                                                                       cleaning_args = self._cleaning_args)};
         except KeyError:
             self.data[state] = {};
-            self.data[state][key] = self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
+            self.data[state][key] = {'Value' : self._dataframe_to_mpcpy_ts_variable(self._df, self._key, varname, unit, \
                                                                        start_time=self.start_time, final_time=self.final_time, \
                                                                        cleaning_type = self._cleaning_type, \
-                                                                       cleaning_args = self._cleaning_args);        
+                                                                       cleaning_args = self._cleaning_args)};
+        if key == 'sLTE' or key == 'sGTE':
+            self.data[state][key]['Weight'] = variables.Static(varname, self.variable_map[self._key][3], unit)
+        else:
+            self.data[state][key]['Weight'] = None
         
  
 ## Prices       
@@ -1683,12 +1692,14 @@ class ConstraintFromCSV(_Constraint, utility._DAQ):
     csv_file_path : string
         Path of csv file.
     variable_map : dictionary
-        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}
+        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit, <weight>[optional])}
+        Note that <weight> is float or int and is only needed if "Constraint Variable Type" is 'sLTE' or 'sGTE'.
 
     Attributes
     ----------
     data : dictionary
-        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+        {"State or Control Variable Name" : {"Constraint Variable Type" : {"Value" : mpcpy.Variables.Timeseries/Static,
+                                                                           "Weight" : mpcpy.Variables.Static or None}}}``
     lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
     lon : mpcpy.variables.Static
@@ -1732,12 +1743,14 @@ class ConstraintFromDF(_Constraint, utility._DAQ):
     df : pandas DataFrame object
         DataFrame of data.  The index must be a datetime object.
     variable_map : dictionary
-        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit)}
+        {"Column Header Name" : ("State or Control Variable Name", "Constraint Variable Type", mpcpy.Units.unit, <weight>[optional])}
+        Note that <weight> is float or int and is only needed if "Constraint Variable Type" is 'sLTE' or 'sGTE'.
 
     Attributes
     ----------
     data : dictionary
-        {"State or Control Variable Name" : {"Constraint Variable Name" : mpcpy.Variables.Timeseries/Static}}.
+        {"State or Control Variable Name" : {"Constraint Variable Type" : {"Value" : mpcpy.Variables.Timeseries/Static,
+                                                                           "Weight" : mpcpy.Variables.Static or None}}}``
     lat : mpcpy.variables.Static
         Latitude in degrees.  For timezone.
     lon : mpcpy.variables.Static
@@ -1816,6 +1829,9 @@ class ConstraintFromOccupancyModel(_Constraint):
         self.name = 'constraint_from_occupancymodel';
         self.state_variable_list = state_variable_list;
         self.values_list = values_list;
+        for constraint_type in constraint_type_list:
+            if constraint_type == 'sLTE' or constraint_type == 'sGTE':
+                raise TypeError('sLTE and sGTE constraint types not supported for use with occupancy model.')
         self.constraint_type_list = constraint_type_list;
         self.unit_list = unit_list;
         self.occupancy_model = occupancy_model;
@@ -1835,7 +1851,8 @@ class ConstraintFromOccupancyModel(_Constraint):
             if state_variable not in self.data:
                 self.data[state_variable] = {};
             ts = self.occupancy_model.get_constraint(values[0], values[1]);
-            self.data[state_variable][constraint_type] = variables.Timeseries(state_variable+'_'+constraint_type, ts[self.start_time:self.final_time], unit);
+            self.data[state_variable][constraint_type] = {'Value':variables.Timeseries(state_variable+'_'+constraint_type, ts[self.start_time:self.final_time], unit),
+                                                          'Weight':None};
 
 #%% Price source implementations
 class PriceFromCSV(_Price, utility._DAQ):
