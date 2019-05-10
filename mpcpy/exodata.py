@@ -179,8 +179,8 @@ Constraints
 
 Constraint data represents limits to which the control and state variables of 
 an optimization solution must abide.  Constraint data object variables are 
-included in the optimization problem formulation.  Exogenous constraint data 
-has the following organization:
+included in the optimization problem formulation as follows.  Exogenous 
+constraint data has the following organization:
 
 ``constraints.data = {"State or Control Variable Name" : {"Constraint Variable Type" : {"Value" : mpcpy.Variables.Timeseries/Static,
                                                                                         "Weight" : mpcpy.Variables.Static or None}}}``
@@ -189,9 +189,27 @@ The state or control variable name must match those that are in the model.
 The constraint variable types should be chosen from the following list:
 
 - LTE - less than or equal to (Timeseries)
-- sLTE - less than or equal to with slack variable (Timeseries)
+- sLTE - less than or equal to with slack variable (Timeseries).  This means that the constraint is implemented by adding a slack variable :math:`s` to the LTE constraint, the objective function with weight :math:`w`, and set of variables to be optimized as follows, where :math:`J` is the specified objective variable in the optimization:
+    
+    .. math::
+
+        &min_{u(t), s(t)} J(x(t),u(t)) + w*s(t)^2
+        
+        &s.t.
+        
+        &   x(t) - s(t) \le b(t)
+        
 - GTE - greater than or equal to (Timeseries)
-- sGTE - greater than or equal to with slack variable (Timeseries)
+- sGTE - greater than or equal to with slack variable (Timeseries).  This means that the constraint is implemented by adding a slack variable :math:`s` to the GTE constraint, the objective function with weight :math:`w`, and set of variables to be optimized as follows, where :math:`J` is the specified objective variable in the optimization:
+    
+    .. math::
+
+        &min_{u(t), s(t)} J(x(t),u(t)) + w*s(t)^2
+        
+        &s.t.
+        
+        &    x(t) + s(t) \ge b(t)
+
 - E - equal to (Timeseries)
 - Initial - initial value (Static)
 - Final - final value (Static)
