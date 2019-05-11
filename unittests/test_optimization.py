@@ -29,12 +29,12 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         # Set .mo path
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         # Gather inputs
-        start_time_exo = '1/1/2017';
-        final_time_exo = '1/10/2017';
+        self.start_time_exo = '1/1/2017';
+        self.final_time_exo = '1/10/2017';
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
         self.controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
-        self.controls.collect_data(start_time_exo, final_time_exo);
+        self.controls.collect_data(self.start_time_exo, self.final_time_exo);
         # Set measurements
         self.measurements = {};
         self.measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
@@ -45,7 +45,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                    'T_db_min' : ('T_db', 'GTE', units.K), \
                                    'T_db_max' : ('T_db', 'LTE', units.K)};
         self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
-        self.constraints.collect_data(start_time_exo, final_time_exo);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
         
     def tearDown(self):
         del self.start_time
@@ -115,7 +115,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         df_test.index.name = 'Time'
         # Check references
         self.check_df(df_test, 'optimize_opt_input.csv');
-        
+
     def test_set_problem_type(self):
         '''Test the dynamic setting of a problem type.
 
@@ -155,6 +155,112 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_energycost.csv');
+        
+    def test_slack_constraints(self):
+        '''Test the slack constraints are created properly.
+        
+        '''
+
+        # Regather constraints       
+        constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints_Slack.csv');
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'sGTE', units.K, 1000), \
+                                   'T_db_max' : ('T_db', 'sLTE', units.K, 500)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
+        modelpath = 'Simple.RC';
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Check slack variables
+        slack_vars_test = opt_problem.get_slack_variables()
+        self.check_json(slack_vars_test, 'slack_variables.txt')
+
+    def test_optimize_slack_constraints_energy(self):
+        '''Test the energy optimization of a model with slack constraints.
+        
+        '''
+
+        # Regather constraints       
+        constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints_Slack.csv');
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'sGTE', units.K, 500000), \
+                                   'T_db_max' : ('T_db', 'sLTE', units.K, 500000)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
+        modelpath = 'Simple.RC';
+        # Instantiate model
+        parameter_data = {};
+        parameter_data['heatCapacitor.C'] = {};
+        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
+        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 3e6, units.boolean);
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data,
+                                parameter_data = parameter_data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Solve optimization problem with default res_control_step                   
+        opt_problem.optimize(self.start_time, self.final_time);
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_energy_slack_constraints.csv');
+
+    def test_optimize_slack_constraints_energycost(self):
+        '''Test the energy cost optimization of a model with slack constraints.
+        
+        '''
+
+        # Regather constraints       
+        constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints_Slack.csv');
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'sGTE', units.K, 500000*500), \
+                                   'T_db_max' : ('T_db', 'sLTE', units.K, 100*500)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
+        modelpath = 'Simple.RC';
+        # Gather prices
+        price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
+        price_variable_map = {'energy' : ('pi_e', units.unit1)};
+        price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
+        price.collect_data(self.start_time, self.final_time);
+        # Instantiate model
+        parameter_data = {};
+        parameter_data['heatCapacitor.C'] = {};
+        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
+        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 3e6, units.boolean);
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data,
+                                parameter_data = parameter_data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyCostMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Solve optimization problem with default res_control_step                   
+        opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_energycost_slack_constraints.csv');
         
     def test_optimize_subpackage(self):
         '''Test the optimization of a model within a subpackage.
@@ -344,7 +450,8 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                 moinfo = (self.mopath, modelpath, {}), \
                                 control_data = self.controls.data);
         # Add initial constraint
-        self.constraints.data['T_db']['Initial'] = variables.Static('T_db_initial', 21, units.degC);
+        self.constraints.data['T_db']['Initial'] = {'Value':variables.Static('T_db_initial', 21, units.degC),
+                                                    'Weight':None};
         # Instantiate optimization problem
         opt_problem = optimization.Optimization(model, \
                                                 optimization.EnergyMin, \
@@ -570,9 +677,12 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
                                          'conHeat_eas_max' : ('conHeat_eas', 'LTE', units.unit1)};
         self.constraints = exodata.ConstraintFromCSV(constraints_path, constraints_variable_map, tz_name = weather.tz_name);
         self.constraints.collect_data(start_time_exodata, final_time_exodata);
-        self.constraints.data['wesTdb']['Cyclic'] = variables.Static('wesTdb_cyclic', 1, units.boolean_integer);
-        self.constraints.data['easTdb']['Cyclic'] = variables.Static('easTdb_cyclic', 1, units.boolean_integer);
-        self.constraints.data['halTdb']['Cyclic'] = variables.Static('halTdb_cyclic', 1, units.boolean_integer);
+        self.constraints.data['wesTdb']['Cyclic'] = {'Value':variables.Static('wesTdb_cyclic', 1, units.boolean_integer),
+                                                     'Weight':None};
+        self.constraints.data['easTdb']['Cyclic'] = {'Value':variables.Static('easTdb_cyclic', 1, units.boolean_integer),
+                                                     'Weight':None};
+        self.constraints.data['halTdb']['Cyclic'] = {'Value':variables.Static('halTdb_cyclic', 1, units.boolean_integer),
+                                                     'Weight':None};
         # Prices
         prices_path = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'PriceCSV.csv');
         price_variable_map = {'pi_e' : ('pi_e', units.unit1)};        

@@ -86,6 +86,7 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
         else:
             self.constraint_data = {};
         self.objective_variable = objective_variable;
+        self._create_slack_variables()
         self._problem_type = problem_type();
         self._package_type = package_type(self);
         self.tz_name = Model.tz_name
@@ -191,6 +192,53 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
         '''
         opt_statistics = self._package_type._get_optimization_statistics();
         return opt_statistics;
+        
+    def _create_slack_variables(self):
+        '''Create slack variables and their expressions from constraint data.
+        
+        Dictionary of slack variable information
+        {<slack_variable_name> : {'Variable': str, 'Weight': float or int}}
+        
+        Parameters
+        ----------
+        Optimization : MPCPy Optimization object
+        
+        '''
+        
+        n_s = 0
+        slack_vars = dict()
+        for key in self.constraint_data.keys():
+            for field in self.constraint_data[key]:
+                if field == 'sGTE' or field == 'sLTE':
+                    key_new = key.replace('.', '_') + '_' + field;
+                    slack_var = 's{0}'.format(n_s)
+                    weight = self.constraint_data[key][field]['Weight']
+                    slack_vars[key_new] = {'Variable': slack_var, 'Weight':weight}
+                    n_s = n_s + 1
+        self._slack_variables = slack_vars
+        
+    def get_slack_variables(self):
+        '''Returns slack variables in display units.
+        
+        Dictionary of slack variable information
+        {<slack_variable_name> : {'Variable': str, 'Weight': float or int}}
+        
+        Returns
+        ----------
+        slack_variables : dict
+            Dictionary of information about slack variables.
+            {<constraint_input_name> :              # str
+                {'Variable':<add_slack_variable>,   # str
+                 'Weight':<slack_variable_weight>   # float or int}
+            }
+        
+        '''
+
+        slack_variables = copy.deepcopy(self._slack_variables)
+        for key in slack_variables:
+            slack_variables[key]['Weight'] = slack_variables[key]['Weight'].display_data()
+
+        return slack_variables
 
 #%% Problem Type Abstract Interface
 class _Problem(object):
@@ -339,8 +387,12 @@ class EnergyMin(_Problem):
 
         JModelica.Model = Optimization.Model;
         JModelica.objective = 'mpc_model.' + Optimization.objective_variable;
+        for key in Optimization._slack_variables.keys():
+            variable = Optimization._slack_variables[key]['Variable']
+            weight = Optimization._slack_variables[key]['Weight'].get_base_data()
+            JModelica.objective = JModelica.objective + ' + {0}*{1}^2'.format(weight, variable)
         JModelica.extra_inputs = {};
-        JModelica._initalize_mop();
+        JModelica._initalize_mop(Optimization);
         JModelica._write_control_mop(Optimization);
         JModelica._compile_transfer_problem();
 
@@ -364,9 +416,13 @@ class EnergyCostMin(_Problem):
 
         JModelica.Model = Optimization.Model;
         JModelica.objective = 'mpc_model.' + Optimization.objective_variable + '*pi_e';
+        for key in Optimization._slack_variables.keys():
+            variable = Optimization._slack_variables[key]['Variable']
+            weight = Optimization._slack_variables[key]['Weight'].get_base_data()
+            JModelica.objective = JModelica.objective + ' + {0}*{1}^2'.format(weight, variable)
         JModelica.extra_inputs = {};
         JModelica.extra_inputs['pi_e'] = [];
-        JModelica._initalize_mop();
+        JModelica._initalize_mop(Optimization);
         JModelica._write_control_mop(Optimization);
         JModelica._compile_transfer_problem();
 
@@ -393,7 +449,7 @@ class _ParameterEstimate(_Problem):
         JModelica.Model = Optimization.Model;
         JModelica.objective = '0';
         JModelica.extra_inputs = {};
-        JModelica._initalize_mop();
+        JModelica._initalize_mop(Optimization);
         JModelica._write_parameter_estimate_mop();
         JModelica._compile_transfer_problem();
 
@@ -468,7 +524,7 @@ class JModelica(_Package, utility._FMU):
         self._solve(Optimization);
         self._get_parameter_results(Optimization);
 
-    def _initalize_mop(self):
+    def _initalize_mop(self, Optimization):
         '''Start writing the mop file.
 
         '''
@@ -487,7 +543,6 @@ class JModelica(_Package, utility._FMU):
                 self.mopfile.write(line);
         mofile.close();
         # Add initialization model to package.mop (must be same name as model in optimization)
-
         self.mopfile.write('\n');
         self.mopfile.write('  model ' + self.Model.modelpath.split('.')[-1] + '_initialize\n');
         package = self.Model.modelpath.split('.')[1:];
@@ -502,11 +557,14 @@ class JModelica(_Package, utility._FMU):
             self._init_input_names.append(key);
             self.other_inputs[key] = self.extra_inputs[key];
             self.mopfile.write('    input Real ' + key+';\n');
+        # Add slack variable inputs required for optimization probelm (initial guess is 0 by default)
+        for key in Optimization._slack_variables.keys():
+            self.mopfile.write('    input Real ' + Optimization._slack_variables[key]['Variable']+';\n');           
         # Instantiate cost function
         self.mopfile.write('    Real J(start = 0, fixed=true);\n');
         # Define cost function
         self.mopfile.write('  equation\n');
-        self.mopfile.write('    der(J) = '+self.objective+';\n');
+        self.mopfile.write('    der(J) = '+self.objective+';\n');  
         # End initalization model
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_initialize;\n');
         # Save the model path of the initialization and optimziation models
@@ -535,8 +593,8 @@ class JModelica(_Package, utility._FMU):
                 if field != 'Cyclic' and field != 'Final' and field != 'Initial':
                     key_new = key.replace('.', '_') + '_' + field;
                     self.opt_input_names.append(key_new);
-                    self.other_inputs[key_new] = Optimization.constraint_data[key][field];
-                    self.mopfile.write('    input Real ' + key_new + ';\n');
+                    self.other_inputs[key_new] = Optimization.constraint_data[key][field]['Value'];
+                    self.mopfile.write('    input Real ' + key_new + ';\n');                    
         # Define constraint_data
         self.mopfile.write('  constraint\n');
         for key in Optimization.constraint_data.keys():
@@ -546,16 +604,22 @@ class JModelica(_Package, utility._FMU):
                     self.mopfile.write('    mpc_model.' + key + ' >= ' + key_new + ';\n');
                 elif field == 'dGTE':
                     self.mopfile.write('    der(mpc_model.' + key + ') >= ' + key_new + ';\n');
+                elif field == 'sGTE':
+                    self.mopfile.write('    mpc_model.' + key + ' + ' + Optimization._slack_variables[key_new]['Variable'] + ' >= ' + key_new + ';\n')
                 elif field == 'LTE':
                     self.mopfile.write('    mpc_model.' + key + ' <= ' + key_new + ';\n');
                 elif field == 'dLTE':
                     self.mopfile.write('    der(mpc_model.' + key + ') <= ' + key_new + ';\n');
+                elif field == 'sLTE':
+                    self.mopfile.write('    mpc_model.' + key + ' - ' + Optimization._slack_variables[key_new]['Variable'] + ' <= ' + key_new + ';\n')
                 elif field == 'Initial':
-                    self.mopfile.write('    mpc_model.' + key + '(startTime)=' + str(Optimization.constraint_data[key][field].get_base_data()) + ';\n');
+                    self.mopfile.write('    mpc_model.' + key + '(startTime)=' + str(Optimization.constraint_data[key][field]['Value'].get_base_data()) + ';\n');
                 elif field == 'Final':
-                    self.mopfile.write('    mpc_model.' + key + '(finalTime)=' + str(Optimization.constraint_data[key][field].get_base_data()) + ';\n');
+                    self.mopfile.write('    mpc_model.' + key + '(finalTime)=' + str(Optimization.constraint_data[key][field]['Value'].get_base_data()) + ';\n');
                 elif field == 'Cyclic':
                     self.mopfile.write('    mpc_model.' + key + '(startTime)=mpc_model.' + key + '(finalTime);\n');
+        for key in Optimization._slack_variables.keys():
+            self.mopfile.write('   ' + Optimization._slack_variables[key]['Variable'] + ' >= 0;\n');
         # End optimization portion of package.mop
         self.mopfile.write('  end ' + self.Model.modelpath.split('.')[-1] + '_optimize;\n');
         # End package.mop and save
@@ -623,7 +687,7 @@ class JModelica(_Package, utility._FMU):
                         if key_new not in self.other_inputs.keys():
                             raise ValueError ('New constraint {0} found. The optimization problem needs to be re-instantiated to use this constraint.'.format(key_new))
                         else:
-                            self.other_inputs[key_new] = Optimization.constraint_data[key][field];
+                            self.other_inputs[key_new] = Optimization.constraint_data[key][field]['Value'];
         # Set parameters
         self.parameter_data = {};
         for key in self.Model.parameter_data.keys():

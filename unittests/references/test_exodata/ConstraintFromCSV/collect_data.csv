@@ -1,4 +1,4 @@
-Time,conHeat_eas_GTE,conHeat_eas_LTE,conHeat_hal_GTE,conHeat_hal_LTE,conHeat_wes_GTE,conHeat_wes_LTE,easTdb_GTE,easTdb_LTE,halTdb_GTE,halTdb_LTE,wesTdb_GTE,wesTdb_LTE
+Time,conHeat_eas_sGTE,conHeat_eas_sLTE,conHeat_hal_GTE,conHeat_hal_LTE,conHeat_wes_GTE,conHeat_wes_LTE,easTdb_GTE,easTdb_LTE,halTdb_GTE,halTdb_LTE,wesTdb_GTE,wesTdb_LTE
 2015-01-01 13:00:00+00:00,0.0,1.0,0.0,1.0,0.0,1.0,20.0,25.0,20.0,25.0,20.0,25.0
 2015-01-01 14:00:00+00:00,0.0,1.0,0.0,1.0,0.0,1.0,20.0,25.0,20.0,25.0,20.0,25.0
 2015-01-01 15:00:00+00:00,0.0,1.0,0.0,1.0,0.0,1.0,20.0,25.0,20.0,25.0,20.0,25.0
