@@ -469,6 +469,10 @@ class EnergyPlusDemandCostMin(_Problem):
             JModelica.extra_inputs['z_hat_{0}'.format(period)] = [];
         if Optimization.coincident:
             JModelica.extra_inputs['z_hat_c'] = [];
+        for key in Optimization._slack_variables.keys():
+            variable = Optimization._slack_variables[key]['Variable']
+            weight = Optimization._slack_variables[key]['Weight'].get_base_data()
+            JModelica.objective = JModelica.objective + ' + {0}*{1}^2'.format(weight, variable)
         JModelica._initalize_mop(Optimization);
         JModelica._write_control_mop(Optimization, demand_periods=Optimization.demand_periods, coincident = Optimization.coincident);
         JModelica._compile_transfer_problem();
