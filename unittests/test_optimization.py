@@ -650,14 +650,14 @@ class EnergyPlusDemand(TestCaseMPCPy):
         opt_problem = optimization.Optimization(model, \
                                                 optimization.EnergyPlusDemandCostMin, \
                                                 optimization.JModelica, \
-                                                {'Power':'q_flow','Penalty':None}, \
+                                                'q_flow', \
                                                 constraint_data = self.constraints.data,
-                                                demand_periods=3);
+                                                demand_periods=3, coincident=(0.01774,3050));
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
         price_variable_map = {'energy' : ('pi_e', units.unit1),
                               'demand' : ('pi_d', units.unit1),
-                              'penalty' : ('pi_p', units.unit1)};
+                              'peak_power' : ('P_est', units.unit1)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(start_time, final_time);
         opt_problem.optimize(start_time, final_time, price_data = price.data)
@@ -670,7 +670,15 @@ class EnergyPlusDemand(TestCaseMPCPy):
         ax[1].plot(df_test['q_flow'])
         ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
         ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
-        plt.show()        
+        plt.show()      
+        
+        dat = (opt_problem._package_type.res_opt['z_0'],
+               opt_problem._package_type.res_opt['z_1'],
+               opt_problem._package_type.res_opt['z_2'],
+               opt_problem._package_type.res_opt['z_c'])
+        print(dat)
+        print(opt_problem._package_type.demand_df.resample('1H').mean())
+        print(opt_problem.get_optimization_statistics())
 #%% Temperature tests
 class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
     '''Tests for the optimization of a model using JModelica.
