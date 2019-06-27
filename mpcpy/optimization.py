@@ -401,13 +401,17 @@ class EnergyMin(_Problem):
 
         '''
 
+        # Initialize objective
         JModelica.Model = Optimization.Model;
         JModelica.objective = 'mpc_model.' + Optimization.objective_variable;
+        # Add any extra inputs
+        JModelica.extra_inputs = {};
+        # Add slack variables
         for key in Optimization._slack_variables.keys():
             variable = Optimization._slack_variables[key]['Variable']
             weight = Optimization._slack_variables[key]['Weight'].get_base_data()
             JModelica.objective = JModelica.objective + ' + {0}*{1}^2'.format(weight, variable)
-        JModelica.extra_inputs = {};
+        # Write mop file
         JModelica._initalize_mop(Optimization);
         JModelica._write_control_mop(Optimization);
         JModelica._compile_transfer_problem();
@@ -430,22 +434,26 @@ class EnergyCostMin(_Problem):
 
         '''
 
+        # Initialize objective
         JModelica.Model = Optimization.Model;
         JModelica.objective = 'mpc_model.' + Optimization.objective_variable + '*pi_e';
+        # Add any extra inputs
+        JModelica.extra_inputs = {};
+        JModelica.extra_inputs['pi_e'] = [];
+        # Add slack variables
         for key in Optimization._slack_variables.keys():
             variable = Optimization._slack_variables[key]['Variable']
             weight = Optimization._slack_variables[key]['Weight'].get_base_data()
             JModelica.objective = JModelica.objective + ' + {0}*{1}^2'.format(weight, variable)
-        JModelica.extra_inputs = {};
-        JModelica.extra_inputs['pi_e'] = [];
+        # Write mop file
         JModelica._initalize_mop(Optimization);
         JModelica._write_control_mop(Optimization);
         JModelica._compile_transfer_problem();
         
 class EnergyPlusDemandCostMin(_Problem):
     '''Minimize the integral of the objective variable multiplied by a 
-    time-varying weighting factor over the time horizon plus the maximum
-    of the objective variable over the time horizon.
+    time-varying weighting factor over the time horizon plus the multi-period 
+    maximum of the objective variable over the time horizon.
     
     '''
 
@@ -461,18 +469,23 @@ class EnergyPlusDemandCostMin(_Problem):
         
         '''
         
+        # Initialize objective
         JModelica.Model = Optimization.Model;
         JModelica.objective = 'mpc_model.{0}*pi_e'.format(Optimization.objective_variable);
+        # Add any extra inputs
         JModelica.extra_inputs = {};
         JModelica.extra_inputs['pi_e'] = [];
-        for period in range(Optimization.demand_periods):
-            JModelica.extra_inputs['z_hat_{0}'.format(period)] = [];
-        if Optimization.coincident:
-            JModelica.extra_inputs['z_hat_c'] = [];
+        # Add slack variables
         for key in Optimization._slack_variables.keys():
             variable = Optimization._slack_variables[key]['Variable']
             weight = Optimization._slack_variables[key]['Weight'].get_base_data()
             JModelica.objective = JModelica.objective + ' + {0}*{1}^2'.format(weight, variable)
+        # Add demand periods
+        for period in range(Optimization.demand_periods):
+            JModelica.extra_inputs['z_hat_{0}'.format(period)] = [];
+        if Optimization.coincident:
+            JModelica.extra_inputs['z_hat_c'] = [];
+        # Write mop file
         JModelica._initalize_mop(Optimization);
         JModelica._write_control_mop(Optimization, demand_periods=Optimization.demand_periods, coincident = Optimization.coincident);
         JModelica._compile_transfer_problem();
@@ -496,10 +509,13 @@ class _ParameterEstimate(_Problem):
         '''Setup the optimization problem for JModelica.
 
         '''
-
+        
+        # Initialize objective
         JModelica.Model = Optimization.Model;
         JModelica.objective = '0';
+        # Add any extra inputs
         JModelica.extra_inputs = {};
+        # Write mop file
         JModelica._initalize_mop(Optimization);
         JModelica._write_parameter_estimate_mop();
         JModelica._compile_transfer_problem();
