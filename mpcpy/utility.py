@@ -263,7 +263,7 @@ class _FMU(_mpcpyPandas):
        
     def _simulate_fmu(self):
         '''Simulate an fmu with pyfmi and using any given exodata inputs.
-        
+
         Yields
         ------
         measurements[key]['Simulated'] : variables.Timeseries
@@ -276,6 +276,9 @@ class _FMU(_mpcpyPandas):
         self._create_input_mpcpy_ts_list_sim();
         # Set inputs
         self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list);
+        # Save inputs if wanted
+        if self._save_sim_opt_data:
+            self._input_df.to_csv('simulation_inputs.csv')
         # Get simulation options
         self._sim_opts = self.fmu.simulate_options();
         # Set simulation fmu with start
@@ -291,7 +294,18 @@ class _FMU(_mpcpyPandas):
         # Set parameters in fmu if they exist
         if hasattr(self, 'parameter_data'):
             for key in self.parameter_data.keys():
-                self.fmu.set(key, self.parameter_data[key]['Value'].get_base_data());
+                value = self.parameter_data[key]['Value'].get_base_data()
+                self.fmu.set(key, value);
+                # Save parameters to file if wanted
+                if self._save_sim_opt_data:
+                    file_name = 'simualation_parameters.csv'
+                    if os.path.exists(file_name):
+                        with open(file_name, 'a') as f:
+                            f.write('{0},{1}\n'.format(key,value))
+                    else:
+                        with open(file_name, 'w') as f:
+                            f.write('parameter,value\n')
+                            f.write('{0},{1}\n'.format(key,value))
         # Get minimum measurement sample rate for simulation
         min_sample = 3600;
         for key in self.measurements.keys():

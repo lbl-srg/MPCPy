@@ -153,7 +153,21 @@ class Modelica(_Model, utility._FMU, utility._Building):
         Name of timezone according to the package ``tzwhere``.  If 
         ``'from_geography'``, then geography kwarg is required.
     geography : list or tuple, optional
-        List or tuple with (latitude, longitude) in degrees.          
+        List or tuple with (latitude, longitude) in degrees.   
+    save_sim_opt_data : boolean
+        True to save the data set to the simulations and optimizations
+        Saved files are:
+        "simulation_parameters.csv"
+        "optimization_parameters.csv"
+        "simulation_inputs.csv"
+        "optimization_inputs.csv"
+        Default is False.
+    save_inputs : boolean
+        True to save the inputs set to the simulations and optimizations
+        Saved files are:
+        "simulation_inputs.csv" for simulations.
+        "optimization_inputs.csv" for optimizations.
+        Default is False.
 
     Attributes
     ----------
@@ -172,7 +186,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
     '''
     
-    def __init__(self, estimate_method, validate_method, measurements, **kwargs):
+    def __init__(self, estimate_method, validate_method, measurements, save_sim_opt_data=False, **kwargs):
         '''Constructor of a modelica or FMU model object.
         
         '''
@@ -183,6 +197,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self.input_names = self._get_input_names();                                       
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
+        self._save_sim_opt_data = save_sim_opt_data
         # Check estimation method compatible with model
         if estimate_method is JModelica:
             if self.mopath is None:
@@ -371,7 +386,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         # Perform validation        
         self._validate_method._validate(self, validate_filename, plot = plot);
             
-    def simulate(self, start_time, final_time):
+    def simulate(self, start_time, final_time, ):
         '''Simulate the model with current parameter estimates and any exodata 
         inputs.
 
