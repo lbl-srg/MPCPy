@@ -3,7 +3,7 @@
 ``Optimization`` objects setup and solve mpc control optimization problems.
 The optimization uses ``models`` objects to  setup and solve the specified
 optimization problem type with the specified optimization package type.
-Constraint informaiton can be added to the optimization problem through the
+Constraint information can be added to the optimization problem through the
 use of the constraint ``exodata`` object. Please see the ``exodata``
 documentation for more information.
 
@@ -21,6 +21,8 @@ Problem Types
 .. autoclass:: mpcpy.optimization.EnergyMin
 
 .. autoclass:: mpcpy.optimization.EnergyCostMin
+
+.. autoclass:: mpcpy.optimization.EnergyPlusDemandCostMin
 
 Package Types
 =============
@@ -75,7 +77,7 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
     Model :  mpcpy.model object
         Model with which to perform the optimization.
     objective_variable : string
-        The name of the model variable to be used in the objective function.
+        The name of the model variable to be used as the objective variable.
     constraint_data : dictionary
         ``exodata`` constraint object data attribute.
 
@@ -342,6 +344,25 @@ class _Package(object):
         '''
 
         pass;
+        
+    @abstractmethod
+    def _energyplusdemandcostmin(self):
+        '''Optimization package-specific call to minimize the integral of the 
+        objective variable multiplied by a time-varying weighting factor over 
+        the time horizon plus the multi-period incremental maximum of the 
+        objective variable over the time horizon.
+
+        Yields
+        ------
+        Upon solving the optimization problem, this method updates the
+        ``Optimization.Model.control_data`` dictionary with the optimal control
+        timeseries for each control variable and creates the
+        Optimization.measurements dictionary with the optimization solution
+        measurements under the ``'Simulated'`` key.
+
+        '''
+
+        pass;
 
     @abstractmethod
     def _parameterestimate(self):
@@ -384,8 +405,12 @@ class _Package(object):
 
 #%% Problem Type Implementation
 class EnergyMin(_Problem):
-    '''Minimize the integral of the objective variable over the time
-    horizon.
+    '''Minimize the integral of the objective variable, :math:`P(t)`, over the 
+    time horizon from time :math:`t_s` to time :math:`t_f`.
+    
+    .. math::
+    
+        min J = \int_{t_s}^{t_f} P dt
 
     '''
 
@@ -417,8 +442,13 @@ class EnergyMin(_Problem):
         JModelica._compile_transfer_problem();
 
 class EnergyCostMin(_Problem):
-    '''Minimize the integral of the objective variable multiplied by a
-    time-varying weighting factor over the time horizon.
+    '''Minimize the integral of the objective variable, :math:`P(t)`, 
+    multiplied by a time-varying weighting factor, :math:`\pi_e(t)`, over the 
+    time horizon from time :math:`t_s` to time :math:`t_f`.
+    
+    .. math:: 
+        
+        min J = \int_{t_s}^{t_f} \pi_e*P dt
 
     '''
 
@@ -451,9 +481,17 @@ class EnergyCostMin(_Problem):
         JModelica._compile_transfer_problem();
         
 class EnergyPlusDemandCostMin(_Problem):
-    '''Minimize the integral of the objective variable multiplied by a 
-    time-varying weighting factor over the time horizon plus the multi-period 
-    maximum of the objective variable over the time horizon.
+    '''Minimize the integral of the objective variable, :math:`P(t)`, 
+    multiplied by a time-varying weighting factor, :math:`\pi_e(t)`, over the 
+    time horizon from time :math:`t_s` to time :math:`t_f` plus the 
+    incremental maximum of the objective variable over a time period, 
+    :math:`P_\\tau`, over a previously observed or estimated maximum for the
+    same time period, :math:`P_{est,\\tau}`, with period-specific demand costs, 
+    :math:`\pi_{d,\\tau}`.
+    
+    .. math:: 
+    
+        min J = \int_{t_s}^{t_f} \pi_e*P dt + \sum_{\\tau} \pi_{d,\\tau}*(max({P}_\\tau)-P_{est,\\tau})
     
     '''
 
@@ -582,7 +620,7 @@ class JModelica(_Package, utility._FMU):
         self._get_control_results(Optimization, **kwargs);
         
     def _energyplusdemandcostmin(self, Optimization, **kwargs):
-        '''Perform the energy cost minimization.
+        '''Perform the energy plus demand cost minimization.
         
         '''
 
