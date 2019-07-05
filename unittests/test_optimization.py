@@ -636,6 +636,7 @@ class EnergyPlusDemand(TestCaseMPCPy):
 
         '''
 
+        plot = False
         # Gather constraints       
         constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
         constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
@@ -661,27 +662,22 @@ class EnergyPlusDemand(TestCaseMPCPy):
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_energyplusdemandcost.csv');
-        fig,ax = plt.subplots(2,1,sharex=True)
-        ax[0].plot(df_test['T_db'])
-        ax[0].plot(df_test['Tamb.y'])
-        ax[1].plot(df_test['q_flow'])
-        ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
-        ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
-        plt.show()      
-        
-        dat = (opt_problem._package_type.res_opt['z_0'],
-               opt_problem._package_type.res_opt['z_1'],
-               opt_problem._package_type.res_opt['z_2'],
-               opt_problem._package_type.res_opt['z_c'])
-        print(dat)
-        print(opt_problem._package_type.demand_df.resample('1H').mean())
-        print(opt_problem.get_optimization_statistics())
+        # Plot if wanted
+        if plot:
+            fig,ax = plt.subplots(2,1,sharex=True)
+            ax[0].plot(df_test['T_db'])
+            ax[0].plot(df_test['Tamb.y'])
+            ax[1].plot(df_test['q_flow'])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
+            plt.show()
         
     def test_energyplusdemandcostmin_slack(self):
         '''Test energy plus demand cost minimization problem with slack constraints.
 
         '''
 
+        plot = False
         # Gather constraints       
         constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
         constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
@@ -707,21 +703,15 @@ class EnergyPlusDemand(TestCaseMPCPy):
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_energyplusdemandcost_slack_constraints.csv');
-        fig,ax = plt.subplots(2,1,sharex=True)
-        ax[0].plot(df_test['T_db'])
-        ax[0].plot(df_test['Tamb.y'])
-        ax[1].plot(df_test['q_flow'])
-        ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
-        ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
-        plt.show()      
-        
-        dat = (opt_problem._package_type.res_opt['z_0'],
-               opt_problem._package_type.res_opt['z_1'],
-               opt_problem._package_type.res_opt['z_2'],
-               opt_problem._package_type.res_opt['z_c'])
-        print(dat)
-        print(opt_problem._package_type.demand_df.resample('1H').mean())
-        print(opt_problem.get_optimization_statistics())
+        # Plot if wanted
+        if plot:
+            fig,ax = plt.subplots(2,1,sharex=True)
+            ax[0].plot(df_test['T_db'])
+            ax[0].plot(df_test['Tamb.y'])
+            ax[1].plot(df_test['q_flow'])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
+            plt.show()
         
 #%% Temperature tests
 class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
