@@ -665,7 +665,7 @@ class JModelica(_Package, utility._FMU):
                          Optimization.final_time_utc];
             data_new = [coincident[1], coincident[1]];
             ts = pd.Series(index=index_new, data=data_new);
-            unit = price_data['pi_d'].get_base_unit();
+            unit = units.W;
             var = variables.Timeseries('z_hat_c'.format(i), ts, unit);
             self.other_inputs['z_hat_c'.format(i)] = var;
             self.opt_problem.set('pi_d_c'.format(i), coincident[0]);
