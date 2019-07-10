@@ -945,49 +945,49 @@ class EnergyPrice(unittest.TestCase):
     def test_cents_kWh(self):
         var = variables.Static('var1', 1.0, units.cents_kWh);
         # Test conversion to base unit
+        self.assertAlmostEqual(var.get_base_data(), 3.6e-8, places = 2);
+        # Test conversion from base unit        
+        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
+        # Test the base unit quantity        
+        self.assertEqual(var.quantity_name, self.quantity_name);
+        # Test the base unit class
+        self.assertEqual(var.get_base_unit(), units.dol_J);
+        # Test the display unit name string
+        self.assertEqual(var.get_display_unit_name(), 'cents/kWh');          
+    def test_dol_kWh(self):
+        var = variables.Static('var1', 1.0, units.dol_kWh);
+        # Test conversion to base unit
+        self.assertAlmostEqual(var.get_base_data(), 3.6e-6, places = 2);
+        # Test conversion from base unit        
+        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
+        # Test the base unit quantity        
+        self.assertEqual(var.quantity_name, self.quantity_name);
+        # Test the base unit class
+        self.assertEqual(var.get_base_unit(), units.dol_J);
+        # Test the display unit name string
+        self.assertEqual(var.get_display_unit_name(), '$/kWh');         
+    def test_dol_MWh(self):
+        var = variables.Static('var1', 1.0, units.dol_MWh);
+        # Test conversion to base unit
+        self.assertAlmostEqual(var.get_base_data(), 3.6e-9, places = 2);
+        # Test conversion from base unit        
+        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
+        # Test the base unit quantity        
+        self.assertEqual(var.quantity_name, self.quantity_name);
+        # Test the base unit class
+        self.assertEqual(var.get_base_unit(), units.dol_J);
+        # Test the display unit name string
+        self.assertEqual(var.get_display_unit_name(), '$/MWh');
+    def test_dol_J(self):
+        var = variables.Static('var1', 1.0, units.dol_J);
+        # Test conversion to base unit
         self.assertAlmostEqual(var.get_base_data(), 1.0, places = 2);
         # Test conversion from base unit        
         self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
         # Test the base unit quantity        
         self.assertEqual(var.quantity_name, self.quantity_name);
         # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kWh);
-        # Test the display unit name string
-        self.assertEqual(var.get_display_unit_name(), 'cents/kWh');          
-    def test_dol_kWh(self):
-        var = variables.Static('var1', 1.0, units.dol_kWh);
-        # Test conversion to base unit
-        self.assertAlmostEqual(var.get_base_data(), 100.0, places = 2);
-        # Test conversion from base unit        
-        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
-        # Test the base unit quantity        
-        self.assertEqual(var.quantity_name, self.quantity_name);
-        # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kWh);
-        # Test the display unit name string
-        self.assertEqual(var.get_display_unit_name(), '$/kWh');         
-    def test_dol_MWh(self):
-        var = variables.Static('var1', 1.0, units.dol_MWh);
-        # Test conversion to base unit
-        self.assertAlmostEqual(var.get_base_data(), 0.1, places = 2);
-        # Test conversion from base unit        
-        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
-        # Test the base unit quantity        
-        self.assertEqual(var.quantity_name, self.quantity_name);
-        # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kWh);
-        # Test the display unit name string
-        self.assertEqual(var.get_display_unit_name(), '$/MWh');
-    def test_dol_J(self):
-        var = variables.Static('var1', 1.0, units.dol_J);
-        # Test conversion to base unit
-        self.assertAlmostEqual(var.get_base_data(), 3.6e8, places = 2);
-        # Test conversion from base unit        
-        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
-        # Test the base unit quantity        
-        self.assertEqual(var.quantity_name, self.quantity_name);
-        # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kWh);
+        self.assertEqual(var.get_base_unit(), units.dol_J);
         # Test the display unit name string
         self.assertEqual(var.get_display_unit_name(), '$/J');
         
@@ -998,49 +998,49 @@ class PowerPrice(unittest.TestCase):
     def test_cents_kW(self):
         var = variables.Static('var1', 1.0, units.cents_kW);
         # Test conversion to base unit
+        self.assertAlmostEqual(var.get_base_data(),1e-5, places = 2);
+        # Test conversion from base unit        
+        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
+        # Test the base unit quantity        
+        self.assertEqual(var.quantity_name, self.quantity_name);
+        # Test the base unit class
+        self.assertEqual(var.get_base_unit(), units.dol_W);
+        # Test the display unit name string
+        self.assertEqual(var.get_display_unit_name(), 'cents/kW');          
+    def test_dol_kW(self):
+        var = variables.Static('var1', 1.0, units.dol_kW);
+        # Test conversion to base unit
+        self.assertAlmostEqual(var.get_base_data(), 1e-3, places = 2);
+        # Test conversion from base unit        
+        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
+        # Test the base unit quantity        
+        self.assertEqual(var.quantity_name, self.quantity_name);
+        # Test the base unit class
+        self.assertEqual(var.get_base_unit(), units.dol_W);
+        # Test the display unit name string
+        self.assertEqual(var.get_display_unit_name(), '$/kW');          
+    def test_dol_MW(self):
+        var = variables.Static('var1', 1.0, units.dol_MW);
+        # Test conversion to base unit
+        self.assertAlmostEqual(var.get_base_data(), 1e-6, places = 2);
+        # Test conversion from base unit        
+        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
+        # Test the base unit quantity        
+        self.assertEqual(var.quantity_name, self.quantity_name);
+        # Test the base unit class
+        self.assertEqual(var.get_base_unit(), units.dol_W);
+        # Test the display unit name string
+        self.assertEqual(var.get_display_unit_name(), '$/MW');
+    def test_dol_W(self):
+        var = variables.Static('var1', 1.0, units.dol_W);
+        # Test conversion to base unit
         self.assertAlmostEqual(var.get_base_data(), 1.0, places = 2);
         # Test conversion from base unit        
         self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
         # Test the base unit quantity        
         self.assertEqual(var.quantity_name, self.quantity_name);
         # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kW);
-        # Test the display unit name string
-        self.assertEqual(var.get_display_unit_name(), 'cents/kW');          
-    def test_dol_kW(self):
-        var = variables.Static('var1', 1.0, units.dol_kW);
-        # Test conversion to base unit
-        self.assertAlmostEqual(var.get_base_data(), 100.0, places = 2);
-        # Test conversion from base unit        
-        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
-        # Test the base unit quantity        
-        self.assertEqual(var.quantity_name, self.quantity_name);
-        # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kW);
-        # Test the display unit name string
-        self.assertEqual(var.get_display_unit_name(), '$/kW');          
-    def test_dol_MW(self):
-        var = variables.Static('var1', 1.0, units.dol_MW);
-        # Test conversion to base unit
-        self.assertAlmostEqual(var.get_base_data(), 0.1, places = 2);
-        # Test conversion from base unit        
-        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
-        # Test the base unit quantity        
-        self.assertEqual(var.quantity_name, self.quantity_name);
-        # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kW);
-        # Test the display unit name string
-        self.assertEqual(var.get_display_unit_name(), '$/MW');
-    def test_dol_W(self):
-        var = variables.Static('var1', 1.0, units.dol_W);
-        # Test conversion to base unit
-        self.assertAlmostEqual(var.get_base_data(), 1*100*1000, places = 2);
-        # Test conversion from base unit        
-        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
-        # Test the base unit quantity        
-        self.assertEqual(var.quantity_name, self.quantity_name);
-        # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kW);
+        self.assertEqual(var.get_base_unit(), units.dol_W);
         # Test the display unit name string
         self.assertEqual(var.get_display_unit_name(), '$/W');   
         
