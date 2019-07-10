@@ -239,7 +239,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         modelpath = 'Simple.RC';
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
-        price_variable_map = {'energy' : ('pi_e', units.dol_J)};
+        price_variable_map = {'energy[cents/kWh]' : ('pi_e', units.cents_kWh)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
         # Instantiate model
