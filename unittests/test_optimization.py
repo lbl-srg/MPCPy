@@ -148,9 +148,12 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         opt_problem.set_problem_type(optimization.EnergyCostMin);
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
-        price_variable_map = {'energy' : ('pi_e', units.unit1)};
+        price_variable_map = {'energy[cents/kWh]' : ('pi_e', units.cents_kWh)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
+        # Check price data
+        price_data = price.get_base_data()
+        self.check_df(price_data, 'optimize_energycost_price_data.csv');
         opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
@@ -236,7 +239,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         modelpath = 'Simple.RC';
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
-        price_variable_map = {'energy' : ('pi_e', units.unit1)};
+        price_variable_map = {'energy' : ('pi_e', units.dol_J)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
         # Instantiate model
@@ -802,7 +805,7 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
                                                      'Weight':None};
         # Prices
         prices_path = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'PriceCSV.csv');
-        price_variable_map = {'pi_e' : ('pi_e', units.unit1)};        
+        price_variable_map = {'pi_e' : ('pi_e', units.dol_J)};        
         self.prices = exodata.PriceFromCSV(prices_path, price_variable_map, tz_name = weather.tz_name);
         self.prices.collect_data(start_time_exodata, final_time_exodata);        
         
