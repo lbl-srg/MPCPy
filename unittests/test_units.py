@@ -992,7 +992,7 @@ class PowerPrice(unittest.TestCase):
         # Test the base unit quantity        
         self.assertEqual(var.quantity_name, self.quantity_name);
         # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kWh);
+        self.assertEqual(var.get_base_unit(), units.cents_kW);
         # Test the display unit name string
         self.assertEqual(var.get_display_unit_name(), 'cents/kW');          
     def test_dol_kW(self):
@@ -1004,7 +1004,7 @@ class PowerPrice(unittest.TestCase):
         # Test the base unit quantity        
         self.assertEqual(var.quantity_name, self.quantity_name);
         # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kWh);
+        self.assertEqual(var.get_base_unit(), units.cents_kW);
         # Test the display unit name string
         self.assertEqual(var.get_display_unit_name(), '$/kW');          
     def test_dol_MW(self):
@@ -1016,7 +1016,7 @@ class PowerPrice(unittest.TestCase):
         # Test the base unit quantity        
         self.assertEqual(var.quantity_name, self.quantity_name);
         # Test the base unit class
-        self.assertEqual(var.get_base_unit(), units.cents_kWh);
+        self.assertEqual(var.get_base_unit(), units.cents_kW);
         # Test the display unit name string
         self.assertEqual(var.get_display_unit_name(), '$/MW');          
         

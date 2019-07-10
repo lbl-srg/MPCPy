@@ -131,7 +131,7 @@ class _EnergyPrice(_DisplayUnit):
 class _PowerPrice(_DisplayUnit):
     def _define_quantity(self, variable):
         variable.quantity_name = 'PowerPrice';
-        variable.base_unit = cents_kWh;
+        variable.base_unit = cents_kW;
         
 class _SpecificHeatCapacity(_DisplayUnit):
     def _define_quantity(self, variable):
