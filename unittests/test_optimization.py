@@ -656,9 +656,9 @@ class EnergyPlusDemand(TestCaseMPCPy):
                                                 demand_periods=3, coincident=(0.01774,3050));
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
-        price_variable_map = {'energy' : ('pi_e', units.unit1),
-                              'demand' : ('pi_d', units.unit1),
-                              'peak_power' : ('P_est', units.unit1)};
+        price_variable_map = {'energy' : ('pi_e', units.dol_J),
+                              'demand' : ('pi_d', units.dol_W),
+                              'peak_power' : ('P_est', units.W)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
         opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
@@ -697,9 +697,9 @@ class EnergyPlusDemand(TestCaseMPCPy):
                                                 demand_periods=3, coincident=(0.01774,3050));
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
-        price_variable_map = {'energy' : ('pi_e', units.unit1),
-                              'demand' : ('pi_d', units.unit1),
-                              'peak_power' : ('P_est', units.unit1)};
+        price_variable_map = {'energy' : ('pi_e', units.dol_J),
+                              'demand' : ('pi_d', units.dol_W),
+                              'peak_power' : ('P_est', units.W)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
         opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
