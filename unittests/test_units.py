@@ -977,7 +977,19 @@ class EnergyPrice(unittest.TestCase):
         # Test the base unit class
         self.assertEqual(var.get_base_unit(), units.cents_kWh);
         # Test the display unit name string
-        self.assertEqual(var.get_display_unit_name(), '$/MWh');         
+        self.assertEqual(var.get_display_unit_name(), '$/MWh');
+    def test_dol_J(self):
+        var = variables.Static('var1', 1.0, units.dol_J);
+        # Test conversion to base unit
+        self.assertAlmostEqual(var.get_base_data(), 3.6e8, places = 2);
+        # Test conversion from base unit        
+        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
+        # Test the base unit quantity        
+        self.assertEqual(var.quantity_name, self.quantity_name);
+        # Test the base unit class
+        self.assertEqual(var.get_base_unit(), units.cents_kWh);
+        # Test the display unit name string
+        self.assertEqual(var.get_display_unit_name(), '$/J');
         
 #%% PowerPrice tests        
 class PowerPrice(unittest.TestCase):
@@ -1018,7 +1030,19 @@ class PowerPrice(unittest.TestCase):
         # Test the base unit class
         self.assertEqual(var.get_base_unit(), units.cents_kW);
         # Test the display unit name string
-        self.assertEqual(var.get_display_unit_name(), '$/MW');          
+        self.assertEqual(var.get_display_unit_name(), '$/MW');
+    def test_dol_W(self):
+        var = variables.Static('var1', 1.0, units.dol_W);
+        # Test conversion to base unit
+        self.assertAlmostEqual(var.get_base_data(), 1*100*1000, places = 2);
+        # Test conversion from base unit        
+        self.assertAlmostEqual(var.display_data(), 1.0, places = 2);
+        # Test the base unit quantity        
+        self.assertEqual(var.quantity_name, self.quantity_name);
+        # Test the base unit class
+        self.assertEqual(var.get_base_unit(), units.cents_kW);
+        # Test the display unit name string
+        self.assertEqual(var.get_display_unit_name(), '$/W');   
         
 #%% SpecificHeatCapacity tests        
 class SpecificHeatCapacity(unittest.TestCase):

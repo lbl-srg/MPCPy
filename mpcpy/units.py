@@ -937,6 +937,16 @@ class dol_MWh(_EnergyPrice):
     def _convert_from_base(self, base_data):
         display_data = base_data/100*1000;
         return display_data;
+
+class dol_J(_EnergyPrice):
+    def _define_display_unit(self):
+        self.name = '$/J';
+    def _convert_to_base(self, display_data):
+        base_data = display_data*3.6e8;
+        return base_data;
+    def _convert_from_base(self, base_data):
+        display_data = base_data/3.6e8;
+        return display_data;
         
 #%% PowerPrice unit implementation     
 class cents_kW(_PowerPrice):
@@ -967,6 +977,16 @@ class dol_MW(_PowerPrice):
         return base_data;
     def _convert_from_base(self, base_data):
         display_data = base_data/100*1000;
+        return display_data;
+
+class dol_W(_PowerPrice):
+    def _define_display_unit(self):
+        self.name = '$/W';
+    def _convert_to_base(self, display_data):
+        base_data = display_data*100*1000;
+        return base_data;
+    def _convert_from_base(self, base_data):
+        display_data = base_data/100/1000;
         return display_data;
         
 #%% Specific heat capacity unit implementation     
