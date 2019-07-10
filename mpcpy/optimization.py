@@ -487,11 +487,42 @@ class EnergyPlusDemandCostMin(_Problem):
     incremental maximum of the objective variable over a time period, 
     :math:`P_\\tau`, over a previously observed or estimated maximum for the
     same time period, :math:`P_{est,\\tau}`, with period-specific demand costs, 
-    :math:`\pi_{d,\\tau}`.
+    :math:`\pi_{d,\\tau}`.  Note that :math:`\\tau` represents ranges of time
+    corresponding to period-specific demand costs.
     
     .. math:: 
     
-        min J = \int_{t_s}^{t_f} \pi_e*P dt + \sum_{\\tau} \pi_{d,\\tau}*(max({P}_\\tau)-P_{est,\\tau})
+        &min J = \int_{t_s}^{t_f} \pi_e*P dt + \sum_{\\tau} \pi_{d,\\tau}*(max({P}_\\tau)-P_{est,\\tau})
+    
+    This formulation was compared with other formulations considering demand
+    in [1] and was found to improve responsiveness to energy shifting without
+    increasing customer utility bills.  For implementation in continuous time
+    and for use with NLP solvers, the problem can be implemented with the 
+    following transformation.
+    
+    .. math:: 
+    
+        &min J_{[z_{\\tau}]} = \int_{t_s}^{t_f} \pi_e*P dt + \sum_{\\tau} \pi_{d,\\tau}*z_\\tau
+        
+        &s.t.
+        
+        &P \le z_\\tau + \hat{z}_\\tau &\\forall \\tau
+        
+        &z_{\\tau} \ge 0 &\\forall \\tau
+        
+        &where
+        
+        &\hat{z}_\\tau = P_{est,\\tau} &\\forall t \in \\tau
+        
+        &\hat{z}_\\tau = M>>1 &\\forall t \\notin \\tau 
+        
+    
+    References:
+    
+    [1] O. V. Cutsem, D. H. Blum, M. Kayal, and M. Pritoni. (2019). 
+    “Comparison of MPC Formulations for Building Control under Commercial 
+    Time-of-Use Tariffs.” Proc. of the 13th IEEE PES PowerTech, Jun 23-27. 
+    Milan, Italy.
     
     '''
 
