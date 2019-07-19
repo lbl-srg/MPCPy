@@ -65,7 +65,7 @@ class Optimization(utility._mpcpyPandas, utility._Measurements):
     constraint_data : dictionary, optional
         ``exodata`` constraint object data attribute.
     demand_periods : int, optional, but required if problem_type includes demand.
-        Number of different demand periods.
+        Maximum number of different demand periods expected to be represented in price data.
     coincident : list or tuple of length twp, optional, only used if problem_type includes demand.
         Information about coincedent demand.
         [0] is price in $/W
@@ -664,8 +664,8 @@ class JModelica(_Package, utility._FMU):
         ts_P_est = price_data['P_est'].get_base_data().loc[Optimization.start_time_utc:Optimization.final_time_utc];
         # Detect when change and check
         uni_pi_d = ts_pi_d.unique()
-        if len(uni_pi_d) != Optimization.demand_periods:
-            raise ValueError('The demand charge price data does have the same number of demand charge periods as indicated by "demand_periods".');
+        if len(uni_pi_d) > Optimization.demand_periods:
+            raise ValueError('The demand charge price data has more demand charge periods than indicated by "demand_periods".');
         # Fill values
         self.demand_df = ts_pi_d.to_frame()
         M = 1e9
@@ -690,6 +690,19 @@ class JModelica(_Package, utility._FMU):
             self.opt_problem.set('pi_d_{0}'.format(i), val);
             # Increment to next demand period
             i = i + 1
+        # Handle remaining demand period variables
+        if (Optimization.demand_periods-i) > 0:
+            for j in range((Optimization.demand_periods-i)):
+                # Mark period
+                period = 'period_{0}'.format(i+j)
+                # Define all periods with Big M
+                self.demand_df[period] = M
+                ts = self.demand_df[period]
+                unit = price_data['pi_d'].get_base_unit();
+                var = variables.Timeseries('z_hat_{0}'.format(i+j), ts, unit);
+                self.other_inputs['z_hat_{0}'.format(i+j)] = var;
+                # Set price parameter in model
+                self.opt_problem.set('pi_d_{0}'.format(i+j), 0);
         if coincident:
             # Create demand limit for coincident demand
             index_new = [Optimization.start_time_utc,
