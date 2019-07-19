@@ -680,7 +680,7 @@ class EnergyPlusDemand(TestCaseMPCPy):
 
         '''
 
-        plot = True
+        plot = False
         # Gather constraints       
         constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
         constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
@@ -706,8 +706,6 @@ class EnergyPlusDemand(TestCaseMPCPy):
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_energyplusdemandcost_excessdemandperiods.csv');
-        for i in range(5):
-            print('z_{0}'.format(i), opt_problem._package_type.res_opt['z_{0}'.format(i)])
         # Plot if wanted
         if plot:
             fig,ax = plt.subplots(2,1,sharex=True)
