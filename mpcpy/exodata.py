@@ -165,8 +165,10 @@ Exogenous price data has the following organization:
 The price variable names should be chosen from the following list:
 
 - pi_e - electrical energy price
-- pi_d - electrical demand price
-- P_est - estimated peak power consumption
+- pi_d - electrical demand price for multi-period
+- P_est - estimated peak power consumption for multi-period
+- pi_d_c - electrical demand price for coincedent.  Must be constant for all time.
+- P_est_c - estimated peak power consumption for coincedent.  Must be constant for all time.
 
 Classes
 =======

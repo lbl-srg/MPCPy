@@ -653,12 +653,14 @@ class EnergyPlusDemand(TestCaseMPCPy):
                                                 optimization.JModelica, \
                                                 'q_flow', \
                                                 constraint_data = self.constraints.data,
-                                                demand_periods=3, coincident=(0.01774,3050));
+                                                demand_periods=4);
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
         price_variable_map = {'energy' : ('pi_e', units.dol_J),
                               'demand' : ('pi_d', units.dol_W),
-                              'peak_power' : ('P_est', units.W)};
+                              'peak_power' : ('P_est', units.W),
+                              'demand_coincident' : ('pi_d_c', units.dol_W),
+                              'peak_power_coincident' : ('P_est_c', units.W)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
         opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
@@ -694,12 +696,14 @@ class EnergyPlusDemand(TestCaseMPCPy):
                                                 optimization.JModelica, \
                                                 'q_flow', \
                                                 constraint_data = self.constraints.data,
-                                                demand_periods=5, coincident=(0.01774,3050));
+                                                demand_periods=7);
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
         price_variable_map = {'energy' : ('pi_e', units.dol_J),
                               'demand' : ('pi_d', units.dol_W),
-                              'peak_power' : ('P_est', units.W)};
+                              'peak_power' : ('P_est', units.W),
+                              'demand_coincident' : ('pi_d_c', units.dol_W),
+                              'peak_power_coincident' : ('P_est_c', units.W)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
         opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
@@ -735,12 +739,14 @@ class EnergyPlusDemand(TestCaseMPCPy):
                                                 optimization.JModelica, \
                                                 'q_flow', \
                                                 constraint_data = self.constraints.data,
-                                                demand_periods=3, coincident=(0.01774,3050));
+                                                demand_periods=4);
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
         price_variable_map = {'energy' : ('pi_e', units.dol_J),
                               'demand' : ('pi_d', units.dol_W),
-                              'peak_power' : ('P_est', units.W)};
+                              'peak_power' : ('P_est', units.W),
+                              'demand_coincident' : ('pi_d_c', units.dol_W),
+                              'peak_power_coincident' : ('P_est_c', units.W)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
         opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
