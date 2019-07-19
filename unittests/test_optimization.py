@@ -674,6 +674,49 @@ class EnergyPlusDemand(TestCaseMPCPy):
             ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
             ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
             plt.show()
+            
+    def test_energyplusdemandcostmin_excessdemandperiods(self):
+        '''Test energy plus demand cost minimization problem with excess demand periods.
+
+        '''
+
+        plot = True
+        # Gather constraints       
+        constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'GTE', units.K), \
+                                   'T_db_max' : ('T_db', 'LTE', units.K)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(self.model, \
+                                                optimization.EnergyPlusDemandCostMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data,
+                                                demand_periods=5, coincident=(0.01774,3050));
+        # Gather prices
+        price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
+        price_variable_map = {'energy' : ('pi_e', units.dol_J),
+                              'demand' : ('pi_d', units.dol_W),
+                              'peak_power' : ('P_est', units.W)};
+        price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
+        price.collect_data(self.start_time, self.final_time);
+        opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_energyplusdemandcost_excessdemandperiods.csv');
+        for i in range(5):
+            print('z_{0}'.format(i), opt_problem._package_type.res_opt['z_{0}'.format(i)])
+        # Plot if wanted
+        if plot:
+            fig,ax = plt.subplots(2,1,sharex=True)
+            ax[0].plot(df_test['T_db'])
+            ax[0].plot(df_test['Tamb.y'])
+            ax[1].plot(df_test['q_flow'])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
+            plt.show()
         
     def test_energyplusdemandcostmin_slack(self):
         '''Test energy plus demand cost minimization problem with slack constraints.
