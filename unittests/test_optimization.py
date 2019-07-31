@@ -876,35 +876,35 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         del self.constraints
         del self.prices
 
-#    def test_energymin(self):
-#        '''Test energy minimization of a model.'''
-#        plt.close('all');        
-#        # Instanatiate optimization problem
-#        opt_problem = optimization.Optimization(self.model, \
-#                                                     optimization.EnergyMin, \
-#                                                     optimization.JModelica, \
-#                                                     'Ptot', \
-#                                                     constraint_data = self.constraints.data)
-#        # Optimize
-#        opt_problem.optimize(self.start_time_optimization, self.final_time_optimization);
-#        # Check references
-#        df_test = opt_problem.display_measurements('Simulated');
-#        self.check_df(df_test, 'energymin.csv');
-#
-#    def test_energycostmin(self):
-#        '''Test energy cost minimization of a model.'''
-#        plt.close('all');
-#        # Instanatiate optimization problem
-#        opt_problem = optimization.Optimization(self.model, \
-#                                                     optimization.EnergyCostMin, \
-#                                                     optimization.JModelica, \
-#                                                     'Ptot', \
-#                                                     constraint_data = self.constraints.data)
-#        # Optimize
-#        opt_problem.optimize(self.start_time_optimization, self.final_time_optimization, price_data = self.prices.data);
-#        # Check references
-#        df_test = opt_problem.display_measurements('Simulated');
-#        self.check_df(df_test, 'energycostmin.csv');
+    def test_energymin(self):
+        '''Test energy minimization of a model.'''
+        plt.close('all');        
+        # Instanatiate optimization problem
+        opt_problem = optimization.Optimization(self.model, \
+                                                     optimization.EnergyMin, \
+                                                     optimization.JModelica, \
+                                                     'Ptot', \
+                                                     constraint_data = self.constraints.data)
+        # Optimize
+        opt_problem.optimize(self.start_time_optimization, self.final_time_optimization);
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'energymin.csv');
+
+    def test_energycostmin(self):
+        '''Test energy cost minimization of a model.'''
+        plt.close('all');
+        # Instanatiate optimization problem
+        opt_problem = optimization.Optimization(self.model, \
+                                                     optimization.EnergyCostMin, \
+                                                     optimization.JModelica, \
+                                                     'Ptot', \
+                                                     constraint_data = self.constraints.data)
+        # Optimize
+        opt_problem.optimize(self.start_time_optimization, self.final_time_optimization, price_data = self.prices.data);
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'energycostmin.csv');
 
     def test_energycostmin_save_parameter_input_data(self):
         '''Test energy cost minimization of a model.'''
