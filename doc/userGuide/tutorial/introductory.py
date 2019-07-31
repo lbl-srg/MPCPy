@@ -409,16 +409,18 @@ greater-than-or-equal-to (GTE) constraint:
 ...                 'T_min' : ('Tzone', 'GTE', units.degC),
 ...                 'T_max' : ('Tzone', 'LTE', units.degC)}
 >>> # Instantiate constraint exodata object
->>> constraints = exodata.ConstraintFromCSV('Constraints.csv', variable_map)
+>>> constraints = exodata.ConstraintFromCSV('Constraints.csv',
+...                                         variable_map,
+...                                         tz_name = weather.tz_name)
 >>> # Collect data
 >>> constraints.collect_data('1/1/2017', '1/3/2017')
 >>> # Get data
 >>> constraints.display_data() # doctest: +ELLIPSIS
                        	   Qflow_GTE  Qflow_LTE  Tzone_GTE  Tzone_LTE
 Time                                                                 
-2017-01-01 00:00:00+00:00        0.0     4000.0       20.0       25.0
-2017-01-01 01:00:00+00:00        0.0     4000.0       20.0       25.0
-2017-01-01 02:00:00+00:00        0.0     4000.0       20.0       25.0
+2017-01-01 06:00:00+00:00        0.0     4000.0       20.0       25.0
+2017-01-01 07:00:00+00:00        0.0     4000.0       20.0       25.0
+2017-01-01 08:00:00+00:00        0.0     4000.0       20.0       25.0
 -etc-
 
 We can now instantiate an optimization object using our calibrated MPC model, 
