@@ -163,7 +163,7 @@ class TestCaseMPCPy(unittest.TestCase):
         self.assertTrue(len(i_ref)==len(i_test), 'Index test failed beacuse of differing number of values.');
         # Test values
         for i in range(len(i_ref)):
-            self.assertTrue(i_ref[i]==i_test[i], 'Index test failed at reference index value {0}.'.format(i_ref[i]));
+            self.assertTrue(i_ref[i]==i_test[i], 'Index test failed at reference index value {0} and test value {1}.'.format(i_ref[i], i_test[i]));
     
     def _check_keys(self, k_test, k_ref):
         '''Test the keys of the test against the reference.

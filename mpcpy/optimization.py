@@ -43,6 +43,7 @@ from pymodelica import compile_fmu
 from pyjmi import transfer_optimization_problem;
 from pyjmi.optimization.casadi_collocation import ExternalData
 import copy
+import os
 
 #%% Optimization Class
 class Optimization(utility._mpcpyPandas, utility._Measurements):
@@ -936,6 +937,8 @@ class JModelica(_Package, utility._FMU):
         self.elapsed_seconds = Optimization.elapsed_seconds;
         self.total_elapsed_seconds = Optimization.total_elapsed_seconds;
         # Simulate fmu
+        self._save_parameter_input_data = self.Model._save_parameter_input_data
+        self._save_parameter_input_filename = 'optimization_initial'
         self._simulate_fmu();
         # Store initial simulation
         self.res_init = self._res;
@@ -949,6 +952,9 @@ class JModelica(_Package, utility._FMU):
         self._create_input_mpcpy_ts_list_opt();
         # Set inputs
         self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list_opt);
+        # Save inputs if wanted
+        if self.Model._save_parameter_input_data:
+            self._input_df.to_csv('mpcpy_optimization_inputs.csv')
         # Create ExternalData structure
         self._create_external_data(Optimization);
         # Set optimization options
@@ -959,8 +965,23 @@ class JModelica(_Package, utility._FMU):
             self.opt_options['n_e'] = self._sim_opts['ncp'];
         # Set parameters if they exist
         if hasattr(self, 'parameter_data'):
+            # Remove parameter data file if exists
+            if self.Model._save_parameter_input_data:
+                file_name = 'mpcpy_optimization_parameters.csv'
+                if os.path.exists(file_name):
+                    os.remove(file_name)
             for key in self.parameter_data.keys():
-                self.opt_problem.set(key, self.parameter_data[key]['Value'].get_base_data());
+                value = self.parameter_data[key]['Value'].get_base_data()
+                self.opt_problem.set(key, value);
+                # Save parameters to file if wanted
+                if self.Model._save_parameter_input_data:
+                    if os.path.exists(file_name):
+                        with open(file_name, 'a') as f:
+                            f.write('{0},{1}\n'.format(key,value))
+                    else:
+                        with open(file_name, 'w') as f:
+                            f.write('parameter,value\n')
+                            f.write('{0},{1}\n'.format(key,value))
         # Set start and final time
         start_time = self.total_elapsed_seconds - self.elapsed_seconds;
         final_time = self.total_elapsed_seconds;
