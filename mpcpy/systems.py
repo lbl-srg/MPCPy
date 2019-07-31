@@ -188,12 +188,11 @@ class EmulationFromFMU(_Emulation, utility._FMU):
     geography : list or tuple, optional
         List or tuple with (latitude, longitude) in degrees. 
     save_parameter_input_data: boolean
-        True to output the parameter and input data set for simulations and optimizations
+        True to output the parameter and input data set for simulations and optimizations.
         Saved files are:
-        "mpcpy_simulation_parameters.csv"
-        "mpcpy_optimization_parameters.csv"
-        "mpcpy_simulation_inputs.csv"
-        "mpcpy_optimization_inputs.csv"
+        "mpcpy_simulation_parameters_system.csv"
+        "mpcpy_simulation_inputs_system.csv"
+        Times will be in UTC.
         Default is False.
 
     Attributes

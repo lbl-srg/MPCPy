@@ -157,10 +157,13 @@ class Modelica(_Model, utility._FMU, utility._Building):
     save_parameter_input_data: boolean
         True to output the parameter and input data set for simulations and optimizations
         Saved files are:
-        "mpcpy_simulation_parameters.csv"
+        "mpcpy_simulation_parameters_model.csv"
+        "mpcpy_simulation_inputs_model.csv"
+        "mpcpy_simulation_parameters_optimization_initial.csv"
+        "mpcpy_simulation_inputs_optimization_initial.csv"
         "mpcpy_optimization_parameters.csv"
-        "mpcpy_simulation_inputs.csv"
         "mpcpy_optimization_inputs.csv"
+        Times will be in UTC.
         Default is False.
 
     Attributes
