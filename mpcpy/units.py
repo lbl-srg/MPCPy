@@ -126,12 +126,12 @@ class _Luminance(_DisplayUnit):
 class _EnergyPrice(_DisplayUnit):
     def _define_quantity(self, variable):
         variable.quantity_name = 'EnergyPrice';
-        variable.base_unit = cents_kWh;
+        variable.base_unit = dol_J;
         
 class _PowerPrice(_DisplayUnit):
     def _define_quantity(self, variable):
         variable.quantity_name = 'PowerPrice';
-        variable.base_unit = cents_kWh;
+        variable.base_unit = dol_W;
         
 class _SpecificHeatCapacity(_DisplayUnit):
     def _define_quantity(self, variable):
@@ -912,30 +912,40 @@ class cents_kWh(_EnergyPrice):
     def _define_display_unit(self):
         self.name = 'cents/kWh';
     def _convert_to_base(self, display_data):
-        base_data = display_data;
+        base_data = display_data/3.6e8;
         return base_data;
     def _convert_from_base(self, base_data):
-        display_data = base_data;
+        display_data = base_data*3.6e8;
         return display_data;
         
 class dol_kWh(_EnergyPrice):
     def _define_display_unit(self):
         self.name = '$/kWh';
     def _convert_to_base(self, display_data):
-        base_data = display_data*100;
+        base_data = display_data/3.6e6;
         return base_data;
     def _convert_from_base(self, base_data):
-        display_data = base_data/100;
+        display_data = base_data*3.6e6;
         return display_data;
         
 class dol_MWh(_EnergyPrice):
     def _define_display_unit(self):
         self.name = '$/MWh';
     def _convert_to_base(self, display_data):
-        base_data = display_data*100/1000;
+        base_data = display_data/3.6e9;
         return base_data;
     def _convert_from_base(self, base_data):
-        display_data = base_data/100*1000;
+        display_data = base_data*3.6e9;
+        return display_data;
+
+class dol_J(_EnergyPrice):
+    def _define_display_unit(self):
+        self.name = '$/J';
+    def _convert_to_base(self, display_data):
+        base_data = display_data;
+        return base_data;
+    def _convert_from_base(self, base_data):
+        display_data = base_data;
         return display_data;
         
 #%% PowerPrice unit implementation     
@@ -943,30 +953,40 @@ class cents_kW(_PowerPrice):
     def _define_display_unit(self):
         self.name = 'cents/kW';
     def _convert_to_base(self, display_data):
-        base_data = display_data;
+        base_data = display_data/1e5;
         return base_data;
     def _convert_from_base(self, base_data):
-        display_data = base_data;
+        display_data = base_data*1e5;
         return display_data;
         
 class dol_kW(_PowerPrice):
     def _define_display_unit(self):
         self.name = '$/kW';
     def _convert_to_base(self, display_data):
-        base_data = display_data*100;
+        base_data = display_data/1e3;
         return base_data;
     def _convert_from_base(self, base_data):
-        display_data = base_data/100;
+        display_data = base_data*1e3;
         return display_data;
         
 class dol_MW(_PowerPrice):
     def _define_display_unit(self):
         self.name = '$/MW';
     def _convert_to_base(self, display_data):
-        base_data = display_data*100/1000;
+        base_data = display_data/1e6;
         return base_data;
     def _convert_from_base(self, base_data):
-        display_data = base_data/100*1000;
+        display_data = base_data*1e6;
+        return display_data;
+
+class dol_W(_PowerPrice):
+    def _define_display_unit(self):
+        self.name = '$/W';
+    def _convert_to_base(self, display_data):
+        base_data = display_data;
+        return base_data;
+    def _convert_from_base(self, base_data):
+        display_data = base_data;
         return display_data;
         
 #%% Specific heat capacity unit implementation     

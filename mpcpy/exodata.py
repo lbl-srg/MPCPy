@@ -155,14 +155,20 @@ Price
 Price data represents price signals from utility or district energy systems 
 for things such as energy consumption, demand, or other services.  Price data 
 object variables are special because they are used for optimization objective 
-functions involving price signals.  Exogenous price data has the following 
-organization:
+functions involving price signals.  For demand cost minimization, price 
+exodata may also contain information regarding an estimated peak demand that 
+has already been acheived or projected to be acheived.  
+Exogenous price data has the following organization:
 
 ``price.data = {"Price Variable Name" : mpcpy.Variables.Timeseries}``
 
 The price variable names should be chosen from the following list:
 
 - pi_e - electrical energy price
+- pi_d - electrical demand price for multi-period
+- P_est - estimated peak power consumption for multi-period
+- pi_d_c - electrical demand price for coincedent.  Must be constant for all time.
+- P_est_c - estimated peak power consumption for coincedent.  Must be constant for all time.
 
 Classes
 =======

@@ -148,9 +148,12 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         opt_problem.set_problem_type(optimization.EnergyCostMin);
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
-        price_variable_map = {'energy' : ('pi_e', units.unit1)};
+        price_variable_map = {'energy[cents/kWh]' : ('pi_e', units.cents_kWh)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
+        # Check price data
+        price_data = price.get_base_data()
+        self.check_df(price_data, 'optimize_energycost_price_data.csv');
         opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
@@ -236,7 +239,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         modelpath = 'Simple.RC';
         # Gather prices
         price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
-        price_variable_map = {'energy' : ('pi_e', units.unit1)};
+        price_variable_map = {'energy[cents/kWh]' : ('pi_e', units.cents_kWh)};
         price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
         price.collect_data(self.start_time, self.final_time);
         # Instantiate model
@@ -595,6 +598,170 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         df_test = model.control_data['q_flow'].display_data().to_frame();
         df_test.index.name = 'Time'
         self.check_df(df_test, 'optimize_control_default.csv');
+
+class EnergyPlusDemand(TestCaseMPCPy):
+    '''Test simple model optimization functions.
+    
+    '''
+    
+    def setUp(self):
+        self.start_time = '1/2/2017';
+        self.final_time = '1/3/2017';
+        # Set .mo path
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        # Gather inputs
+        self.start_time_exo = '1/1/2017';
+        self.final_time_exo = '1/10/2017';
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        control_variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
+        controls.collect_data(self.start_time_exo, self.final_time_exo);
+        # Set measurements
+        measurements = {};
+        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        measurements['q_flow'] = {'Sample' : variables.Static('q_flow_sample', 1800, units.s)};
+        measurements['Tamb.y'] = {'Sample' : variables.Static('T_amb_sample', 1800, units.s)};
+        # Instantiate model
+        modelpath = 'Simple.RC';
+        parameter_data = {};
+        parameter_data['heatCapacitor.C'] = {};
+        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
+        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 1e6, units.boolean);
+        self.model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     measurements, \
+                                     moinfo = (mopath, modelpath, {}), \
+                                     control_data = controls.data, \
+                                     parameter_data = parameter_data);
+        
+    def test_energyplusdemandcostmin(self):
+        '''Test energy plus demand cost minimization problem.
+
+        '''
+
+        plot = False
+        # Gather constraints       
+        constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'GTE', units.K), \
+                                   'T_db_max' : ('T_db', 'LTE', units.K)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(self.model, \
+                                                optimization.EnergyPlusDemandCostMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data,
+                                                demand_periods=4);
+        # Gather prices
+        price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
+        price_variable_map = {'energy' : ('pi_e', units.dol_J),
+                              'demand' : ('pi_d', units.dol_W),
+                              'peak_power' : ('P_est', units.W),
+                              'demand_coincident' : ('pi_d_c', units.dol_W),
+                              'peak_power_coincident' : ('P_est_c', units.W)};
+        price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
+        price.collect_data(self.start_time, self.final_time);
+        opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_energyplusdemandcost.csv');
+        # Plot if wanted
+        if plot:
+            fig,ax = plt.subplots(2,1,sharex=True)
+            ax[0].plot(df_test['T_db'])
+            ax[0].plot(df_test['Tamb.y'])
+            ax[1].plot(df_test['q_flow'])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
+            plt.show()
+            
+    def test_energyplusdemandcostmin_excessdemandperiods(self):
+        '''Test energy plus demand cost minimization problem with excess demand periods.
+
+        '''
+
+        plot = False
+        # Gather constraints       
+        constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'GTE', units.K), \
+                                   'T_db_max' : ('T_db', 'LTE', units.K)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(self.model, \
+                                                optimization.EnergyPlusDemandCostMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data,
+                                                demand_periods=7);
+        # Gather prices
+        price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
+        price_variable_map = {'energy' : ('pi_e', units.dol_J),
+                              'demand' : ('pi_d', units.dol_W),
+                              'peak_power' : ('P_est', units.W),
+                              'demand_coincident' : ('pi_d_c', units.dol_W),
+                              'peak_power_coincident' : ('P_est_c', units.W)};
+        price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
+        price.collect_data(self.start_time, self.final_time);
+        opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_energyplusdemandcost_excessdemandperiods.csv');
+        # Plot if wanted
+        if plot:
+            fig,ax = plt.subplots(2,1,sharex=True)
+            ax[0].plot(df_test['T_db'])
+            ax[0].plot(df_test['Tamb.y'])
+            ax[1].plot(df_test['q_flow'])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
+            plt.show()
+        
+    def test_energyplusdemandcostmin_slack(self):
+        '''Test energy plus demand cost minimization problem with slack constraints.
+
+        '''
+
+        plot = False
+        # Gather constraints       
+        constraint_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Constraints.csv');
+        constraint_variable_map = {'q_flow_min' : ('q_flow', 'GTE', units.W), \
+                                   'T_db_min' : ('T_db', 'sGTE', units.K, 10), \
+                                   'T_db_max' : ('T_db', 'sLTE', units.K, 10)};
+        self.constraints = exodata.ConstraintFromCSV(constraint_csv_filepath, constraint_variable_map);
+        self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(self.model, \
+                                                optimization.EnergyPlusDemandCostMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data,
+                                                demand_periods=4);
+        # Gather prices
+        price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
+        price_variable_map = {'energy' : ('pi_e', units.dol_J),
+                              'demand' : ('pi_d', units.dol_W),
+                              'peak_power' : ('P_est', units.W),
+                              'demand_coincident' : ('pi_d_c', units.dol_W),
+                              'peak_power_coincident' : ('P_est_c', units.W)};
+        price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
+        price.collect_data(self.start_time, self.final_time);
+        opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
+        # Check references
+        df_test = opt_problem.display_measurements('Simulated');
+        self.check_df(df_test, 'optimize_energyplusdemandcost_slack_constraints.csv');
+        # Plot if wanted
+        if plot:
+            fig,ax = plt.subplots(2,1,sharex=True)
+            ax[0].plot(df_test['T_db'])
+            ax[0].plot(df_test['Tamb.y'])
+            ax[1].plot(df_test['q_flow'])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [293, 293])
+            ax[0].plot([df_test.index[0], df_test.index[-1]], [298, 298])
+            plt.show()
         
 #%% Temperature tests
 class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
@@ -685,7 +852,7 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
                                                      'Weight':None};
         # Prices
         prices_path = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'PriceCSV.csv');
-        price_variable_map = {'pi_e' : ('pi_e', units.unit1)};        
+        price_variable_map = {'pi_e' : ('pi_e', units.dol_J)};        
         self.prices = exodata.PriceFromCSV(prices_path, price_variable_map, tz_name = weather.tz_name);
         self.prices.collect_data(start_time_exodata, final_time_exodata);        
         
