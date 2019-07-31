@@ -155,18 +155,12 @@ class Modelica(_Model, utility._FMU, utility._Building):
     geography : list or tuple, optional
         List or tuple with (latitude, longitude) in degrees.   
     save_sim_opt_data : boolean
-        True to save the data set to the simulations and optimizations
+        True to output the parameter and input data set for simulations and optimizations
         Saved files are:
         "simulation_parameters.csv"
         "optimization_parameters.csv"
         "simulation_inputs.csv"
         "optimization_inputs.csv"
-        Default is False.
-    save_inputs : boolean
-        True to save the inputs set to the simulations and optimizations
-        Saved files are:
-        "simulation_inputs.csv" for simulations.
-        "optimization_inputs.csv" for optimizations.
         Default is False.
 
     Attributes
