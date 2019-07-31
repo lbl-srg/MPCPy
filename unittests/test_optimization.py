@@ -869,31 +869,48 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
                                      internal_data = internal.data, \
                                      control_data = control.data, \
                                      parameter_data = parameters.data, \
-                                     tz_name = weather.tz_name);      
+                                     tz_name = weather.tz_name);
                                      
     def tearDown(self):
         del self.model
         del self.constraints
         del self.prices
 
-    def test_energymin(self):
-        '''Test energy minimization of a model.'''
-        plt.close('all');        
-        # Instanatiate optimization problem
-        opt_problem = optimization.Optimization(self.model, \
-                                                     optimization.EnergyMin, \
-                                                     optimization.JModelica, \
-                                                     'Ptot', \
-                                                     constraint_data = self.constraints.data)
-        # Optimize
-        opt_problem.optimize(self.start_time_optimization, self.final_time_optimization);
-        # Check references
-        df_test = opt_problem.display_measurements('Simulated');
-        self.check_df(df_test, 'energymin.csv');
+#    def test_energymin(self):
+#        '''Test energy minimization of a model.'''
+#        plt.close('all');        
+#        # Instanatiate optimization problem
+#        opt_problem = optimization.Optimization(self.model, \
+#                                                     optimization.EnergyMin, \
+#                                                     optimization.JModelica, \
+#                                                     'Ptot', \
+#                                                     constraint_data = self.constraints.data)
+#        # Optimize
+#        opt_problem.optimize(self.start_time_optimization, self.final_time_optimization);
+#        # Check references
+#        df_test = opt_problem.display_measurements('Simulated');
+#        self.check_df(df_test, 'energymin.csv');
+#
+#    def test_energycostmin(self):
+#        '''Test energy cost minimization of a model.'''
+#        plt.close('all');
+#        # Instanatiate optimization problem
+#        opt_problem = optimization.Optimization(self.model, \
+#                                                     optimization.EnergyCostMin, \
+#                                                     optimization.JModelica, \
+#                                                     'Ptot', \
+#                                                     constraint_data = self.constraints.data)
+#        # Optimize
+#        opt_problem.optimize(self.start_time_optimization, self.final_time_optimization, price_data = self.prices.data);
+#        # Check references
+#        df_test = opt_problem.display_measurements('Simulated');
+#        self.check_df(df_test, 'energycostmin.csv');
 
-    def test_energycostmin(self):
+    def test_energycostmin_save_parameter_input_data(self):
         '''Test energy cost minimization of a model.'''
         plt.close('all');
+        # Set save parameter input data in model
+        self.model._save_parameter_input_data = True
         # Instanatiate optimization problem
         opt_problem = optimization.Optimization(self.model, \
                                                      optimization.EnergyCostMin, \
@@ -903,8 +920,16 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         # Optimize
         opt_problem.optimize(self.start_time_optimization, self.final_time_optimization, price_data = self.prices.data);
         # Check references
-        df_test = opt_problem.display_measurements('Simulated');
-        self.check_df(df_test, 'energycostmin.csv');
+        df_test = pd.read_csv('mpcpy_optimization_inputs.csv', index_col='Time');
+        df_test.index = pd.to_datetime(df_test.index).tz_localize('UTC')
+        self.check_df(df_test, 'mpcpy_optimization_inputs.csv');
+        df_test = pd.read_csv('mpcpy_simulation_inputs_optimization_initial.csv', index_col='Time');
+        df_test.index = pd.to_datetime(df_test.index).tz_localize('UTC')
+        self.check_df(df_test, 'mpcpy_simulation_inputs_optimization_initial.csv');
+        df_test = pd.read_csv('mpcpy_optimization_parameters.csv', index_col='parameter');
+        self.check_df(df_test, 'mpcpy_optimization_parameters.csv', timeseries=False); 
+        df_test = pd.read_csv('mpcpy_simulation_parameters_optimization_initial.csv', index_col='parameter');
+        self.check_df(df_test, 'mpcpy_simulation_parameters_optimization_initial.csv', timeseries=False); 
         
 if __name__ == '__main__':
     unittest.main()

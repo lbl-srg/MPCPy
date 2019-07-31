@@ -58,6 +58,31 @@ class SimpleRC(TestCaseMPCPy):
         self.check_df(df_test, 'simulate_display.csv');
         df_test = model.get_base_measurements('Simulated');
         self.check_df(df_test, 'simulate_base.csv');
+        
+    def test_simulate_with_save_parameter_input_data(self):
+        '''Test simulation of a model.'''
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.RC_nostart';
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(self.start_time, self.final_time);
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     self.measurements, \
+                                     moinfo = (mopath, modelpath, {}), \
+                                     control_data = controls.data,
+                                     save_parameter_input_data=True);
+        # Simulate model
+        model.simulate(self.start_time, self.final_time);
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_display.csv');
+        df_test = model.get_base_measurements('Simulated');
+        self.check_df(df_test, 'simulate_base.csv');
 
     def test_estimate_one_par(self):
         '''Test the estimation of one parameter of a model.'''
@@ -554,12 +579,19 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
                                      internal_data = self.internal.data, \
                                      control_data = self.control.data, \
                                      parameter_data = self.parameters.data, \
-                                     tz_name = self.weather.tz_name);
+                                     tz_name = self.weather.tz_name,
+                                     save_parameter_input_data=True);
         # Simulate model with initial guess
         self.model.simulate(self.start_time_estimation, self.final_time_estimation)
         # Check references
         df_test = self.model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_initial_parameters.csv');
+        # Check parameter and input data were saved
+        df_test = pd.read_csv('mpcpy_simulation_inputs_model.csv', index_col='Time');
+        df_test.index = pd.to_datetime(df_test.index).tz_localize('UTC')
+        self.check_df(df_test, 'mpcpy_simulation_inputs_model.csv');
+        df_test = pd.read_csv('mpcpy_simulation_parameters_model.csv', index_col='parameter');
+        self.check_df(df_test, 'mpcpy_simulation_parameters_model.csv', timeseries=False);   
         # Estimate model based on emulated data
         self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         # Validate model based on estimation data

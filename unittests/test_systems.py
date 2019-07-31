@@ -81,7 +81,38 @@ class EmulationFromFMU(TestCaseMPCPy):
         df_test = building.display_measurements('Measured');
         self.check_df(df_test, 'collect_measurements_display.csv');
         df_test = building.get_base_measurements('Measured');
-        self.check_df(df_test, 'collect_measurements_base.csv');  
+        self.check_df(df_test, 'collect_measurements_base.csv');
+
+    def test_collect_measurements_save_parameter_input_data(self):
+        start_time = '1/1/2015';
+        final_time = '1/4/2015';
+        # Collect exodata
+        self.weather.collect_data(start_time, final_time);
+        self.internal.collect_data(start_time, final_time);
+        self.control.collect_data(start_time, final_time);
+        # Instantiate building source
+        building = systems.EmulationFromFMU(self.measurements, \
+                                            fmupath = self.building_source_file_path, \
+                                            zone_names = self.zone_names, \
+                                            weather_data = self.weather.data, \
+                                            internal_data = self.internal.data, \
+                                            control_data = self.control.data, \
+                                            parameter_data = self.parameter_data, \
+                                            tz_name = self.weather.tz_name,
+                                            save_parameter_input_data=True);
+        # Collect measurements
+        building.collect_measurements(start_time, final_time);
+        # Check references
+        df_test = building.display_measurements('Measured');
+        self.check_df(df_test, 'collect_measurements_display.csv');
+        df_test = building.get_base_measurements('Measured');
+        self.check_df(df_test, 'collect_measurements_base.csv');
+        # Check parameter and input data was saved
+        df_test = pd.read_csv('mpcpy_simulation_inputs_system.csv', index_col='Time');
+        df_test.index = pd.to_datetime(df_test.index).tz_localize('UTC')
+        self.check_df(df_test, 'mpcpy_simulation_inputs_system.csv');
+        df_test = pd.read_csv('mpcpy_simulation_parameters_system.csv', index_col = 'parameter')
+        self.check_df(df_test, 'mpcpy_simulation_parameters_system.csv', timeseries=False);  
         
     def test_collect_measurements_dst_start(self):
         # Test simulation through the start of daylight savings time
