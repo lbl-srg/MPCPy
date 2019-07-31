@@ -187,6 +187,14 @@ class EmulationFromFMU(_Emulation, utility._FMU):
         ``'from_geography'``, then geography kwarg is required.
     geography : list or tuple, optional
         List or tuple with (latitude, longitude) in degrees. 
+    save_parameter_input_data: boolean
+        True to output the parameter and input data set for simulations and optimizations
+        Saved files are:
+        "mpcpy_simulation_parameters.csv"
+        "mpcpy_optimization_parameters.csv"
+        "mpcpy_simulation_inputs.csv"
+        "mpcpy_optimization_inputs.csv"
+        Default is False.
 
     Attributes
     ----------
@@ -203,7 +211,7 @@ class EmulationFromFMU(_Emulation, utility._FMU):
         
     '''
 
-    def __init__(self, measurements, **kwargs):
+    def __init__(self, measurements, save_parameter_input_data=False, **kwargs):
         '''Constructor of a system fmu simulation source.
         
         '''
@@ -214,6 +222,8 @@ class EmulationFromFMU(_Emulation, utility._FMU):
         self.input_names = self._get_input_names();
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
+        self._save_parameter_input_data = save_parameter_input_data
+        self._save_parameter_input_filename = 'system'
         
     def _simulate(self):
         '''Simulate the fmu.

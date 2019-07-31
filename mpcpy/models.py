@@ -154,13 +154,13 @@ class Modelica(_Model, utility._FMU, utility._Building):
         ``'from_geography'``, then geography kwarg is required.
     geography : list or tuple, optional
         List or tuple with (latitude, longitude) in degrees.   
-    save_sim_opt_data : boolean
+    save_parameter_input_data: boolean
         True to output the parameter and input data set for simulations and optimizations
         Saved files are:
-        "simulation_parameters.csv"
-        "optimization_parameters.csv"
-        "simulation_inputs.csv"
-        "optimization_inputs.csv"
+        "mpcpy_simulation_parameters.csv"
+        "mpcpy_optimization_parameters.csv"
+        "mpcpy_simulation_inputs.csv"
+        "mpcpy_optimization_inputs.csv"
         Default is False.
 
     Attributes
@@ -180,7 +180,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
     '''
     
-    def __init__(self, estimate_method, validate_method, measurements, save_sim_opt_data=False, **kwargs):
+    def __init__(self, estimate_method, validate_method, measurements, save_parameter_input_data=False, **kwargs):
         '''Constructor of a modelica or FMU model object.
         
         '''
@@ -191,7 +191,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self.input_names = self._get_input_names();                                       
         self._parse_building_kwargs(kwargs);
         self._parse_time_zone_kwargs(kwargs);
-        self._save_sim_opt_data = save_sim_opt_data
+        self._save_parameter_input_data = save_parameter_input_data
+        self._save_parameter_input_filename = 'model'
         # Check estimation method compatible with model
         if estimate_method is JModelica:
             if self.mopath is None:

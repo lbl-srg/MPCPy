@@ -277,8 +277,8 @@ class _FMU(_mpcpyPandas):
         # Set inputs
         self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list);
         # Save inputs if wanted
-        if self._save_sim_opt_data:
-            self._input_df.to_csv('simulation_inputs.csv')
+        if self._save_parameter_input_data:
+            self._input_df.to_csv('mpcpy_simulation_inputs_{0}.csv'.format(self._save_parameter_input_filename))
         # Get simulation options
         self._sim_opts = self.fmu.simulate_options();
         # Set simulation fmu with start
@@ -293,12 +293,16 @@ class _FMU(_mpcpyPandas):
         final_time = self.total_elapsed_seconds;
         # Set parameters in fmu if they exist
         if hasattr(self, 'parameter_data'):
+            # Remove parameter data file if exists
+            if self._save_parameter_input_data:
+                file_name = 'mpcpy_simulation_parameters_{0}.csv'.format(self._save_parameter_input_filename)
+                if os.path.exists(file_name):
+                    os.remove(file_name)            
             for key in self.parameter_data.keys():
                 value = self.parameter_data[key]['Value'].get_base_data()
                 self.fmu.set(key, value);
                 # Save parameters to file if wanted
-                if self._save_sim_opt_data:
-                    file_name = 'simualation_parameters.csv'
+                if self._save_parameter_input_data:
                     if os.path.exists(file_name):
                         with open(file_name, 'a') as f:
                             f.write('{0},{1}\n'.format(key,value))

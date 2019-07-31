@@ -509,6 +509,7 @@ class _Weather(_Type, utility._FMU):
             self.measurements[key] = {};
             self.measurements[key]['Sample'] = variables.Static(key+'_Sample', 3600, units.s);
         # Simulate the fmu
+        self._save_parameter_input_data = False
         self._simulate_fmu();
         # Add process var data 
         for key in self.process_variables:
