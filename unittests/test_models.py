@@ -842,14 +842,17 @@ class StateEstimateFromUKF(TestCaseMPCPy):
         model.state_estimate(start_time, final_time, ['y']);
         # Check references
         df_test = system.display_measurements('Measured')
-        est = np.array([x[0] for x in model._state_estimate_method.res_est[1]])
-        df_test['x_est'] = est
-        df_test['x+'] = est+np.array(model._state_estimate_method.res_est[2])[:,0,0]
-        df_test['x-'] = est-np.array(model._state_estimate_method.res_est[2])[:,0,0]
+        x_est = np.array([x[0] for x in model._state_estimate_method.res_est[1]])
+        y_est = np.array([x[0] for x in model._state_estimate_method.res_est[3]])
+        df_test['x_est'] = x_est
+        df_test['y_est'] = y_est
+        df_test['x+'] = x_est+np.array(model._state_estimate_method.res_est[2])[:,0,0]
+        df_test['x-'] = x_est-np.array(model._state_estimate_method.res_est[2])[:,0,0]
         self.check_df(df_test, 'estimationpy_example.csv');
         if plot:
             plt.figure(1)
             plt.plot(df_test['x_est'], 'o', label='x_est')
+            plt.plot(df_test['y_est'], 'o', label='y_est')
             plt.plot(df_test['x+'], '-b')
             plt.plot(df_test['x-'], '-b')
             plt.legend()
