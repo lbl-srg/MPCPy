@@ -729,6 +729,10 @@ class StateEstimateFromUKF(TestCaseMPCPy):
     '''
 
     def test_simple_estimate(self):
+        '''Test state estimation on a simple two-state model.
+        
+        '''
+        
         start_time = '1/1/2017';
         final_time = '1/1/2017 12:00:00';
         plot = False
@@ -779,6 +783,13 @@ class StateEstimateFromUKF(TestCaseMPCPy):
             plt.show()
             
     def test_estimationpy_example(self):
+        '''Validate state estimation with example from estimationpy package.
+        
+        The example is the FirstOrder example, and is adapted from
+        estimationpy/examples/first_order/run_ukf.py
+        
+        '''
+        
         start_time = '1/1/2017 00:00:00'
         final_time = '1/1/2017 00:00:30'
         plot= False
