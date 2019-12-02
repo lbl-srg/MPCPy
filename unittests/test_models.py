@@ -722,6 +722,154 @@ class EstimateFromUKF(TestCaseMPCPy):
                                          parameter_data = self.parameters.data, \
                                          control_data = self.controls.data, \
                                          version = '2.0');
+                                         
+class StateEstimateFromUKF(TestCaseMPCPy):
+    '''Test the state estimation of a model using UKF.
+
+    '''
+
+    def test_simple_estimate(self):
+        start_time = '1/1/2017';
+        final_time = '1/1/2017 12:00:00';
+        plot = False
+        # Set measurements
+        measurements = {};
+        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        measurements['heatCapacitor2.T'] = {'Sample' : variables.Static('T_flo_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.R2C2';
+        moinfo = (mopath, modelpath, {})
+        # Gather state data
+        estimated_state_data = {'heatCapacitor2.T':{'Value':variables.Static('T_flo_init', 18, units.degC)}}
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(start_time, final_time);
+        # Instantiate system
+        system = systems.EmulationFromFMU(measurements, \
+                                          moinfo = moinfo, \
+                                          control_data = controls.data);
+        # Get measurements
+        system.collect_measurements(start_time, final_time);
+        
+        # Instantiate model
+        model = models.Modelica(models.UKF, \
+                                     models.RMSE, \
+                                     system.measurements, \
+                                     models.UKFState, \
+                                     moinfo = moinfo, \
+                                     estimated_state_data = estimated_state_data, \
+                                     control_data = controls.data, \
+                                     version = '1.0');
+        # Estimate
+        model.state_estimate(start_time, final_time, ['T_db']);
+        # Check references
+        df_test = system.display_measurements('Measured')
+        est = [x[0] for x in model._state_estimate_method.res_est[1]]
+        df_test['heatCapacitor2.T_est'] = est
+        self.check_df(df_test, 'estimate_and_validate.csv');
+        if plot:
+            plt.figure(1)
+            plt.plot(df_test['T_db'], '-', label='T_db_meas')
+            plt.plot(df_test['heatCapacitor2.T'], '-', label='T_flo_meas')
+            plt.plot(df_test['heatCapacitor2.T_est'], 'o', label = 'T_flo_est')
+            plt.legend()
+            plt.show()
+            
+    def test_estimationpy_example(self):
+        start_time = '1/1/2017 00:00:00'
+        final_time = '1/1/2017 00:00:30'
+        plot= False
+        # Get estimationpy directory
+        ep_dir = self.get_estimationpy_dir()
+        # Copy and format data
+        csv_file_path = os.path.join(ep_dir, 'estimationpy', 'modelica','FmuExamples','Resources', 'data', 'NoisySimulationData_FirstOrder.csv')
+        csv_file_path_new = self.create_mpcpy_csv(csv_file_path)
+        # Set measurements
+        measurements = {};
+        measurements['y'] = {'Sample' : variables.Static('y_sample', 30, units.s)};
+        measurements['x'] = {'Sample' : variables.Static('x_sample', 30, units.s)};
+        vm_measurements = {'system.y': ('y', units.unit1),
+                           'system.x': ('x', units.unit1)}
+        # Gather control inputs
+        vm_control = {'system.u' : ('u', units.unit1)};
+        controls = exodata.ControlFromCSV(csv_file_path_new, vm_control);
+        controls.collect_data(start_time, final_time);
+        # Instantiate system
+        system = systems.RealFromCSV(csv_file_path_new, measurements, vm_measurements)
+        # Get measurements
+        system.collect_measurements(start_time, final_time);
+        # Set model paths
+        mopath = os.path.join(ep_dir, 'estimationpy', 'modelica','FmuExamples', 'package.mo')
+        modelpath = 'FmuExamples.FirstOrder';
+        moinfo = (mopath, modelpath, {})
+        # Gather state data
+        estimated_state_data = {'x':{'Value':variables.Static('x_init', 1.5, units.unit1)}}    
+        # Gather parameter data
+        parameter_data = {};
+        parameter_data['a'] = {};
+        parameter_data['a']['Value'] = variables.Static('a_value', -0.90717055, units.unit1);
+        parameter_data['b'] = {};
+        parameter_data['b']['Value'] = variables.Static('b_value', 2.28096907, units.unit1);
+        parameter_data['c'] = {};
+        parameter_data['c']['Value'] = variables.Static('c_value', 3.01419707, units.unit1);
+        parameter_data['d'] = {};
+        parameter_data['d']['Value'] = variables.Static('d_value', 0.06112703, units.unit1);
+        # Instantiate model
+        model = models.Modelica(models.UKF, 
+                                models.RMSE,
+                                measurements,
+                                models.UKFState,
+                                moinfo = moinfo,
+                                estimated_state_data = estimated_state_data,
+                                parameter_data = parameter_data,
+                                control_data = controls.data,
+                                version = '1.0')
+        # Estimate
+        model.state_estimate(start_time, final_time, ['y']);
+        # Check references
+        df_test = system.display_measurements('Measured')
+        est = np.array([x[0] for x in model._state_estimate_method.res_est[1]])
+        df_test['x_est'] = est
+        df_test['x+'] = est+np.array(model._state_estimate_method.res_est[2])[:,0,0]
+        df_test['x-'] = est-np.array(model._state_estimate_method.res_est[2])[:,0,0]
+        self.check_df(df_test, 'estimationpy_example.csv');
+        if plot:
+            plt.figure(1)
+            plt.plot(df_test['x_est'], 'o', label='x_est')
+            plt.plot(df_test['x+'], '-b')
+            plt.plot(df_test['x-'], '-b')
+            plt.legend()
+            plt.show()
+        os.remove(csv_file_path_new)
+            
+    def get_estimationpy_dir(self):
+        '''Return the path of estimationpy on the PYTHONPATH'''
+        
+        ep_dir = None
+        for path in os.environ['PYTHONPATH'].split(os.pathsep):
+            if 'EstimationPy' in path:
+                ep_dir = path
+                break
+        if ep_dir is None:
+            raise ValueError('Directory for EstimationPy not found on PYTHONPATH')
+            
+        return ep_dir
+        
+    def create_mpcpy_csv(self, path):
+        '''Converts the example data found in estimationpy to mpcpy format'''
+        
+        csv_file_path_new = 'ep_input_data.csv'
+        df = pd.read_csv(path)
+        df.index = pd.to_datetime(pd.to_timedelta(df['time'], unit='s')+pd.to_datetime('1/1/2017'))
+        del(df['time'])
+        df.index.name = 'Time'
+        df.to_csv(csv_file_path_new)
+        
+        return csv_file_path_new
+        
 
 #%% Occupancy tests
 class OccupancyFromQueueing(TestCaseMPCPy):
