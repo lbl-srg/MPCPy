@@ -85,7 +85,7 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
     __metaclass__ = ABCMeta;
 
     @abstractmethod
-    def estimate(self):
+    def parameter_estimate(self):
         '''Estimate parameters of the model using the measurement and 
         parameter_data dictionary attributes.
 
@@ -98,6 +98,19 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
 
         pass;
 
+    @abstractmethod
+    def state_estimate(self):
+        '''Estimate states of the model using measurements dictionary attributes.
+
+        Yields
+        ------
+        Updates the ``'Value'`` key for each estimated state in the 
+        state_data attribute.
+
+        '''
+
+        pass;
+        
     @abstractmethod        
     def validate(self):
         '''Validate parameters of the model using the measurement and 
@@ -126,7 +139,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
     Parameters
     ----------
-    estimate_method : estimation method class from mpcpy.models
+    parameter_estimate_method : parameter estimation method class from mpcpy.models
         Method for performing the parameter estimation.
     validate_method : validation method class from mpcpy.models
         Method for performing the parameter validation.
@@ -134,6 +147,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
         Measurement variables for the model.  Same as the measurements 
         attribute from a ``systems`` class.  See documentation for ``systems`` 
         for more information.
+    state_estimate_method : state estimation method class from mpcpy.models
+        Method for performing the state estimation.
     moinfo : tuple or list
         Modelica information for the model.  See documentation for 
         ``systems.EmulationFromFMU`` for more information.
@@ -149,6 +164,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
         ``exodata`` other inputs object data attribute.    
     parameter_data : dictionary, optional
         ``exodata`` parameter object data attribute.
+    estimated_state_data : dictionary, optional
+        ``exodata`` estimated state object data attribute.
     tz_name : string, optional
         Name of timezone according to the package ``tzwhere``.  If 
         ``'from_geography'``, then geography kwarg is required.
@@ -183,7 +200,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
     '''
     
-    def __init__(self, estimate_method, validate_method, measurements, save_parameter_input_data=False, **kwargs):
+    def __init__(self, parameter_estimate_method, validate_method, measurements, state_estimate_method, save_parameter_input_data=False, **kwargs):
         '''Constructor of a modelica or FMU model object.
         
         '''
@@ -196,14 +213,19 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self._parse_time_zone_kwargs(kwargs);
         self._save_parameter_input_data = save_parameter_input_data
         self._save_parameter_input_filename = 'model'
+        if 'estimated_state_data' in kwargs:
+            self.estimated_state_data = kwargs['estimated_state_data'];
+        else:
+            self.estimated_state_data = {};
         # Check estimation method compatible with model
-        if estimate_method is JModelica:
+        if parameter_estimate_method is JModelica:
             if self.mopath is None:
                 raise ValueError('Must supply modelica file to use JModelica estimation method.  Cannot only use FMU.  If only looking to simulate the fmu, use systems.EmulationFromFMU object.')
-        self.set_estimate_method(estimate_method);
+        self.set_parameter_estimate_method(parameter_estimate_method);
+        self.set_state_estimate_method(state_estimate_method);
         self.set_validate_method(validate_method);
         
-    def estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=None, use_initial_values=True):
+    def parameter_estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=None, use_initial_values=True):
         '''Estimate the parameters of the model.
         
         The estimation of the parameters is based on the data in the 
@@ -281,7 +303,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self.measurement_variable_list = measurement_variable_list;
         # Without global start
         if not global_start:
-            self._estimate_method._estimate(self);
+            self._parameter_estimate_method._estimate(self);
         # With global start
         else:
             # Detect free parameters
@@ -319,7 +341,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
                     self.parameter_data[par]['Value'].set_data(par_vals[par][i]);
                     glo_est_data[i][par] = par_vals[par][i]
                 # Make estimate for iteration
-                self._estimate_method._estimate(self);
+                self._parameter_estimate_method._estimate(self);
                 # Validate estimate for iteration
                 self.validate(start_time, final_time, 'validate', plot = 0);
                 # Save RMSE for initial_guess
@@ -342,7 +364,45 @@ class Modelica(_Model, utility._FMU, utility._Building):
                 for par in par_vals.keys():
                     self.parameter_data[par]['Value'].set_data(par_best[par]);
         
+    def state_estimate(self, start_time, final_time, measurement_variable_list):
+        '''Estimate the states of the model.
         
+        The estimation of the states is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute, 
+        the estimated_state_data dictionary attribute, and any exodata inputs.
+        
+        Parameters
+        ----------
+        start_time : string
+            Start time of estimation period.
+            Setting to 'continue' will result in error.
+        final_time : string
+            Final time of estimation period.
+        measurement_variable_list : list
+            List of strings defining for which variables defined in the 
+            measurements dictionary attribute the estimation will use.
+
+        Yields
+        ------
+        Updates the ``'Value'`` key for each estimated state in the 
+        estimated_state_data attribute.
+
+        '''
+        
+        # Check for state estimate data
+        if not self.estimated_state_data:
+            raise ValueError('No state estimate data set with estimated_state_data dictionary. Cannot run state estimation.');
+        # Check for measurements
+        for meas in measurement_variable_list:
+            if meas not in self.measurements.keys():
+                raise ValueError('Measurement {0} defined in measurement_variable_list not defined in measurements dictionary.'.format(meas))
+        # Check for continue
+        if start_time == 'continue':
+            raise ValueError('"continue" is not a valid entry for start_time for state estimation problems.')
+        # Perform state estimation
+        self._set_time_interval(start_time, final_time);
+        self.measurement_variable_list = measurement_variable_list;
+        self._state_estimate_method._estimate(self);        
         
     def validate(self, start_time, final_time, validate_filename, plot = 1):
         '''Validate the estimated parameters of the model.
@@ -413,8 +473,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
         self._set_time_interval(start_time, final_time);
         self._simulate_fmu();
         
-    def set_estimate_method(self, estimate_method):
-        '''Set the estimation method for the model.
+    def set_parameter_estimate_method(self, parameter_estimate_method):
+        '''Set the parameter estimation method for the model.
 
         Parameters
         ----------
@@ -423,7 +483,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
         '''
 
-        self._estimate_method = estimate_method(self);  
+        self._parameter_estimate_method = parameter_estimate_method(self);
         
     def set_validate_method(self, validate_method):
         '''Set the validation method for the model.
@@ -436,6 +496,18 @@ class Modelica(_Model, utility._FMU, utility._Building):
         '''
 
         self._validate_method = validate_method(self);
+        
+    def set_state_estimate_method(self, state_estimate_method):
+        '''Set the state estimation method for the model.
+
+        Parameters
+        ----------
+        state_estimate_method : estimation method class from mpcpy.models
+            Method for performing the state estimation.
+
+        '''
+
+        self._state_estimate_method = state_estimate_method(self);  
         
     def get_global_estimate_data(self):
         '''Get the estimation data if using the global estimation algorithm.
@@ -712,9 +784,9 @@ class Occupancy(_Model):
         return self._occupancy_method.estimate_options;
         
         
-#%% Estimate Method Interface
-class _Estimate(utility._mpcpyPandas):
-    '''Interface for a model identifcation method.
+#%% Parameter Method Interface
+class _ParameterEstimate(utility._mpcpyPandas):
+    '''Interface for a model parameter estimation method.
     
     '''
     
@@ -735,6 +807,34 @@ class _Estimate(utility._mpcpyPandas):
         parameter_data : dictionary
             Updates the ``'Value'`` key for each estimated parameter in the 
             parameter_data attribute of the Model.
+            
+        '''
+                
+        pass;
+        
+#%% State Estimate Method Interface
+class _StateEstimate(utility._mpcpyPandas):
+    '''Interface for a model state estimation method.
+    
+    '''
+    
+    __metaclass__ = ABCMeta;   
+    
+    @abstractmethod
+    def _estimate():
+        '''Estimation method-specific call to perform the state estimation.
+        
+        Parameters
+        ----------
+        Model : mpcpy.Models._Model object
+            The model on which the state estimation is performed.  Please
+            see documentation on the _Model class for info about attributes.
+        
+        Yields
+        ------
+        estimated_state_data : dictionary
+            Updates the ``'Value'`` key for each estimated states in the 
+            estimated_state_data attribute of the Model.
             
         '''
                 
@@ -794,8 +894,8 @@ class _OccupancyMethod(utility._mpcpyPandas):
     def _simulate():
         pass            
              
-#%% Estimate Method Interface Implementations
-class JModelica(_Estimate):
+#%% Parameter Estimate Method Interface Implementations
+class JModelica(_ParameterEstimate):
     '''Estimation method using JModelica optimization.
     
     This estimation method sets up a parameter estimation problem to be solved
@@ -821,8 +921,8 @@ class JModelica(_Estimate):
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
         
 
-class UKF(_Estimate, utility._FMU):
-    '''Estimation method using the Unscented Kalman Filter.
+class UKF(_ParameterEstimate, utility._FMU):
+    '''Parameter estimation method using the Unscented Kalman Filter.
     
     This estimation method uses the UKF implementation EstimationPy-KA_, 
     which is a fork of EstimationPy_ that allows for parameter estimation 
@@ -842,13 +942,13 @@ class UKF(_Estimate, utility._FMU):
         self.name = 'UKF';
         # Check correct fmu version
         if Model.fmu_version != '1.0':
-            raise ValueError('Compiled fmu version is {0} and needs to be 1.0.'.format(Model.fmu_version));
+            raise ValueError('Compiled fmu version is {0} and needs to be 1.0 for UKF parameter estimation method.'.format(Model.fmu_version));
         else:
             self.fmu_version = Model.fmu_version;
         # Instantiate UKF model
         self.model = ukf_model.Model(Model.fmupath);
         
-    def _estimate(self, Model):
+    def _estimate(self, Model, style='parameter'):
         '''Perform UKF estimation.
 
         '''
@@ -974,6 +1074,153 @@ class UKF(_Estimate, utility._FMU):
                 Model.parameter_data[key]['Value'].set_display_unit(unit);
                 Model.parameter_data[key]['Value'].set_data(data);
                 i = i + 1;
+                
+class UKFState(_StateEstimate, utility._FMU):
+    '''State estimation method using the Unscented Kalman Filter.
+    
+    This estimation method uses the UKF implementation EstimationPy-KA_, 
+    which is a fork of EstimationPy_ that allows for parameter estimation 
+    without any state estimation.
+    
+    .. _EstimationPy: https://github.com/lbl-srg/EstimationPy
+    
+    .. _EstimationPy-KA: https://github.com/krzysztofarendt/EstimationPy-KA
+
+    '''
+
+    def __init__(self, Model):
+        '''Constructor of UKF estimation method.
+        
+        '''
+
+        self.name = 'UKF';
+        # Check correct fmu version
+        if Model.fmu_version != '1.0':
+            raise ValueError('Compiled fmu version is {0} and needs to be 1.0 for UKF state estimation method.'.format(Model.fmu_version));
+        else:
+            self.fmu_version = Model.fmu_version;
+        # Instantiate UKF model
+        self.model = ukf_model.Model(Model.fmupath);
+        
+    def _estimate(self, Model):
+        '''Perform UKF estimation.
+
+        '''
+
+        estimationpy_logging.configure_logger(log_level = logging.INFO, log_level_console = logging.INFO, log_level_file = logging.INFO)
+        # Write the inputs, measurements, and parameters to csv
+        self._writeukfcsv(Model);
+        # Select inputs
+        for key in Model.input_names:
+            inputvar = self.model.get_input_by_name(key);
+            inputvar.get_csv_reader().open_csv(self.csv_path);
+            inputvar.get_csv_reader().set_selected_column(key);    
+        # Select outputs
+        for key in Model.measurement_variable_list:
+            outputvar = self.model.get_output_by_name(key);
+            outputvar.get_csv_reader().open_csv(self.csv_path);
+            outputvar.get_csv_reader().set_selected_column(key);        
+            outputvar.set_measured_output()
+            outputvar.set_covariance(0.5);
+        # Select the states to be estimated
+        i = 0;
+        for key in Model.estimated_state_data.keys():
+            self.model.add_variable(self.model.get_variable_object(key));
+            var = self.model.get_variables()[i];
+            var.set_initial_value(Model.estimated_state_data[key]['Value'].get_base_data());
+            i = i + 1;
+        # Initialize the model for the simulation
+        self.model.initialize_simulator();
+        # Set model parameters
+        for name in Model.parameter_data.keys():
+            self.model.set_real(self.model.get_variable_object(name),Model.parameter_data[name]['Value'].get_base_data());
+        # Instantiate the UKF for the FMU
+        ukf_FMU = UkfFmu(self.model);
+        # Start filter
+        t0 = pd.to_datetime(0, unit = "s", utc = True);
+        t1 = pd.to_datetime(Model.elapsed_seconds, unit = "s", utc = True);
+        self.res_est = ukf_FMU.filter(start = t0, stop = t1);
+        # Update parameter results
+        self._get_state_results(Model);
+        
+    def _writeukfcsv(self, Model):
+        '''Write the UKF csv file.
+
+        '''
+
+        # Collect additional inputs for csv file     
+        self._additional_inputs = {};
+        # Measurements
+        for key_mea in Model.measurement_variable_list:
+            variable = Model.measurements[key_mea];
+            self._additional_inputs[key_mea] = {};
+            self._additional_inputs[key_mea] = variable['Measured'];
+        # Parameters
+        free_parameters = [];
+        for key_par in Model.parameter_data.keys():
+            variable = Model.parameter_data[key_par];
+            if variable['Free'].get_base_data():
+                free_parameters.append(key_par)
+                time = self._additional_inputs[key_mea].get_base_data().index.values;
+                data = variable['Value'].get_base_data()*np.ones(len(time));
+                unit = variable['Value'].get_base_unit();
+                ts = pd.Series(index = time, data = data)
+                self._additional_inputs[key_par] = variables.Timeseries(key_par+'_ukf', ts, unit);
+                
+        # Create mpcpy ts list
+        self._input_mpcpy_ts_list = [];
+        # Weather
+        for key in Model.weather_data.keys():
+            if key in Model.input_names:
+                self._input_mpcpy_ts_list.append(Model.weather_data[key]);
+        # Internal
+        for zone in Model.internal_data.keys():
+            for intLoad in ['intCon', 'intRad', 'intLat']:
+                if intLoad+'_'+zone in Model.input_names:
+                    self._input_mpcpy_ts_list.append(Model.internal_data[zone][intLoad]);
+        # Controls
+        for key in Model.control_data.keys():
+            if key in Model.input_names:
+                self._input_mpcpy_ts_list.append(Model.control_data[key]);                     
+        # Other inputs                   
+        for key in Model.other_inputs.keys():
+            if key in Model.input_names:
+                self._input_mpcpy_ts_list.append(Model.other_inputs[key]);
+        # Add measurements and parameters
+        for key in self._additional_inputs.keys():
+            self._input_mpcpy_ts_list.append(self._additional_inputs[key]);
+            
+        # Create input object to write to csv
+        # Set timing
+        self.start_time_utc = Model.start_time_utc;
+        self.final_time_utc = Model.final_time_utc;   
+        self._global_start_time_utc = Model._global_start_time_utc
+        self.elapsed_seconds = Model.elapsed_seconds;  
+        self.total_elapsed_seconds = Model.total_elapsed_seconds;
+        self._create_input_object_from_input_mpcpy_ts_list(self._input_mpcpy_ts_list)
+        # Write to csv
+        self.csv_path = 'ukf.csv';                                               
+        with open(self.csv_path, 'wb') as f:
+            ukfwriter = csv.writer(f);
+            ukfwriter.writerow(['time'] + list(self._input_object[0]));
+            for i in range(len(self._input_object[1][:,0])):
+                ukfwriter.writerow(self._input_object[1][i]);
+
+    def _get_state_results(self, Model):
+        '''Update the state data dictionary in the model with ukf results.
+        
+        '''
+        
+        i = 0;
+        for key in Model.estimated_state_data.keys():
+            fmu_variable_units = Model._get_fmu_variable_units();
+            unit = self._get_unit_class_from_fmu_variable_units(key, fmu_variable_units);
+            if not unit:
+                unit = units.unit1;
+            data = self.res_est[1][-1][i];
+            Model.estimated_state_data[key]['Value'].set_display_unit(unit);
+            Model.estimated_state_data[key]['Value'].set_data(data);
+            i = i + 1;
        
 #%% Validate Method Interfaces
 class RMSE(_Validate):
