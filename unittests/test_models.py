@@ -691,7 +691,7 @@ class EstimateFromUKF(TestCaseMPCPy):
     def test_estimate_and_validate(self):
         '''Test the estimation of a model's coefficients based on measured data.'''
         # Instantiate model
-        model = models.Modelica(models.UKF, \
+        model = models.Modelica(models.UKFParameter, \
                                      models.RMSE, \
                                      self.system.measurements, \
                                      moinfo = self.moinfo, \
@@ -715,7 +715,7 @@ class EstimateFromUKF(TestCaseMPCPy):
         # Check error raised with wrong fmu version (2.0 instead of 1.0)
         with self.assertRaises(ValueError):
             # Instantiate model
-            model = models.Modelica(models.UKF, \
+            model = models.Modelica(models.UKFParameter, \
                                          models.RMSE, \
                                          self.system.measurements, \
                                          moinfo = self.moinfo, \
