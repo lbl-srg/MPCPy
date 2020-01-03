@@ -29,6 +29,7 @@ abstract Internal
 abstract Control
 abstract OtherInput
 abstract Parameter
+abstract EstimatedState
 abstract Constraint
 abstract Price
 
@@ -37,6 +38,7 @@ Type <|-- Internal
 Type <|-- Control
 Type <|-- OtherInput
 Type <|-- Parameter
+Type <|-- EstimatedState
 Type <|-- Constraint
 Type <|-- Price
 
@@ -47,6 +49,7 @@ Internal <|-- InternalFromOccupancyModel
 Control <|-- ControlFromCSV
 OtherInput <|-- OtherInputFromCSV
 Parameter <|-- ParameterFromCSV
+EstimatedState <|-- EstimatedStateFromCSV
 Constraint <|-- ConstraintFromCSV
 Constraint <|-- ConstraintFromOccupancyModel
 Price <|-- PriceFromCSV
@@ -70,18 +73,21 @@ Real <|-- RealFromCSV
 Models
 @startuml
 abstract Model
-abstract Estimate
+abstract ParameterEstimate
+abstract StateEstimate
 abstract Validate
 abstract OccupancyMethod
 
 Model <|-- Modelica
 Model <|-- Occupancy
-Modelica *-- Estimate
+Modelica *-- ParameterEstimate
+Modelica *-- StateEstimate
 Modelica *-- Validate
 
 Validate <|-- RMSE
-Estimate <|-- JModelica
-Estimate <|-- UKF
+ParameterEstimate <|-- JModelica
+ParameterEstimate <|-- UKFParameter
+StateEstimate <|-- UKFState
 
 Occupancy *-- OccupancyMethod
 OccupancyMethod <|-- QueueModel
