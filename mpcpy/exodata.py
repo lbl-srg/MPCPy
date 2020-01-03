@@ -266,7 +266,32 @@ Classes
     
 .. autoclass:: mpcpy.exodata.ParameterFromDF
     :members: collect_data, display_data, get_base_data, set_data, append_data 
+
+================
+Estimated States
+================
+
+Estimated state data represents data for states of models which may need to be estimated using system 
+measurement data.
+Exogenous estimated state data has the following organization:
+
+{"Estimated State Name" : {"Estimated State Key Name" : mpcpy.Variables.Static}}
+
+The estimated state name must match that which is in the model.  The estimated 
+state key names should be chosen from the following list:
+
+- Value - value of the estimated state, which is also used as an initial guess for state estimation algorithms
+- Unit - unit string of estimated state
+
+Classes
+=======
+
+.. autoclass:: mpcpy.exodata.EstimatedStateFromCSV
+    :members: collect_data, display_data, get_base_data, set_data, append_data 
     
+.. autoclass:: mpcpy.exodata.EstimatedStateFromDF
+    :members: collect_data, display_data, get_base_data, set_data, append_data 
+
 """
 
 from abc import ABCMeta
@@ -775,6 +800,106 @@ class _Parameter(_Type):
             self.data[name]['Minimum'] = variables.Static(name+'_min', minimum, unit)
             self.data[name]['Maximum'] = variables.Static(name+'_max', maximum, unit)
             self.data[name]['Covariance'] = variables.Static(name+'_cov', covariance, unit)
+            
+## Parameters       
+class _EstimatedState(_Type):
+    '''Mix-in class for estimated state exogenous data.
+
+    '''
+        
+    def display_data(self):
+        '''Get data as pandas dataframe in display units.
+
+        Returns
+        -------
+
+        df : ``pandas`` dataframe
+            Dataframe in display units.
+            
+        '''
+
+        d = {};
+        for key in self.data.keys():
+            d[key] = {};
+            for subkey in self.data[key].keys():
+                d[key][subkey] = self.data[key][subkey].display_data();
+                if subkey == 'Value':
+                    d[key]['Unit'] = self.data[key][subkey].get_display_unit_name();
+        df = pd.DataFrame(data = d).transpose();
+        df.index.name = 'Name';
+        
+        return df
+        
+    def get_base_data(self):
+        '''Get data as pandas dataframe in base units.
+
+        Returns
+        -------
+
+        df : ``pandas`` dataframe
+            Dataframe in base units.
+            
+        '''
+
+        d = {};
+        for key in self.data.keys():
+            d[key] = {};
+            for subkey in self.data[key].keys():
+                d[key][subkey] = self.data[key][subkey].get_base_data();
+        df = pd.DataFrame(data = d);
+        
+        return df;    
+        
+    def set_data(self, name, value=None, new_name=None):
+        '''Set new data for existing estimated state.
+        
+        All data must be in display units of estimated state.
+        No changes are made to arguments that are None.
+        
+        Parameters
+        ----------
+        name : str
+            Name of estimated state for which to set data.
+        value : float | int, optional
+            Set a new value for the estimated state.
+            Default is None.
+        new_name : str, optional
+            Set a new name for the estimated state.
+            Default is None.
+            
+        '''
+        
+        # Check parameter exists already
+        if name not in self.data.keys():
+            raise KeyError('{0} not found in estimated state.  Use append_data() to add new estimated state'.format(name))
+        # Set data
+        else:
+            if value is not None:
+                self.data[name]['Value'].set_data(value)
+            if new_name is not None:
+                self.data[new_name] = self.data.pop(name)
+
+    def append_data(self, name, value, unit):                
+        '''Append a new estimated state to existing estimated states.
+
+        Parameters
+        ----------
+        name : str
+            Name of estimated state.
+        value : float | int
+            Value for the estimated state.
+        unit : mpcpy Units object
+            Unit of estimated state.
+            
+        '''
+        
+        # Check parameter doesn't already exist
+        if name in self.data.keys():
+            raise KeyError('{0} already found in estimated state.  Use set_data() to change data.'.format(name))
+        # Set data
+        else:
+            self.data[name] = dict()
+            self.data[name]['Value'] = variables.Static(name+'_val', value, unit)
 
 ## Constraints       
 class _Constraint(_Type):
@@ -1706,7 +1831,99 @@ class ParameterFromDF(_Parameter, utility._DAQ):
                 self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
             else: 
                 self.data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
-                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
+                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);            
+                
+#%% Parameter source implementations 
+class EstimatedStateFromCSV(_EstimatedState, utility._DAQ):
+    '''Collects estimated state data from a csv file. 
+
+    Parameters
+    ----------
+    csv_file_path : string
+        Path of csv file. The csv file rows must be named as the estimated state 
+        names and the columns must be named as the estimated state key names.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Estimated State Name" : {"Estimated State Key Name" : mpcpy.Variables.Static}}.
+    file_path : string
+        Path of csv file.
+    
+    '''
+
+    def __init__(self, csv_file_path):
+        '''Constructor of csv estimated state source.
+        
+        '''
+
+        self.name = 'estimated_state_from_csv';
+        self.file_path = csv_file_path;
+        self.data = {};
+        
+    def collect_data(self):
+        '''Collect estimated state data from csv file into data dictionary.
+        
+        Yields
+        ------
+        
+        data : dictionary
+            Data attribute.
+
+        '''
+        
+        # Read coefficients file
+        df = pd.read_csv(self.file_path, index_col='Name', dtype={'Unit':str});
+        # Create coefficient dictionary
+        for key in df.index.values:
+            self.data[key] = {};
+            unit = utility.get_unit_class_from_unit_string(df.loc[key, 'Unit']);
+            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
+
+class EstimatedStateFromDF(_EstimatedState, utility._DAQ):
+    '''Collects estimated state data from a pandas DataFrame object. 
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        DataFrame of data.  The DataFrame index values must be named as the 
+        estimated state names and the columns must be named as the estimated
+        state key names.
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Estimated State Name" : {"Estimated State Key Name" : mpcpy.Variables.Static}}.
+    
+    '''
+
+    def __init__(self, df):
+        '''Constructor of df estimated state source.
+        
+        '''
+
+        self.name = 'estimated_state_from_df';
+        self._df = df;
+        self.data = {};
+        
+    def collect_data(self):
+        '''Collect estimated state data from DataFrame into data dictionary.
+        
+        Yields
+        ------
+        
+        data : dictionary
+            Data attribute.
+
+        '''
+        
+        # Read coefficients file
+        df = self._df
+        # Create coefficient dictionary
+        for key in df.index.values:
+            self.data[key] = {};
+            unit = utility.get_unit_class_from_unit_string(df.loc[key, 'Unit']);
+            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);     
             
 #%% Constraint source implementations
 class ConstraintFromCSV(_Constraint, utility._DAQ):
