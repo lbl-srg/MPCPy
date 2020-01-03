@@ -138,657 +138,6 @@ class _Model(utility._mpcpyPandas, utility._Measurements):
 
         pass;
 
-#%% Model Implementations
-class Modelica(_Model, utility._FMU, utility._Building):
-    '''Class for models of physical systems represented by Modelica or an FMU.
-
-    Parameters
-    ----------
-    parameter_estimate_method : parameter estimation method class from mpcpy.models
-        Method for performing the parameter estimation.
-    validate_method : validation method class from mpcpy.models
-        Method for performing the parameter validation.
-    measurements : dictionary
-        Measurement variables for the model.  Same as the measurements 
-        attribute from a ``systems`` class.  See documentation for ``systems`` 
-        for more information.
-    state_estimate_method : state estimation method class from mpcpy.models
-        Method for performing the state estimation.
-    moinfo : tuple or list
-        Modelica information for the model.  See documentation for 
-        ``systems.EmulationFromFMU`` for more information.
-    zone_names : list, optional
-        List of zone name strings.
-    weather_data : dictionary, optional
-        ``exodata`` weather object data attribute.
-    internal_data : dictionary, optional
-        ``exodata`` internal object data attribute.
-    control_data : dictionary, optional
-        ``exodata`` control object data attribute.    
-    other_inputs : dictionary, optional
-        ``exodata`` other inputs object data attribute.    
-    parameter_data : dictionary, optional
-        ``exodata`` parameter object data attribute.
-    estimated_state_data : dictionary, optional
-        ``exodata`` estimated state object data attribute.
-    tz_name : string, optional
-        Name of timezone according to the package ``tzwhere``.  If 
-        ``'from_geography'``, then geography kwarg is required.
-    geography : list or tuple, optional
-        List or tuple with (latitude, longitude) in degrees.   
-    save_parameter_input_data: boolean
-        True to output the parameter and input data set for simulations and optimizations
-        Saved files are:
-        "mpcpy_simulation_parameters_model.csv"
-        "mpcpy_simulation_inputs_model.csv"
-        "mpcpy_simulation_parameters_optimization_initial.csv"
-        "mpcpy_simulation_inputs_optimization_initial.csv"
-        "mpcpy_optimization_parameters.csv"
-        "mpcpy_optimization_inputs.csv"
-        Times will be in UTC.
-        Default is False.
-
-    Attributes
-    ----------
-    measurements : dictionary
-        ``systems`` measurement object attribute.
-    fmu : pyfmi fmu object
-        FMU respresenting the emulated system.
-    fmupath : string
-        Path to the FMU file.
-    lat : numeric
-        Latitude in degrees.  For timezone.
-    lon : numeric
-        Longitude in degrees.  For timezone.
-    tz_name : string
-        Timezone name.
-
-    '''
-    
-    def __init__(self, parameter_estimate_method, validate_method, measurements, state_estimate_method, save_parameter_input_data=False, **kwargs):
-        '''Constructor of a modelica or FMU model object.
-        
-        '''
-        
-        self.name = 'modelica';    
-        self.measurements = measurements;
-        self._create_fmu(kwargs);
-        self.input_names = self._get_input_names();                                       
-        self._parse_building_kwargs(kwargs);
-        self._parse_time_zone_kwargs(kwargs);
-        self._save_parameter_input_data = save_parameter_input_data
-        self._save_parameter_input_filename = 'model'
-        if 'estimated_state_data' in kwargs:
-            self.estimated_state_data = kwargs['estimated_state_data'];
-        else:
-            self.estimated_state_data = {};
-        # Check estimation method compatible with model
-        if parameter_estimate_method is JModelica:
-            if self.mopath is None:
-                raise ValueError('Must supply modelica file to use JModelica estimation method.  Cannot only use FMU.  If only looking to simulate the fmu, use systems.EmulationFromFMU object.')
-        self.set_parameter_estimate_method(parameter_estimate_method);
-        self.set_state_estimate_method(state_estimate_method);
-        self.set_validate_method(validate_method);
-        
-    def parameter_estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=None, use_initial_values=True):
-        '''Estimate the parameters of the model.
-        
-        The estimation of the parameters is based on the data in the 
-        ``'Measured'`` key in the measurements dictionary attribute, 
-        the parameter_data dictionary attribute, and any exodata inputs.
-        
-        An optional global start algorithm where multiple estimations are 
-        preformed with different initial guesses within the ranges of each 
-        free parameter provided.  It is implemented as tested in 
-        Blum et al. (2019).  The algorithm uses latin hypercube sampling 
-        to choose the initial parameter guess values for each iteration and 
-        the iteration with the lowest estimation problem objective value is 
-        chosen.  A user-provided guess is included by default using initial
-        values given to parameter data of the model, though this option can be 
-        turned off to use only sampled initial guesses.
-        
-        Blum, D.H., Arendt, K., Rivalin, L., Piette, M.A., Wetter, M., and 
-        Veje, C.T. (2019). "Practical factors of envelope model setup and 
-        their effects on the performance of model predictive control for 
-        building heating, ventilating, and air conditioning systems." 
-        Applied Energy 236, 410-425. 
-        https://doi.org/10.1016/j.apenergy.2018.11.093
-        
-        Parameters
-        ----------
-        start_time : string
-            Start time of estimation period.
-            Setting to 'continue' will result in error.
-        final_time : string
-            Final time of estimation period.
-        measurement_variable_list : list
-            List of strings defining for which variables defined in the 
-            measurements dictionary attirubute the estimation will 
-            try to minimize the error.
-        global_start : int, optional
-            Number of iterations of a global start algorithm.
-            If 0, the global start algorithm is disabled and the values in
-            the parameter_data dictionary are used as initial guesses.
-            Default is 0.
-        seed : numeric or None, optional
-            Specific seed of the global start algorithm for the random selection
-            of initial value guesses.
-            Default is None.
-        use_initial_values : boolean, optional
-            True to include initial parameter values in the estimation iterations.
-            Default is True.
-
-        Yields
-        ------
-        Updates the ``'Value'`` key for each estimated parameter in the 
-        parameter_data attribute.
-
-        '''
-        
-        # Check for free parameters
-        free = False;
-        for key in self.parameter_data.keys():
-            if self.parameter_data[key]['Free'].get_base_data():
-                free = True;
-                break
-            else:
-                free = False;
-        if not free:
-            # If none free raise error
-            raise ValueError('No parameters set as "Free" in parameter_data dictionary. Cannot run parameter estimation.');
-        # Check for measurements
-        for meas in measurement_variable_list:
-            if meas not in self.measurements.keys():
-                raise ValueError('Measurement {0} defined in measurement_variable_list not defined in measurements dictionary.'.format(meas))
-        # Check for continue
-        if start_time == 'continue':
-            raise ValueError('"continue" is not a valid entry for start_time for parameter estimation problems.')
-        # Perform parameter estimation
-        self._set_time_interval(start_time, final_time);
-        self.measurement_variable_list = measurement_variable_list;
-        # Without global start
-        if not global_start:
-            self._parameter_estimate_method._estimate(self);
-        # With global start
-        else:
-            # Detect free parameters
-            free_pars = [];
-            for par in self.parameter_data.keys():
-                if self.parameter_data[par]['Free'].display_data():
-                    free_pars.append(par)
-            # Create lhs sample for all parameters
-            np.random.seed(seed)  # Random seed for LHS initialization
-            n_free_pars = len(free_pars);
-            lhs = doe.lhs(n_free_pars, samples=global_start, criterion='c');
-            # Scale and store lhs samples for parameters between min and max bounds
-            par_vals = dict();
-            for par, i in zip(free_pars, range(n_free_pars)):
-                par_min = self.parameter_data[par]['Minimum'].display_data();
-                par_max = self.parameter_data[par]['Maximum'].display_data();                                
-                par_vals[par] = (lhs[:,i]*(par_max-par_min)+par_min).tolist();
-                # Add initial value guesses if wanted
-                if use_initial_values:
-                    par_vals[par].append(self.parameter_data[par]['Value'].display_data())
-            # Estimate for each sample
-            J = float('inf');
-            par_best = dict();
-            glo_est_data = dict()
-            if use_initial_values:
-                iterations = range(global_start+1)
-            else:
-                iterations = range(global_start)
-            for i in iterations:
-                # Create dictionary to save all estimation iteration data
-                glo_est_data[i] = dict()
-                # Set lhs sample values for each parameter
-                for par in par_vals.keys():
-                    # Use latin hypercube selections
-                    self.parameter_data[par]['Value'].set_data(par_vals[par][i]);
-                    glo_est_data[i][par] = par_vals[par][i]
-                # Make estimate for iteration
-                self._parameter_estimate_method._estimate(self);
-                # Validate estimate for iteration
-                self.validate(start_time, final_time, 'validate', plot = 0);
-                # Save RMSE for initial_guess
-                for key in self.RMSE:
-                    glo_est_data[i]['RMSE_{0}'.format(key)] = self.RMSE[key].display_data();
-                # If solve succeeded, compare objective and if less, save best par values
-                solver_message = self._estimate_method.opt_problem.get_optimization_statistics()[0]
-                J_curr = self._estimate_method.opt_problem.get_optimization_statistics()[2]
-                glo_est_data[i]['Message'] = solver_message
-                glo_est_data[i]['J'] = J_curr
-                if ((J_curr < J) and (J_curr > 0.0)) or ((J_curr < J) and (solver_message == 'Solve_Succeeded')):
-                    J = J_curr;
-                    for par in free_pars:
-                        par_best[par] = self.parameter_data[par]['Value'].display_data();
-            # Save all estimates
-            glo_est_data['J_Best'] = J
-            self.glo_est_data = glo_est_data
-            # Set best parameters in model if found
-            if par_best:
-                for par in par_vals.keys():
-                    self.parameter_data[par]['Value'].set_data(par_best[par]);
-        
-    def state_estimate(self, start_time, final_time, measurement_variable_list):
-        '''Estimate the states of the model.
-        
-        The estimation of the states is based on the data in the 
-        ``'Measured'`` key in the measurements dictionary attribute, 
-        the estimated_state_data dictionary attribute, and any exodata inputs.
-        
-        Parameters
-        ----------
-        start_time : string
-            Start time of estimation period.
-            Setting to 'continue' will result in error.
-        final_time : string
-            Final time of estimation period.
-        measurement_variable_list : list
-            List of strings defining for which variables defined in the 
-            measurements dictionary attribute the estimation will use.
-
-        Yields
-        ------
-        Updates the ``'Value'`` key for each estimated state in the 
-        estimated_state_data attribute.
-
-        '''
-        
-        # Check for state estimate data
-        if not self.estimated_state_data:
-            raise ValueError('No state estimate data set with estimated_state_data dictionary. Cannot run state estimation.');
-        # Check for measurements
-        for meas in measurement_variable_list:
-            if meas not in self.measurements.keys():
-                raise ValueError('Measurement {0} defined in measurement_variable_list not defined in measurements dictionary.'.format(meas))
-        # Check for continue
-        if start_time == 'continue':
-            raise ValueError('"continue" is not a valid entry for start_time for state estimation problems.')
-        # Perform state estimation
-        self._set_time_interval(start_time, final_time);
-        self.measurement_variable_list = measurement_variable_list;
-        self._state_estimate_method._estimate(self);        
-        
-    def validate(self, start_time, final_time, validate_filename, plot = 1):
-        '''Validate the estimated parameters of the model.
-
-        The validation of the parameters is based on the data in the 
-        ``'Measured'`` key in the measurements dictionary attribute, 
-        the parameter_data dictionary attribute, and any exodata inputs.
-
-        Parameters
-        ----------
-        start_time : string
-            Start time of validation period.
-            Set to 'continue' in order to continue the model simulation
-            from the final time of the previous simulation, estimation, or 
-            validation.  Continuous states from simulation and validation are 
-            saved.  Exodata input objects must contain values for the 
-            continuation timestamp.  The measurements in a continued 
-            simulation replace previous values.  They do not append to a 
-            previous simulation's measurements.
-        final_time : string
-            Final time of validation period.
-        validate_filepath : string
-            File path without an extension for which to save validation 
-            results.  Extensions will be added depending on the file type 
-            (e.g. .png for figures, .txt for data).
-        plot : [0,1], optional
-            Plot flag for some validation or estimation methods.
-            Default = 1.
-
-        Yields
-        ------
-        Various results depending on the validation method.  Please check the
-        documentation for the validation method chosen.
-
-        '''
-
-        # Simulate model
-        self.simulate(start_time, final_time);
-        # Perform validation        
-        self._validate_method._validate(self, validate_filename, plot = plot);
-            
-    def simulate(self, start_time, final_time, ):
-        '''Simulate the model with current parameter estimates and any exodata 
-        inputs.
-
-        Parameters
-        ----------
-        start_time : string
-            Start time of validation period.
-            Set to 'continue' in order to continue the model simulation
-            from the final time of the previous simulation, estimation, or 
-            validation.  Continuous states from simulation and validation are 
-            saved.  Exodata input objects must contain values for the 
-            continuation timestamp.  The measurements in a continued 
-            simulation replace previous values.  They do not append to a 
-            previous simulation's measurements.
-        final_time : string
-            Final time of simulation period.  Must be greater than the
-            start time.
-
-        Yields
-        ------
-        Updates the ``'Simulated'`` key for each measurement in the 
-        measurements attribute.
-
-        '''
-        
-        self._set_time_interval(start_time, final_time);
-        self._simulate_fmu();
-        
-    def set_parameter_estimate_method(self, parameter_estimate_method):
-        '''Set the parameter estimation method for the model.
-
-        Parameters
-        ----------
-        estimate_method : estimation method class from mpcpy.models
-            Method for performing the parameter estimation.
-
-        '''
-
-        self._parameter_estimate_method = parameter_estimate_method(self);
-        
-    def set_validate_method(self, validate_method):
-        '''Set the validation method for the model.
-
-        Parameters
-        ----------
-        validate_method : validation method class from mpcpy.models
-            Method for performing the parameter validation.
-
-        '''
-
-        self._validate_method = validate_method(self);
-        
-    def set_state_estimate_method(self, state_estimate_method):
-        '''Set the state estimation method for the model.
-
-        Parameters
-        ----------
-        state_estimate_method : estimation method class from mpcpy.models
-            Method for performing the state estimation.
-
-        '''
-
-        self._state_estimate_method = state_estimate_method(self);  
-        
-    def get_global_estimate_data(self):
-        '''Get the estimation data if using the global estimation algorithm.
-        
-        Must have completed the estimation using the global algorithm.
-        
-        Returns
-        -------
-        glo_est_data : dictionary
-            Estimation data from each iteration of the global estimation
-            algorithm, including the training RMSE for each measurement
-            variable, initial guess for each parameter, returned objective 
-            value, returned solver status, and best objective value.
-        
-        '''
-        
-        glo_est_data = self.glo_est_data
-        
-        return glo_est_data
-        
-class Occupancy(_Model):
-    '''Class for models of occupancy.
-
-    Parameters
-    ----------
-    occupancy_method : occupancy method class from mpcpy.models
-    measurements : dictionary
-        Measurement variables for the model.  Same as the measurements 
-        attribute from a ``systems`` class.  See documentation for ``systems`` 
-        for more information.  This measurement dictionary should only have
-        one variable key, which represents occupancy count.
-    tz_name : string, optional
-        Name of timezone according to the package ``tzwhere``.  If 
-        ``'from_geography'``, then geography kwarg is required.
-    geography : list or tuple, optional
-        List or tuple with (latitude, longitude) in degrees.   
-
-    Attributes
-    ----------
-    measurements : dictionary
-        ``systems`` measurement object attribute.
-    parameter_data : dictionary
-        ``exodata`` parameter object data attribute.
-    lat : numeric
-        Latitude in degrees.  For timezone.
-    lon : numeric
-        Longitude in degrees.  For timezone.
-    tz_name : string
-        Timezone name.
-
-    '''
-
-    def __init__(self, occupancy_method, measurements, **kwargs):
-        '''Constructor of an occupancy model object.
-
-        '''
-
-        # Initialize variables and model method
-        self.name = 'occupancy';
-        self.measurements = measurements;
-        self.set_occupancy_method(occupancy_method);
-        self.parameters_data = {};
-        self._parse_time_zone_kwargs(kwargs);
-        
-    def estimate(self, start_time, final_time, **kwargs):
-        '''Estimate the parameters of the model using measurement data.
-        
-        The estimation of the parameters is based on the data in the 
-        ``'Measured'`` key in the measurements dictionary attribute of the 
-        model object.
-
-        Parameters
-        ----------
-        start_time : string
-            Start time of estimation period.
-        final_time : string
-            Final time of estimation period.
-        estimate_options : dictionary, optional
-            Use the ``get_estimate_options`` method to obtain and edit.
-
-        Yields
-        ------
-        parameter_data : dictionary
-            Updates the ``'Value'`` key for each estimated parameter in the 
-            parameter_data attribute.
-
-        '''
-
-        # Set the training time interval
-        self._set_time_interval(start_time, final_time);
-        # Set the estimation options
-        if 'estimate_options' in kwargs:
-            self.set_estimate_options(kwargs['estimate_options']);
-        # Perform estimation
-        self._occupancy_method._estimate(self);
-        
-    def validate(self, start_time, final_time, validate_filename, plot = 1):
-        '''Validate the estimated parameters of the model with measurement data.
-
-        The validation of the parameters is based on the data in the 
-        ``'Measured'`` key in the measurements dictionary attribute of the 
-        model object.
-        
-        Parameters
-        ----------
-        start_time : string
-            Start time of validation period.
-        final_time : string
-            Final time of validation period.
-        validate_filepath : string
-            File path without an extension for which to save validation 
-            results.  Extensions will be added depending on the file type 
-            (e.g. .png for figures, .txt for data).
-        plot : [0,1], optional
-            Plot flag for some validation or estimation methods.
-
-        Yields
-        ------
-        Various results depending on the validation method.  Please check the
-        documentation for the occupancy model chosen.
-
-        '''
-
-        # Set the name of all validation output files
-        self.validate_filename = validate_filename;
-        # Set the validation time interval
-        self._set_time_interval(start_time, final_time);
-        # Simulate the model using currently estimated parameters
-        self.simulate(start_time, final_time);
-        # Perform the validation against measured data
-        self._occupancy_method._validate(self, plot);
-        
-    def simulate(self, start_time, final_time, **kwargs):
-        '''Simulate the model with current parameter estimates.
-
-        Parameters
-        ----------
-        start_time : string
-            Start time of simulation period.
-        final_time : string
-            Final time of simulation period.
-        simulate_options : dictionary, optional
-            Use the ``get_simulate_options`` method to obtain and edit.
-
-        Yields
-        ------
-        measurements : dictionary
-            Updates the ``'Simulated'`` key for each measurement in the 
-            measurements attribute.  If available by the occupancy method, 
-            also updates the ``'SimulatedError'`` key for each measurement in
-            the measurements attribute.
-
-        '''
-        
-        # Set the simulation time interval
-        self._set_time_interval(start_time, final_time);
-        # Set the simulation options
-        if 'simulate_options' in kwargs:
-            self.set_simulate_options(kwargs['simulate_options']);
-        # Perform the simulation
-        self._occupancy_method._simulate(self);
-        
-    def get_load(self, load_per_person):
-        '''Get a load timeseries based on the predicted occupancy.
-
-        Parameters
-        ----------
-        load_per_person : mpcpy.variables.Static
-            Scaling factor of occupancy prediction to produce load timeseries.
-        
-        Returns
-        -------
-        load : mpcpy.variables.Timeseries
-            Load timeseries.
-
-        '''
-
-        # Get occupancy prediction
-        ts = self.measurements[self._occupancy_method.occ_key]['Simulated'].get_base_data();
-        # Multiply by load factor
-        ts_load = load_per_person*ts;
-        # Return timeseries
-        return ts_load;
-        
-    def get_constraint(self, occupied_value, unoccupied_value):
-        '''Get a constraint timeseries based on the predicted occupancy.
-
-        Parameters
-        ----------
-        occupied_value : mpcpy.variables.Static
-            Value of constraint during occupied times.
-        unoccupied_value : mpcpy.variables.Static
-            Value of constraint during unoccupied times.
-        
-        Returns
-        -------
-        constraint : mpcpy.variables.Timeseries
-            Constraint timeseries.
-
-        '''
-
-        # Get occupancy prediction
-        ts = self.measurements[self._occupancy_method.occ_key]['Simulated'].get_base_data();
-        # Determine when occupied
-        ts_occ = ts>=0.5;
-        # Apply occupied and unoccupied values
-        ts_occ_value = ts_occ.apply(lambda x: occupied_value if x == 1 else unoccupied_value);
-        # Return timeseries
-        return ts_occ_value;
-
-    def set_occupancy_method(self, occupancy_method):
-        '''Set the occupancy method for the model.
-
-        Parameters
-        ----------
-        occupancy_method : occupancy method class from mpcpy.models
-
-        '''
-
-        self._occupancy_method = occupancy_method();
-        
-    def set_simulate_options(self, simulate_options):
-        '''Set the simulation options for the model.
-
-        Parameters
-        ----------
-        simulate_options : dictionary
-            Options for simulation of occupancy model.  Please see
-            documentation for specific occupancy model for more information.
-
-        '''
-
-        for key in self._occupancy_method.simulate_options.keys():
-            self._occupancy_method.simulate_options[key] = simulate_options[key];
-
-    def set_estimate_options(self, estimate_options):
-        '''Set the estimation options for the model.
-
-        Parameters
-        ----------
-        estimate_options : dictionary
-            Options for estimation of occupancy model parameters.  Please see
-            documentation for specific occupancy model for more information.
-
-        '''
-
-        for key in self._occupancy_method.estimate_options.keys():
-            self._occupancy_method.estimate_options[key] = estimate_options[key];
-
-    def get_simulate_options(self):
-        '''Get the simulation options for the model.
-
-        Returns
-        -------
-        simulate_options : dictionary
-            Options for simulation of occupancy model.  Please see
-            documentation for specific occupancy model for more information.
-
-        '''
-
-        return self._occupancy_method.simulate_options;
-            
-    def get_estimate_options(self):
-        '''Set the estimation options for the model.
-
-        Returns
-        -------
-        estimate_options : dictionary
-            Options for estimation of occupancy model parameters.  Please see
-            documentation for specific occupancy model for more information.
-
-        '''
-
-        return self._occupancy_method.estimate_options;
-        
-        
 #%% Parameter Method Interface
 class _ParameterEstimate(utility._mpcpyPandas):
     '''Interface for a model parameter estimation method.
@@ -1481,3 +830,655 @@ class QueueModel(_OccupancyMethod):
         self.data_train = df_interest['occ'].as_matrix();
         self.data_train = self.data_train.reshape((self.data_train.size/self.points_per_day, self.points_per_day));
     
+#%% Model Implementations
+class Modelica(_Model, utility._FMU, utility._Building):
+    '''Class for models of physical systems represented by Modelica or an FMU.
+
+    Parameters
+    ----------
+    parameter_estimate_method : parameter estimation method class from mpcpy.models
+        Method for performing the parameter estimation.
+    validate_method : validation method class from mpcpy.models
+        Method for performing the parameter validation.
+    measurements : dictionary
+        Measurement variables for the model.  Same as the measurements 
+        attribute from a ``systems`` class.  See documentation for ``systems`` 
+        for more information.
+    state_estimate_method : state estimation method class from mpcpy.models, optional
+        Method for performing the state estimation.
+        Default is models.UKFState
+    moinfo : tuple or list
+        Modelica information for the model.  See documentation for 
+        ``systems.EmulationFromFMU`` for more information.
+    zone_names : list, optional
+        List of zone name strings.
+    weather_data : dictionary, optional
+        ``exodata`` weather object data attribute.
+    internal_data : dictionary, optional
+        ``exodata`` internal object data attribute.
+    control_data : dictionary, optional
+        ``exodata`` control object data attribute.    
+    other_inputs : dictionary, optional
+        ``exodata`` other inputs object data attribute.    
+    parameter_data : dictionary, optional
+        ``exodata`` parameter object data attribute.
+    estimated_state_data : dictionary, optional
+        ``exodata`` estimated state object data attribute.
+    tz_name : string, optional
+        Name of timezone according to the package ``tzwhere``.  If 
+        ``'from_geography'``, then geography kwarg is required.
+    geography : list or tuple, optional
+        List or tuple with (latitude, longitude) in degrees.   
+    save_parameter_input_data: boolean
+        True to output the parameter and input data set for simulations and optimizations
+        Saved files are:
+        "mpcpy_simulation_parameters_model.csv"
+        "mpcpy_simulation_inputs_model.csv"
+        "mpcpy_simulation_parameters_optimization_initial.csv"
+        "mpcpy_simulation_inputs_optimization_initial.csv"
+        "mpcpy_optimization_parameters.csv"
+        "mpcpy_optimization_inputs.csv"
+        Times will be in UTC.
+        Default is False.
+
+    Attributes
+    ----------
+    measurements : dictionary
+        ``systems`` measurement object attribute.
+    fmu : pyfmi fmu object
+        FMU respresenting the emulated system.
+    fmupath : string
+        Path to the FMU file.
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
+    tz_name : string
+        Timezone name.
+
+    '''
+    
+    def __init__(self, parameter_estimate_method, validate_method, measurements, state_estimate_method=UKFState, save_parameter_input_data=False, **kwargs):
+        '''Constructor of a modelica or FMU model object.
+        
+        '''
+        
+        self.name = 'modelica';    
+        self.measurements = measurements;
+        self._create_fmu(kwargs);
+        self.input_names = self._get_input_names();                                       
+        self._parse_building_kwargs(kwargs);
+        self._parse_time_zone_kwargs(kwargs);
+        self._save_parameter_input_data = save_parameter_input_data
+        self._save_parameter_input_filename = 'model'
+        if 'estimated_state_data' in kwargs:
+            self.estimated_state_data = kwargs['estimated_state_data'];
+        else:
+            self.estimated_state_data = {};
+        # Check estimation method compatible with model
+        if parameter_estimate_method is JModelica:
+            if self.mopath is None:
+                raise ValueError('Must supply modelica file to use JModelica estimation method.  Cannot only use FMU.  If only looking to simulate the fmu, use systems.EmulationFromFMU object.')
+        self.set_parameter_estimate_method(parameter_estimate_method);
+        self.set_state_estimate_method(state_estimate_method);
+        self.set_validate_method(validate_method);
+        
+    def parameter_estimate(self, start_time, final_time, measurement_variable_list, global_start=0, seed=None, use_initial_values=True):
+        '''Estimate the parameters of the model.
+        
+        The estimation of the parameters is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute, 
+        the parameter_data dictionary attribute, and any exodata inputs.
+        
+        An optional global start algorithm where multiple estimations are 
+        preformed with different initial guesses within the ranges of each 
+        free parameter provided.  It is implemented as tested in 
+        Blum et al. (2019).  The algorithm uses latin hypercube sampling 
+        to choose the initial parameter guess values for each iteration and 
+        the iteration with the lowest estimation problem objective value is 
+        chosen.  A user-provided guess is included by default using initial
+        values given to parameter data of the model, though this option can be 
+        turned off to use only sampled initial guesses.
+        
+        Blum, D.H., Arendt, K., Rivalin, L., Piette, M.A., Wetter, M., and 
+        Veje, C.T. (2019). "Practical factors of envelope model setup and 
+        their effects on the performance of model predictive control for 
+        building heating, ventilating, and air conditioning systems." 
+        Applied Energy 236, 410-425. 
+        https://doi.org/10.1016/j.apenergy.2018.11.093
+        
+        Parameters
+        ----------
+        start_time : string
+            Start time of estimation period.
+            Setting to 'continue' will result in error.
+        final_time : string
+            Final time of estimation period.
+        measurement_variable_list : list
+            List of strings defining for which variables defined in the 
+            measurements dictionary attirubute the estimation will 
+            try to minimize the error.
+        global_start : int, optional
+            Number of iterations of a global start algorithm.
+            If 0, the global start algorithm is disabled and the values in
+            the parameter_data dictionary are used as initial guesses.
+            Default is 0.
+        seed : numeric or None, optional
+            Specific seed of the global start algorithm for the random selection
+            of initial value guesses.
+            Default is None.
+        use_initial_values : boolean, optional
+            True to include initial parameter values in the estimation iterations.
+            Default is True.
+
+        Yields
+        ------
+        Updates the ``'Value'`` key for each estimated parameter in the 
+        parameter_data attribute.
+
+        '''
+        
+        # Check for free parameters
+        free = False;
+        for key in self.parameter_data.keys():
+            if self.parameter_data[key]['Free'].get_base_data():
+                free = True;
+                break
+            else:
+                free = False;
+        if not free:
+            # If none free raise error
+            raise ValueError('No parameters set as "Free" in parameter_data dictionary. Cannot run parameter estimation.');
+        # Check for measurements
+        for meas in measurement_variable_list:
+            if meas not in self.measurements.keys():
+                raise ValueError('Measurement {0} defined in measurement_variable_list not defined in measurements dictionary.'.format(meas))
+        # Check for continue
+        if start_time == 'continue':
+            raise ValueError('"continue" is not a valid entry for start_time for parameter estimation problems.')
+        # Perform parameter estimation
+        self._set_time_interval(start_time, final_time);
+        self.measurement_variable_list = measurement_variable_list;
+        # Without global start
+        if not global_start:
+            self._parameter_estimate_method._estimate(self);
+        # With global start
+        else:
+            # Detect free parameters
+            free_pars = [];
+            for par in self.parameter_data.keys():
+                if self.parameter_data[par]['Free'].display_data():
+                    free_pars.append(par)
+            # Create lhs sample for all parameters
+            np.random.seed(seed)  # Random seed for LHS initialization
+            n_free_pars = len(free_pars);
+            lhs = doe.lhs(n_free_pars, samples=global_start, criterion='c');
+            # Scale and store lhs samples for parameters between min and max bounds
+            par_vals = dict();
+            for par, i in zip(free_pars, range(n_free_pars)):
+                par_min = self.parameter_data[par]['Minimum'].display_data();
+                par_max = self.parameter_data[par]['Maximum'].display_data();                                
+                par_vals[par] = (lhs[:,i]*(par_max-par_min)+par_min).tolist();
+                # Add initial value guesses if wanted
+                if use_initial_values:
+                    par_vals[par].append(self.parameter_data[par]['Value'].display_data())
+            # Estimate for each sample
+            J = float('inf');
+            par_best = dict();
+            glo_est_data = dict()
+            if use_initial_values:
+                iterations = range(global_start+1)
+            else:
+                iterations = range(global_start)
+            for i in iterations:
+                # Create dictionary to save all estimation iteration data
+                glo_est_data[i] = dict()
+                # Set lhs sample values for each parameter
+                for par in par_vals.keys():
+                    # Use latin hypercube selections
+                    self.parameter_data[par]['Value'].set_data(par_vals[par][i]);
+                    glo_est_data[i][par] = par_vals[par][i]
+                # Make estimate for iteration
+                self._parameter_estimate_method._estimate(self);
+                # Validate estimate for iteration
+                self.validate(start_time, final_time, 'validate', plot = 0);
+                # Save RMSE for initial_guess
+                for key in self.RMSE:
+                    glo_est_data[i]['RMSE_{0}'.format(key)] = self.RMSE[key].display_data();
+                # If solve succeeded, compare objective and if less, save best par values
+                solver_message = self._estimate_method.opt_problem.get_optimization_statistics()[0]
+                J_curr = self._estimate_method.opt_problem.get_optimization_statistics()[2]
+                glo_est_data[i]['Message'] = solver_message
+                glo_est_data[i]['J'] = J_curr
+                if ((J_curr < J) and (J_curr > 0.0)) or ((J_curr < J) and (solver_message == 'Solve_Succeeded')):
+                    J = J_curr;
+                    for par in free_pars:
+                        par_best[par] = self.parameter_data[par]['Value'].display_data();
+            # Save all estimates
+            glo_est_data['J_Best'] = J
+            self.glo_est_data = glo_est_data
+            # Set best parameters in model if found
+            if par_best:
+                for par in par_vals.keys():
+                    self.parameter_data[par]['Value'].set_data(par_best[par]);
+        
+    def state_estimate(self, start_time, final_time, measurement_variable_list):
+        '''Estimate the states of the model.
+        
+        The estimation of the states is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute, 
+        the estimated_state_data dictionary attribute, and any exodata inputs.
+        
+        Parameters
+        ----------
+        start_time : string
+            Start time of estimation period.
+            Setting to 'continue' will result in error.
+        final_time : string
+            Final time of estimation period.
+        measurement_variable_list : list
+            List of strings defining for which variables defined in the 
+            measurements dictionary attribute the estimation will use.
+
+        Yields
+        ------
+        Updates the ``'Value'`` key for each estimated state in the 
+        estimated_state_data attribute.
+
+        '''
+        
+        # Check for state estimate data
+        if not self.estimated_state_data:
+            raise ValueError('No state estimate data set with estimated_state_data dictionary. Cannot run state estimation.');
+        # Check for measurements
+        for meas in measurement_variable_list:
+            if meas not in self.measurements.keys():
+                raise ValueError('Measurement {0} defined in measurement_variable_list not defined in measurements dictionary.'.format(meas))
+        # Check for continue
+        if start_time == 'continue':
+            raise ValueError('"continue" is not a valid entry for start_time for state estimation problems.')
+        # Perform state estimation
+        self._set_time_interval(start_time, final_time);
+        self.measurement_variable_list = measurement_variable_list;
+        self._state_estimate_method._estimate(self);        
+        
+    def validate(self, start_time, final_time, validate_filename, plot = 1):
+        '''Validate the estimated parameters of the model.
+
+        The validation of the parameters is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute, 
+        the parameter_data dictionary attribute, and any exodata inputs.
+
+        Parameters
+        ----------
+        start_time : string
+            Start time of validation period.
+            Set to 'continue' in order to continue the model simulation
+            from the final time of the previous simulation, estimation, or 
+            validation.  Continuous states from simulation and validation are 
+            saved.  Exodata input objects must contain values for the 
+            continuation timestamp.  The measurements in a continued 
+            simulation replace previous values.  They do not append to a 
+            previous simulation's measurements.
+        final_time : string
+            Final time of validation period.
+        validate_filepath : string
+            File path without an extension for which to save validation 
+            results.  Extensions will be added depending on the file type 
+            (e.g. .png for figures, .txt for data).
+        plot : [0,1], optional
+            Plot flag for some validation or estimation methods.
+            Default = 1.
+
+        Yields
+        ------
+        Various results depending on the validation method.  Please check the
+        documentation for the validation method chosen.
+
+        '''
+
+        # Simulate model
+        self.simulate(start_time, final_time);
+        # Perform validation        
+        self._validate_method._validate(self, validate_filename, plot = plot);
+            
+    def simulate(self, start_time, final_time, ):
+        '''Simulate the model with current parameter estimates and any exodata 
+        inputs.
+
+        Parameters
+        ----------
+        start_time : string
+            Start time of validation period.
+            Set to 'continue' in order to continue the model simulation
+            from the final time of the previous simulation, estimation, or 
+            validation.  Continuous states from simulation and validation are 
+            saved.  Exodata input objects must contain values for the 
+            continuation timestamp.  The measurements in a continued 
+            simulation replace previous values.  They do not append to a 
+            previous simulation's measurements.
+        final_time : string
+            Final time of simulation period.  Must be greater than the
+            start time.
+
+        Yields
+        ------
+        Updates the ``'Simulated'`` key for each measurement in the 
+        measurements attribute.
+
+        '''
+        
+        self._set_time_interval(start_time, final_time);
+        self._simulate_fmu();
+        
+    def set_parameter_estimate_method(self, parameter_estimate_method):
+        '''Set the parameter estimation method for the model.
+
+        Parameters
+        ----------
+        estimate_method : estimation method class from mpcpy.models
+            Method for performing the parameter estimation.
+
+        '''
+
+        self._parameter_estimate_method = parameter_estimate_method(self);
+        
+    def set_validate_method(self, validate_method):
+        '''Set the validation method for the model.
+
+        Parameters
+        ----------
+        validate_method : validation method class from mpcpy.models
+            Method for performing the parameter validation.
+
+        '''
+
+        self._validate_method = validate_method(self);
+        
+    def set_state_estimate_method(self, state_estimate_method):
+        '''Set the state estimation method for the model.
+
+        Parameters
+        ----------
+        state_estimate_method : estimation method class from mpcpy.models
+            Method for performing the state estimation.
+
+        '''
+
+        self._state_estimate_method = state_estimate_method(self);  
+        
+    def get_global_estimate_data(self):
+        '''Get the estimation data if using the global estimation algorithm.
+        
+        Must have completed the estimation using the global algorithm.
+        
+        Returns
+        -------
+        glo_est_data : dictionary
+            Estimation data from each iteration of the global estimation
+            algorithm, including the training RMSE for each measurement
+            variable, initial guess for each parameter, returned objective 
+            value, returned solver status, and best objective value.
+        
+        '''
+        
+        glo_est_data = self.glo_est_data
+        
+        return glo_est_data
+        
+class Occupancy(_Model):
+    '''Class for models of occupancy.
+
+    Parameters
+    ----------
+    occupancy_method : occupancy method class from mpcpy.models
+    measurements : dictionary
+        Measurement variables for the model.  Same as the measurements 
+        attribute from a ``systems`` class.  See documentation for ``systems`` 
+        for more information.  This measurement dictionary should only have
+        one variable key, which represents occupancy count.
+    tz_name : string, optional
+        Name of timezone according to the package ``tzwhere``.  If 
+        ``'from_geography'``, then geography kwarg is required.
+    geography : list or tuple, optional
+        List or tuple with (latitude, longitude) in degrees.   
+
+    Attributes
+    ----------
+    measurements : dictionary
+        ``systems`` measurement object attribute.
+    parameter_data : dictionary
+        ``exodata`` parameter object data attribute.
+    lat : numeric
+        Latitude in degrees.  For timezone.
+    lon : numeric
+        Longitude in degrees.  For timezone.
+    tz_name : string
+        Timezone name.
+
+    '''
+
+    def __init__(self, occupancy_method, measurements, **kwargs):
+        '''Constructor of an occupancy model object.
+
+        '''
+
+        # Initialize variables and model method
+        self.name = 'occupancy';
+        self.measurements = measurements;
+        self.set_occupancy_method(occupancy_method);
+        self.parameters_data = {};
+        self._parse_time_zone_kwargs(kwargs);
+        
+    def estimate(self, start_time, final_time, **kwargs):
+        '''Estimate the parameters of the model using measurement data.
+        
+        The estimation of the parameters is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute of the 
+        model object.
+
+        Parameters
+        ----------
+        start_time : string
+            Start time of estimation period.
+        final_time : string
+            Final time of estimation period.
+        estimate_options : dictionary, optional
+            Use the ``get_estimate_options`` method to obtain and edit.
+
+        Yields
+        ------
+        parameter_data : dictionary
+            Updates the ``'Value'`` key for each estimated parameter in the 
+            parameter_data attribute.
+
+        '''
+
+        # Set the training time interval
+        self._set_time_interval(start_time, final_time);
+        # Set the estimation options
+        if 'estimate_options' in kwargs:
+            self.set_estimate_options(kwargs['estimate_options']);
+        # Perform estimation
+        self._occupancy_method._estimate(self);
+        
+    def validate(self, start_time, final_time, validate_filename, plot = 1):
+        '''Validate the estimated parameters of the model with measurement data.
+
+        The validation of the parameters is based on the data in the 
+        ``'Measured'`` key in the measurements dictionary attribute of the 
+        model object.
+        
+        Parameters
+        ----------
+        start_time : string
+            Start time of validation period.
+        final_time : string
+            Final time of validation period.
+        validate_filepath : string
+            File path without an extension for which to save validation 
+            results.  Extensions will be added depending on the file type 
+            (e.g. .png for figures, .txt for data).
+        plot : [0,1], optional
+            Plot flag for some validation or estimation methods.
+
+        Yields
+        ------
+        Various results depending on the validation method.  Please check the
+        documentation for the occupancy model chosen.
+
+        '''
+
+        # Set the name of all validation output files
+        self.validate_filename = validate_filename;
+        # Set the validation time interval
+        self._set_time_interval(start_time, final_time);
+        # Simulate the model using currently estimated parameters
+        self.simulate(start_time, final_time);
+        # Perform the validation against measured data
+        self._occupancy_method._validate(self, plot);
+        
+    def simulate(self, start_time, final_time, **kwargs):
+        '''Simulate the model with current parameter estimates.
+
+        Parameters
+        ----------
+        start_time : string
+            Start time of simulation period.
+        final_time : string
+            Final time of simulation period.
+        simulate_options : dictionary, optional
+            Use the ``get_simulate_options`` method to obtain and edit.
+
+        Yields
+        ------
+        measurements : dictionary
+            Updates the ``'Simulated'`` key for each measurement in the 
+            measurements attribute.  If available by the occupancy method, 
+            also updates the ``'SimulatedError'`` key for each measurement in
+            the measurements attribute.
+
+        '''
+        
+        # Set the simulation time interval
+        self._set_time_interval(start_time, final_time);
+        # Set the simulation options
+        if 'simulate_options' in kwargs:
+            self.set_simulate_options(kwargs['simulate_options']);
+        # Perform the simulation
+        self._occupancy_method._simulate(self);
+        
+    def get_load(self, load_per_person):
+        '''Get a load timeseries based on the predicted occupancy.
+
+        Parameters
+        ----------
+        load_per_person : mpcpy.variables.Static
+            Scaling factor of occupancy prediction to produce load timeseries.
+        
+        Returns
+        -------
+        load : mpcpy.variables.Timeseries
+            Load timeseries.
+
+        '''
+
+        # Get occupancy prediction
+        ts = self.measurements[self._occupancy_method.occ_key]['Simulated'].get_base_data();
+        # Multiply by load factor
+        ts_load = load_per_person*ts;
+        # Return timeseries
+        return ts_load;
+        
+    def get_constraint(self, occupied_value, unoccupied_value):
+        '''Get a constraint timeseries based on the predicted occupancy.
+
+        Parameters
+        ----------
+        occupied_value : mpcpy.variables.Static
+            Value of constraint during occupied times.
+        unoccupied_value : mpcpy.variables.Static
+            Value of constraint during unoccupied times.
+        
+        Returns
+        -------
+        constraint : mpcpy.variables.Timeseries
+            Constraint timeseries.
+
+        '''
+
+        # Get occupancy prediction
+        ts = self.measurements[self._occupancy_method.occ_key]['Simulated'].get_base_data();
+        # Determine when occupied
+        ts_occ = ts>=0.5;
+        # Apply occupied and unoccupied values
+        ts_occ_value = ts_occ.apply(lambda x: occupied_value if x == 1 else unoccupied_value);
+        # Return timeseries
+        return ts_occ_value;
+
+    def set_occupancy_method(self, occupancy_method):
+        '''Set the occupancy method for the model.
+
+        Parameters
+        ----------
+        occupancy_method : occupancy method class from mpcpy.models
+
+        '''
+
+        self._occupancy_method = occupancy_method();
+        
+    def set_simulate_options(self, simulate_options):
+        '''Set the simulation options for the model.
+
+        Parameters
+        ----------
+        simulate_options : dictionary
+            Options for simulation of occupancy model.  Please see
+            documentation for specific occupancy model for more information.
+
+        '''
+
+        for key in self._occupancy_method.simulate_options.keys():
+            self._occupancy_method.simulate_options[key] = simulate_options[key];
+
+    def set_estimate_options(self, estimate_options):
+        '''Set the estimation options for the model.
+
+        Parameters
+        ----------
+        estimate_options : dictionary
+            Options for estimation of occupancy model parameters.  Please see
+            documentation for specific occupancy model for more information.
+
+        '''
+
+        for key in self._occupancy_method.estimate_options.keys():
+            self._occupancy_method.estimate_options[key] = estimate_options[key];
+
+    def get_simulate_options(self):
+        '''Get the simulation options for the model.
+
+        Returns
+        -------
+        simulate_options : dictionary
+            Options for simulation of occupancy model.  Please see
+            documentation for specific occupancy model for more information.
+
+        '''
+
+        return self._occupancy_method.simulate_options;
+            
+    def get_estimate_options(self):
+        '''Set the estimation options for the model.
+
+        Returns
+        -------
+        estimate_options : dictionary
+            Options for estimation of occupancy model parameters.  Please see
+            documentation for specific occupancy model for more information.
+
+        '''
+
+        return self._occupancy_method.estimate_options;
+        
+        
