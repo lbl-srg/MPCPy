@@ -745,7 +745,10 @@ class StateEstimateFromUKF(TestCaseMPCPy):
         modelpath = 'Simple.R2C2';
         moinfo = (mopath, modelpath, {})
         # Gather state data
-        estimated_state_data = {'heatCapacitor2.T':{'Value':variables.Static('T_flo_init', 18, units.degC)}}
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
+        # Instantiate estimated state object
+        estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
+        estimated_states.collect_data()
         # Gather control inputs
         control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
         variable_map = {'q_flow_csv' : ('q_flow', units.W)};
@@ -759,12 +762,12 @@ class StateEstimateFromUKF(TestCaseMPCPy):
         system.collect_measurements(start_time, final_time);
         
         # Instantiate model
-        model = models.Modelica(models.UKF, \
+        model = models.Modelica(models.UKFParameter, \
                                      models.RMSE, \
                                      system.measurements, \
                                      models.UKFState, \
                                      moinfo = moinfo, \
-                                     estimated_state_data = estimated_state_data, \
+                                     estimated_state_data = estimated_states.data, \
                                      control_data = controls.data, \
                                      version = '1.0');
         # Estimate
@@ -829,7 +832,7 @@ class StateEstimateFromUKF(TestCaseMPCPy):
         parameter_data['d'] = {};
         parameter_data['d']['Value'] = variables.Static('d_value', 0.06112703, units.unit1);
         # Instantiate model
-        model = models.Modelica(models.UKF, 
+        model = models.Modelica(models.UKFParameter, 
                                 models.RMSE,
                                 measurements,
                                 models.UKFState,
