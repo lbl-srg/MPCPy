@@ -15,16 +15,21 @@ Classes
 =======
 
 .. autoclass:: mpcpy.models.Modelica
-    :members: estimate, validate, simulate, set_estimate_method, 
-              set_validate_method, display_measurements, 
+    :members: parameter_estimate, state_estimate, validate, simulate, set_parameter_estimate_method, 
+              set_state_estimate_method, set_validate_method, display_measurements, 
               get_base_measurements
 
-Estimate Methods
-================
+Parameter Estimate Methods
+==========================
 
 .. autoclass:: mpcpy.models.JModelica
 
-.. autoclass:: mpcpy.models.UKF
+.. autoclass:: mpcpy.models.UKFParameter
+
+State Estimate Methods
+======================
+
+.. autoclass:: mpcpy.models.UKFState
 
 Validate Methods
 ================
@@ -921,7 +926,7 @@ class JModelica(_ParameterEstimate):
         self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
         
 
-class UKF(_ParameterEstimate, utility._FMU):
+class UKFParameter(_ParameterEstimate, utility._FMU):
     '''Parameter estimation method using the Unscented Kalman Filter.
     
     This estimation method uses the UKF implementation EstimationPy-KA_, 
