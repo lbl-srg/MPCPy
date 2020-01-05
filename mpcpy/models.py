@@ -80,6 +80,7 @@ from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
 import pyDOE as doe
+import os
 
 #%% Model Class
 class _Model(utility._mpcpyPandas, utility._Measurements):
@@ -450,11 +451,28 @@ class UKFState(_StateEstimate, utility._FMU):
         self.name = 'UKF';
         # Check correct fmu version
         if Model.fmu_version != '1.0':
-            raise ValueError('Compiled fmu version is {0} and needs to be 1.0 for UKF state estimation method.'.format(Model.fmu_version));
+            if 'fmupath' in Model._kwargs:
+                raise ValueError('Precompiled fmu version is {0} and needs to be 1.0 for UKF state estimation method.'.format(Model.fmu_version));
+            else:
+                print('Compiling Modelica model into FMU 1.0 for use with UKF state estimation method.')
+                kwargs = Model._kwargs
+                kwargs['version'] = '1.0'
+                model_fmupath = os.path.splitext(Model.fmupath)[0]
+                # Rename model fmu
+                os.rename(Model.fmupath, model_fmupath+'_.fmu')
+                # Create new fmu which will have same path as original model fmu
+                self._create_fmu(kwargs)
+                # Rename new fmu
+                os.rename(self.fmupath, model_fmupath+'_v1.fmu')
+                # Change name of model fmu back
+                os.rename(model_fmupath+'_.fmu', Model.fmupath)
+                # Get new fmu path name
+                fmupath = model_fmupath+'_v1.fmu'
         else:
-            self.fmu_version = Model.fmu_version;
+            # Get fmu path name            
+            fmupath = Model.fmupath
         # Instantiate UKF model
-        self.model = ukf_model.Model(Model.fmupath);
+        self.model = ukf_model.Model(fmupath);
         
     def _estimate(self, Model):
         '''Perform UKF estimation.
@@ -905,6 +923,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         
         self.name = 'modelica';    
         self.measurements = measurements;
+        self._kwargs = kwargs
         self._create_fmu(kwargs);
         self.input_names = self._get_input_names();                                       
         self._parse_building_kwargs(kwargs);
