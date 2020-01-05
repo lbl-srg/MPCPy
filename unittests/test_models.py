@@ -107,7 +107,7 @@ class SimpleRC(TestCaseMPCPy):
                                      moinfo = (mopath, modelpath, {}), \
                                      parameter_data = parameter_data);
         # Estimate models
-        model.estimate(self.start_time, self.final_time, ['T_db'])
+        model.parameter_estimate(self.start_time, self.final_time, ['T_db'])
         # Check references
         data = [model.parameter_data['heatCapacitor.C']['Value'].display_data()]
         index = ['heatCapacitor.C']
@@ -142,7 +142,7 @@ class SimpleRC(TestCaseMPCPy):
                                      moinfo = (mopath, modelpath, {}), \
                                      parameter_data = parameter_data);
         # Estimate models
-        model.estimate(self.start_time, self.final_time, ['T_db'])
+        model.parameter_estimate(self.start_time, self.final_time, ['T_db'])
         # Check references
         data = [model.parameter_data['heatCapacitor.C']['Value'].display_data(),
                 model.parameter_data['thermalResistor.R']['Value'].display_data(),]
@@ -211,7 +211,7 @@ class SimpleRC(TestCaseMPCPy):
                                                moinfo = (mopath, modelpath, {}));
         # Check error raised with no parameters
         with self.assertRaises(ValueError):
-            model_no_params.estimate(self.start_time, self.final_time, []);
+            model_no_params.parameter_estimate(self.start_time, self.final_time, []);
         # Set parameters
         parameter_data = {};
         parameter_data['heatCapacitor.C'] = {};
@@ -227,7 +227,7 @@ class SimpleRC(TestCaseMPCPy):
                                                parameter_data = parameter_data);
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
-            model_no_params.estimate(self.start_time, self.final_time, []);
+            model_no_params.parameter_estimate(self.start_time, self.final_time, []);
 
     def test_estimate_error_nomeasurements(self):
         '''Test error raised if measurement_variable_list not in measurements dictionary.'''
@@ -249,7 +249,7 @@ class SimpleRC(TestCaseMPCPy):
                                                parameter_data = parameter_data);
         # Check error raised with no free parameters
         with self.assertRaises(ValueError):
-            model_no_meas.estimate(self.start_time, self.final_time, ['wrong_meas']);
+            model_no_meas.parameter_estimate(self.start_time, self.final_time, ['wrong_meas']);
             
     def test_instantiate_error_incompatible_estimation(self):
         '''Test error raised if estimation method is incompatible with model.'''
@@ -369,7 +369,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         df_test = self.model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_initial_parameters.csv');
         # Estimate model based on emulated data
-        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
+        self.model.parameter_estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         # Finish test
         self._finish_estimate_validate('')
 
@@ -385,7 +385,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         df_test = self.model.display_measurements('Simulated');
         self.check_df(df_test, 'simulate_initial_parameters.csv');
         # Estimate model based on emulated data
-        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
+        self.model.parameter_estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         # Validate model based on estimation data
         self.model.validate(self.start_time_estimation, self.final_time_estimation, \
                             os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation_csv'), plot=0)
@@ -418,7 +418,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         '''Test the estimation of a model's coefficients based on measured data using global start and user-defined initial value.'''
         plt.close('all');
         # Estimate model based on emulated data
-        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0, use_initial_values=True);
+        self.model.parameter_estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0, use_initial_values=True);
         # Finish test
         self._finish_estimate_validate('_global_start_winit')
         
@@ -426,7 +426,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         '''Test the estimation of a model's coefficients based on measured data using global start and no user-defined initial value.'''
         plt.close('all');
         # Estimate model based on emulated data
-        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0, use_initial_values=False);
+        self.model.parameter_estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0, use_initial_values=False);
         # Finish test
         self._finish_estimate_validate('_global_start_woinit')
         
@@ -434,12 +434,12 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         '''Test the estimation of a model's coefficients based on measured data using global start and maximum cpu time and iterations.'''
         plt.close('all');
         # Set maximum cpu time for JModelica
-        opt_options = self.model._estimate_method.opt_problem.get_optimization_options();
+        opt_options = self.model._parameter_estimate_method.opt_problem.get_optimization_options();
         opt_options['IPOPT_options']['max_cpu_time'] = 60;
         opt_options['IPOPT_options']['max_iter'] = 100;
-        self.model._estimate_method.opt_problem.set_optimization_options(opt_options);
+        self.model._parameter_estimate_method.opt_problem.set_optimization_options(opt_options);
         # Estimate model based on emulated data
-        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0, use_initial_values=True);
+        self.model.parameter_estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list, global_start=7, seed=0, use_initial_values=True);
         # Finish test
         self._finish_estimate_validate('_global_start_maxexceeded')
         
@@ -593,7 +593,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         df_test = pd.read_csv('mpcpy_simulation_parameters_model.csv', index_col='parameter');
         self.check_df(df_test, 'mpcpy_simulation_parameters_model.csv', timeseries=False);   
         # Estimate model based on emulated data
-        self.model.estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
+        self.model.parameter_estimate(self.start_time_estimation, self.final_time_estimation, self.measurement_variable_list);
         # Validate model based on estimation data
         self.model.validate(self.start_time_estimation, self.final_time_estimation, \
                             os.path.join(self.get_unittest_path(), 'outputs', 'model_estimation'), plot=0)
@@ -648,7 +648,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
                                      tz_name = self.weather.tz_name);
         # Error when estimate model
         with self.assertRaises(ValueError):
-            self.model.estimate(start_time_estimation, final_time_estimation, self.measurement_variable_list);
+            self.model.parameter_estimate(start_time_estimation, final_time_estimation, self.measurement_variable_list);
 
 #%%
 class EstimateFromUKF(TestCaseMPCPy):
@@ -699,7 +699,7 @@ class EstimateFromUKF(TestCaseMPCPy):
                                      control_data = self.controls.data, \
                                      version = '1.0');
         # Estimate
-        model.estimate(self.start_time, self.final_time, ['T_db']);
+        model.parameter_estimate(self.start_time, self.final_time, ['T_db']);
         # Validate
         model.validate(self.start_time, self.final_time, 'validate', plot = 0);
         # Check references

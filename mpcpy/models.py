@@ -437,6 +437,9 @@ class UKFState(_StateEstimate, utility._FMU):
     which is a fork of EstimationPy_ that allows for parameter estimation 
     without any state estimation.
     
+    For use with this estimation method, Modelica models are automatically 
+    compiled into FMU model exchange v1.0 for compatibility with EstimationPy.
+    
     .. _EstimationPy: https://github.com/lbl-srg/EstimationPy
     
     .. _EstimationPy-KA: https://github.com/krzysztofarendt/EstimationPy-KA
@@ -450,13 +453,13 @@ class UKFState(_StateEstimate, utility._FMU):
 
         self.name = 'UKF';
         # Check correct fmu version
-        if Model.fmu_version != '1.0':
+        if Model.fmu_version != '1.0' or Model.fmu_target != 'me':
             if 'fmupath' in Model._kwargs:
-                raise ValueError('Precompiled fmu version is {0} and needs to be 1.0 for UKF state estimation method.'.format(Model.fmu_version));
+                raise ValueError('Precompiled fmu version is {0} or target is {1} and needs to be 1.0 and model exchange for UKF state estimation method.'.format(Model.fmu_version, Model.fmu_target));
             else:
-                print('Compiling Modelica model into FMU 1.0 for use with UKF state estimation method.')
                 kwargs = Model._kwargs
                 kwargs['version'] = '1.0'
+                kwargs['target'] = 'me'
                 model_fmupath = os.path.splitext(Model.fmupath)[0]
                 # Rename model fmu
                 os.rename(Model.fmupath, model_fmupath+'_.fmu')
@@ -1065,8 +1068,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
                 for key in self.RMSE:
                     glo_est_data[i]['RMSE_{0}'.format(key)] = self.RMSE[key].display_data();
                 # If solve succeeded, compare objective and if less, save best par values
-                solver_message = self._estimate_method.opt_problem.get_optimization_statistics()[0]
-                J_curr = self._estimate_method.opt_problem.get_optimization_statistics()[2]
+                solver_message = self._parameter_estimate_method.opt_problem.get_optimization_statistics()[0]
+                J_curr = self._parameter_estimate_method.opt_problem.get_optimization_statistics()[2]
                 glo_est_data[i]['Message'] = solver_message
                 glo_est_data[i]['J'] = J_curr
                 if ((J_curr < J) and (J_curr > 0.0)) or ((J_curr < J) and (solver_message == 'Solve_Succeeded')):
@@ -1245,7 +1248,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
         
         return glo_est_data
         
-class Occupancy(_Model):
+class Occupancy(utility._mpcpyPandas, utility._Measurements):
     '''Class for models of occupancy.
 
     Parameters
