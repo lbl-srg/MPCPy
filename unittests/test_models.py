@@ -688,7 +688,7 @@ class EstimateFromUKF(TestCaseMPCPy):
         del self.parameters
         del self.measurements
 
-    def test_estimate_and_validate(self):
+    def _test_estimate_and_validate(self, fmu_ver):
         '''Test the estimation of a model's coefficients based on measured data.'''
         # Instantiate model
         model = models.Modelica(models.UKFParameter, \
@@ -697,7 +697,7 @@ class EstimateFromUKF(TestCaseMPCPy):
                                      moinfo = self.moinfo, \
                                      parameter_data = self.parameters.data, \
                                      control_data = self.controls.data, \
-                                     version = '1.0');
+                                     version = fmu_ver);
         # Estimate
         model.parameter_estimate(self.start_time, self.final_time, ['T_db']);
         # Validate
@@ -709,26 +709,19 @@ class EstimateFromUKF(TestCaseMPCPy):
             RMSE[key]['Value'] = model.RMSE[key].display_data();
         df_test = pd.DataFrame(data = RMSE);
         self.check_df(df_test, 'validate_RMSE.csv', timeseries=False);
+        
+    def test_estimate_and_validate_10(self):
+        self._test_estimate_and_validate(fmu_ver = '1.0')
+        
+    def test_estimate_and_validate_20(self):
+        self._test_estimate_and_validate(fmu_ver = '2.0')
 
-    def test_error_fmu_version(self):
-        '''Test error raised if wrong fmu version.'''
-        # Check error raised with wrong fmu version (2.0 instead of 1.0)
-        with self.assertRaises(ValueError):
-            # Instantiate model
-            model = models.Modelica(models.UKFParameter, \
-                                         models.RMSE, \
-                                         self.system.measurements, \
-                                         moinfo = self.moinfo, \
-                                         parameter_data = self.parameters.data, \
-                                         control_data = self.controls.data, \
-                                         version = '2.0');
-                                         
 class StateEstimateFromUKF(TestCaseMPCPy):
     '''Test the state estimation of a model using UKF.
 
     '''
 
-    def test_simple_estimate(self):
+    def _test_simple_estimate(self, fmu_ver):
         '''Test state estimation on a simple two-state model.
         
         '''
@@ -769,7 +762,7 @@ class StateEstimateFromUKF(TestCaseMPCPy):
                                      moinfo = moinfo, \
                                      estimated_state_data = estimated_states.data, \
                                      control_data = controls.data, \
-                                     version = '1.0');
+                                     version = fmu_ver);
         # Estimate
         model.state_estimate(start_time, final_time, ['T_db']);
         # Check references
@@ -784,6 +777,12 @@ class StateEstimateFromUKF(TestCaseMPCPy):
             plt.plot(df_test['heatCapacitor2.T_est'], 'o', label = 'T_flo_est')
             plt.legend()
             plt.show()
+            
+    def test_simple_estimate_10(self):
+        self._test_simple_estimate(fmu_ver='1.0')
+        
+    def test_simple_estimate_20(self):
+        self._test_simple_estimate(fmu_ver='2.0')
             
     def test_estimationpy_example(self):
         '''Validate state estimation with example from estimationpy package.
@@ -839,8 +838,7 @@ class StateEstimateFromUKF(TestCaseMPCPy):
                                 moinfo = moinfo,
                                 estimated_state_data = estimated_state_data,
                                 parameter_data = parameter_data,
-                                control_data = controls.data,
-                                version = '1.0')
+                                control_data = controls.data)
         # Estimate
         model.state_estimate(start_time, final_time, ['y']);
         # Check references

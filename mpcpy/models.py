@@ -295,11 +295,7 @@ class UKFParameter(_ParameterEstimate, utility._FMU):
         '''
 
         self.name = 'UKF';
-        # Check correct fmu version
-        if Model.fmu_version != '1.0':
-            raise ValueError('Compiled fmu version is {0} and needs to be 1.0 for UKF parameter estimation method.'.format(Model.fmu_version));
-        else:
-            self.fmu_version = Model.fmu_version;
+        self.fmu_version = Model.fmu_version;
         # Instantiate UKF model
         self.model = ukf_model.Model(Model.fmupath);
         
@@ -452,28 +448,8 @@ class UKFState(_StateEstimate, utility._FMU):
         '''
 
         self.name = 'UKF';
-        # Check correct fmu version
-        if Model.fmu_version != '1.0' or Model.fmu_target != 'me':
-            if 'fmupath' in Model._kwargs:
-                raise ValueError('Precompiled fmu version is {0} or target is {1} and needs to be 1.0 and model exchange for UKF state estimation method.'.format(Model.fmu_version, Model.fmu_target));
-            else:
-                kwargs = Model._kwargs
-                kwargs['version'] = '1.0'
-                kwargs['target'] = 'me'
-                model_fmupath = os.path.splitext(Model.fmupath)[0]
-                # Rename model fmu
-                os.rename(Model.fmupath, model_fmupath+'_.fmu')
-                # Create new fmu which will have same path as original model fmu
-                self._create_fmu(kwargs)
-                # Rename new fmu
-                os.rename(self.fmupath, model_fmupath+'_v1.fmu')
-                # Change name of model fmu back
-                os.rename(model_fmupath+'_.fmu', Model.fmupath)
-                # Get new fmu path name
-                fmupath = model_fmupath+'_v1.fmu'
-        else:
-            # Get fmu path name            
-            fmupath = Model.fmupath
+        # Get fmu path name            
+        fmupath = Model.fmupath
         # Instantiate UKF model
         self.model = ukf_model.Model(fmupath);
         
