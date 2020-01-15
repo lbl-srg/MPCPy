@@ -6,7 +6,11 @@ This is the development site for MPCPy, the python-based open-source platform fo
 MPCPy is a python package that facilitates the testing and implementation of occupant-integrated model predictive control (MPC) for building systems.  The package focuses on the use of data-driven, simplified physical or statistical models to predict building performance and optimize control.  Four main modules contain object classes to import data, interact with real or emulated systems, estimate and validate data-driven models, and optimize control input.
 
 ## Third Party Software
-While MPCPy provides an integration platform, it relies on free, open-source, third-party software packages for model implementation, simulators, parameter estimation algorithms, and optimization solvers.  This includes python packages for scripting and data manipulation as well as other more comprehensive software packages for specific purposes.  In particular, modeling and optimization for physical systems rely on the Modelica language specification (https://www.modelica.org/) and FMI standard (http://fmi-standard.org/) in order to leverage model library and tool development on these standards occurring elsewhere within the building and other industries.
+While MPCPy provides an integration platform, it relies on free, open-source, third-party software packages for model implementation, simulators, parameter estimation algorithms, and optimization solvers.  This includes python packages for scripting and data manipulation as well as other more comprehensive software packages for specific purposes.  
+
+In particular, modeling and optimization for physical systems currently relies on the Modelica language specification (https://www.modelica.org/) and FMI standard (http://fmi-standard.org/) in order to leverage model library and tool development on these standards occurring elsewhere within the building and other industries.
+
+A note to users:  Per https://jmodelica.org/, Modelon stopped supporting the open-source JModelica environment as of December 2019. MPCPy can still continue to work with the public open-source version for compilation and optimization of Modelica models. Alternative solutions are being explored for longer-term maintenance.
 
 ## Getting Started
 **Users** can [**download v0.1.0**](https://github.com/lbl-srg/MPCPy/releases/tag/v0.1.0).
