@@ -885,6 +885,67 @@ class StateEstimateFromUKF(TestCaseMPCPy):
         
         return csv_file_path_new
         
+class StateEstimateFromJModelica(TestCaseMPCPy):
+    '''Test the state estimation of a model using JModelica.
+
+    '''
+
+    def test_simple_estimate(self):
+        '''Test state estimation on a simple two-state model.
+        
+        '''
+        
+        start_time = '1/1/2017';
+        final_time = '1/1/2017 12:00:00';
+        plot = False
+        # Set measurements
+        measurements = {};
+        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        measurements['heatCapacitor2.T'] = {'Sample' : variables.Static('T_flo_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.R2C2';
+        moinfo = (mopath, modelpath, {})
+        # Gather state data
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
+        # Instantiate estimated state object
+        estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
+        estimated_states.collect_data()
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(start_time, final_time);
+        # Instantiate system
+        system = systems.EmulationFromFMU(measurements, \
+                                          moinfo = moinfo, \
+                                          control_data = controls.data);
+        # Get measurements
+        system.collect_measurements(start_time, final_time);
+        
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     system.measurements, \
+                                     models.JModelicaState, \
+                                     moinfo = moinfo, \
+                                     estimated_state_data = estimated_states.data, \
+                                     control_data = controls.data);
+        # Estimate
+        model.state_estimate(start_time, final_time, ['T_db']);
+        # Check references
+        df_test = system.display_measurements('Measured')
+        est = [x[0] for x in model._state_estimate_method.res_est[1]]
+        df_test['heatCapacitor2.T_est'] = est
+        self.check_df(df_test, 'estimate_and_validate.csv');
+        if plot:
+            plt.figure(1)
+            plt.plot(df_test['T_db'], '-', label='T_db_meas')
+            plt.plot(df_test['heatCapacitor2.T'], '-', label='T_flo_meas')
+            plt.plot(df_test['heatCapacitor2.T_est'], 'o', label = 'T_flo_est')
+            plt.legend()
+            plt.show()
+        
 
 #%% Occupancy tests
 class OccupancyFromQueueing(TestCaseMPCPy):
