@@ -29,6 +29,8 @@ Parameter Estimate Methods
 State Estimate Methods
 ======================
 
+.. autoclass:: mpcpy.models.JModelicaState
+
 .. autoclass:: mpcpy.models.UKFState
 
 Validate Methods
@@ -80,6 +82,7 @@ from estimationpy.fmu_utils import model as ukf_model
 from estimationpy.ukf.ukf_fmu import UkfFmu
 from estimationpy.fmu_utils import estimationpy_logging
 import pyDOE as doe
+import copy
 import os
 
 #%% Model Class
@@ -251,7 +254,7 @@ class _OccupancyMethod(utility._mpcpyPandas):
              
 #%% Parameter Estimate Method Interface Implementations
 class JModelica(_ParameterEstimate):
-    '''Estimation method using JModelica optimization.
+    '''Parameter Estimation method using JModelica optimization.
     
     This estimation method sets up a parameter estimation problem to be solved
     using JModelica_.
@@ -421,7 +424,87 @@ class UKFParameter(_ParameterEstimate, utility._FMU):
                 Model.parameter_data[key]['Value'].set_display_unit(unit);
                 Model.parameter_data[key]['Value'].set_data(data);
                 i = i + 1;
+
+class JModelicaState(_ParameterEstimate):
+    '''State Estimation method using JModelica optimization.
+    
+    This estimation method sets up a moving horizon state estimation problem 
+    to be solved using JModelica_.  The method uses a parameter estimation with
+    altered parameter data to estimate only initial states.
+    
+    .. _JModelica: http://jmodelica.org/
+
+    '''
+
+    def __init__(self, Model):
+        '''Constructor of JModelica estimation method.
+
+        '''
+
+        self.name = 'Jmo';       
+        # Replace parameter data for state estimation
+        self._replace_parameter_data(Model)
+        # Instantiate state estimation optimization problem
+        self.opt_problem = optimization.Optimization(Model, optimization._ParameterEstimate, optimization.JModelica, {});
+        # Restore original parameter data
+        self._restore_parameter_data(Model)
+        
+    def _estimate(self, Model):
+        '''Perform estimation using JModelica optimization.
+
+        '''
+
+        # Replace parameter data for state estimation
+        self._replace_parameter_data(Model)
+        # Solve problem, which updates parameter estimates
+        self.opt_problem.optimize(Model.start_time, Model.final_time, measurement_variable_list = Model.measurement_variable_list);
+        # Update estimated state data with updated parameter estimates
+        self._get_state_results(Model)
+        # Restore original parameter data
+        self._restore_parameter_data(Model)
                 
+    def _replace_parameter_data(self, Model):
+        '''Replaces the parameter_data in the Model for state estimation.
+        
+        '''
+        
+        # Save current parameter data definition
+        self.__parameter_data = copy.deepcopy(Model.parameter_data)
+        # Find all parameters that are state initializers
+        pars_state = []
+        for key in Model.estimated_state_data.keys():
+            pars_state.append(Model.estimated_state_data.keys['Parameter'])
+        # Set parameters of state initialization to free, all others not free
+        for key in Model.parameter_data.keys():
+            if key in pars_state:
+                Model.parameter_data[key]['Free'].set_data(True)
+            else:
+                Model.parameter_data[key]['Free'].set_data(False)
+                
+    def _restore_parameter_data(self, Model):
+        '''Restores the parameter_data in the Model for state estimation.
+        
+        '''
+        
+        Model.parameter_data = self.__parameter_data
+
+    def _get_state_results(self, Model):
+        '''Update the state data dictionary in the model with ukf results.
+        
+        '''
+        
+        i = 0;
+        for key in Model.estimated_state_data.keys():
+            fmu_variable_units = Model._get_fmu_variable_units();
+            unit = self._get_unit_class_from_fmu_variable_units(key, fmu_variable_units);
+            if not unit:
+                unit = units.unit1;
+            parameter_key = Model.estimated_state_data[key]['Parameter']
+            data = self.opt_problem.res_opt['mpc_model.' + parameter_key][-1];
+            Model.estimated_state_data[key]['Value'].set_display_unit(unit);
+            Model.estimated_state_data[key]['Value'].set_data(data);
+            i = i + 1;        
+
 class UKFState(_StateEstimate, utility._FMU):
     '''State estimation method using the Unscented Kalman Filter.
     
