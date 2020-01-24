@@ -652,6 +652,118 @@ class ParameterFromDF(TestCaseMPCPy):
         # Check reference
         df_test = self.parameters.display_data();
         self.check_df(df_test, 'collect_data.csv', timeseries=False);
+        
+#%% Estimated State Tests
+class EstimatedStateFromCSV(TestCaseMPCPy):
+    '''Test the collection of estimated state data from a CSV file.
+    
+    '''
+    
+    def setUp(self):
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'EstimatedStates.csv');
+        # Instantiate estimated state object
+        self.estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
+        # Get estimated state data
+        self.estimated_states.collect_data()
+        
+    def tearDown(self):
+        del self.estimated_states
+
+    def test_collect_data(self):
+        # Check reference
+        df_test = self.estimated_states.display_data();
+        self.check_df(df_test, 'collect_data.csv', timeseries=False);
+
+class EstimatedStateSet(TestCaseMPCPy):
+    '''Test setting estimated state data.
+    
+    '''
+    
+    def setUp(self):
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'EstimatedStates.csv');
+        # Instantiate estimated state object
+        self.estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
+        # Get estimated state data
+        self.estimated_states.collect_data()
+        
+    def tearDown(self):
+        del self.estimated_states
+        
+    def test_set_data_value(self):
+        # Set value only
+        self.estimated_states.set_data('heatCapacitor2.T', value=20.0)
+        df_test = self.estimated_states.display_data();
+        self.check_df(df_test, 'set_data_value.csv', timeseries=False);
+        
+    def test_set_data_name(self):
+        # Set name only
+        self.estimated_states.set_data('heatCapacitor2.T', new_name='heaCap2.T')
+        df_test = self.estimated_states.display_data();
+        self.check_df(df_test, 'set_data_name.csv', timeseries=False);
+        
+    def test_set_data_all(self):
+        # Set all data
+        self.estimated_states.set_data('heatCapacitor2.T', 
+                                 value=20.0,
+                                 new_name='heaCap2.T')
+        df_test = self.estimated_states.display_data();
+        self.check_df(df_test, 'set_data_all.csv', timeseries=False);
+        
+    def test_set_data_keyerror(self):
+        # Key doesn't exist
+        with self.assertRaises(KeyError): 
+            self.estimated_states.set_data('heaCap2.T', value=20.0)
+            
+class EstimatedStateAppend(TestCaseMPCPy):
+    '''Test appending estimated state data.
+    
+    '''
+    
+    def setUp(self):
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'EstimatedStates.csv');
+        # Instantiate estimated state object
+        self.estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
+        # Get estimated state data
+        self.estimated_states.collect_data()
+        
+    def tearDown(self):
+        del self.estimated_states
+        
+    def test_set_data_all(self):
+        # Set all data
+        self.estimated_states.append_data('heaCap2.T', 
+                                    value=20.0,
+                                    unit=units.degC)
+        df_test = self.estimated_states.display_data();
+        self.check_df(df_test, 'append_data.csv', timeseries=False);
+        
+    def test_set_data_keyerror(self):
+        # Key already exists
+        with self.assertRaises(KeyError): 
+            self.estimated_states.append_data('heatCapacitor2.T', 
+                                        value=20.0,
+                                        unit=units.degC)
+
+class EstimatedStateFromDF(TestCaseMPCPy):
+    '''Test the collection of estimated state data from a pandas DataFrame object.
+    
+    '''
+    
+    def setUp(self):
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'EstimatedStates.csv');
+        df = pd.read_csv(csv_filepath, index_col = 'Name')
+        # Instantiate estimated state object
+        self.estimated_states = exodata.EstimatedStateFromDF(df);
+        
+    def tearDown(self):
+        del self.estimated_states
+
+    def test_collect_data(self):
+        # Get estimated state data
+        self.estimated_states.collect_data();
+        # Check reference
+        df_test = self.estimated_states.display_data();
+        self.check_df(df_test, 'collect_data.csv', timeseries=False);
 
 #%% Constraint Tests
 class ConstraintFromCSV(TestCaseMPCPy):

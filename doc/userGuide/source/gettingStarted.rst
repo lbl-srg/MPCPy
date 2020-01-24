@@ -60,9 +60,9 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
             export MODELICAPATH="$JMODELICA_HOME/ThirdParty/MSL"
 
-6. Download or Clone EstimationPy-KA
+6. Download or Clone EstimationPy
 
-    - go to https://github.com/krzysztofarendt/EstimationPy-KA and clone or download repository into a directory (let's call it ``.../EstimationPy-KA``).
+    - go to https://github.com/lbl-srg/EstimationPy and clone or download repository into a directory (let's call it ``.../EstimationPy``).
 
 7. Download or Clone MPCPy
 
@@ -76,7 +76,7 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
         
             export PYTHONPATH=$PYTHONPATH:"$JMODELICA_HOME/Python"
             export PYTHONPATH=$PYTHONPATH:"$JMODELICA_HOME/Python/pymodelica"
-            export PYTHONPATH=$PYTHONPATH:".../EstimationPy-KA"
+            export PYTHONPATH=$PYTHONPATH:".../EstimationPy"
             export PYTHONPATH=$PYTHONPATH:".../MPCPy"
 
 9. Test the installation

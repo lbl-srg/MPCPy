@@ -331,7 +331,7 @@ and measured data.  In this case, we only have one, ``'Tzone'``.  The
 ``estimate()`` function updates the Value field for the parameter data in 
 the model.  
 
->>> model.estimate('1/1/2017', '1/2/2017', ['Tzone']) # doctest: +ELLIPSIS
+>>> model.parameter_estimate('1/1/2017', '1/2/2017', ['Tzone']) # doctest: +ELLIPSIS
 -etc-
 
 Let's validate the estimation on the training period.  The ``validate()``
