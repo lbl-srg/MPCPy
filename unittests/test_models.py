@@ -859,6 +859,21 @@ class StateEstimateFromUKF(TestCaseMPCPy):
             plt.legend()
             plt.show()
         os.remove(csv_file_path_new)
+        
+    def test_instantiate_error_incompatible_estimation(self):
+        '''Check that the correct FMU model is supplied for UKF state estimation'''
+
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.R2C2';
+        moinfo = (mopath, modelpath, {})
+        with self.assertRaises(ValueError):
+            model = models.Modelica(models.UKFParameter, \
+                                         models.RMSE, \
+                                         {}, \
+                                         models.UKFState, \
+                                         moinfo = moinfo, \
+                                         target = 'cs');        
             
     def get_estimationpy_dir(self):
         '''Return the path of estimationpy on the PYTHONPATH'''
