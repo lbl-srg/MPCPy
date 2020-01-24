@@ -822,9 +822,12 @@ class _EstimatedState(_Type):
         for key in self.data.keys():
             d[key] = {};
             for subkey in self.data[key].keys():
-                d[key][subkey] = self.data[key][subkey].display_data();
-                if subkey == 'Value':
-                    d[key]['Unit'] = self.data[key][subkey].get_display_unit_name();
+                if subkey == 'Parameter':
+                    d[key]['Parameter'] = self.data[key][subkey]
+                else:
+                    d[key][subkey] = self.data[key][subkey].display_data();
+                    if subkey == 'Value':
+                        d[key]['Unit'] = self.data[key][subkey].get_display_unit_name();
         df = pd.DataFrame(data = d).transpose();
         df.index.name = 'Name';
         
@@ -845,7 +848,10 @@ class _EstimatedState(_Type):
         for key in self.data.keys():
             d[key] = {};
             for subkey in self.data[key].keys():
-                d[key][subkey] = self.data[key][subkey].get_base_data();
+                if subkey == 'Parameter':
+                    d[key]['Parameter'] = self.data[key][subkey]
+                else:
+                    d[key][subkey] = self.data[key][subkey].get_base_data();
         df = pd.DataFrame(data = d);
         
         return df;    
@@ -1878,7 +1884,8 @@ class EstimatedStateFromCSV(_EstimatedState, utility._DAQ):
         for key in df.index.values:
             self.data[key] = {};
             unit = utility.get_unit_class_from_unit_string(df.loc[key, 'Unit']);
-            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
+            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);  
+            self.data[key]['Parameter'] = df.loc[key, 'Parameter']            
 
 class EstimatedStateFromDF(_EstimatedState, utility._DAQ):
     '''Collects estimated state data from a pandas DataFrame object. 
@@ -1923,7 +1930,8 @@ class EstimatedStateFromDF(_EstimatedState, utility._DAQ):
         for key in df.index.values:
             self.data[key] = {};
             unit = utility.get_unit_class_from_unit_string(df.loc[key, 'Unit']);
-            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);     
+            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);
+            self.data[key]['Parameter'] = df.loc[key, 'Parameter']
             
 #%% Constraint source implementations
 class ConstraintFromCSV(_Constraint, utility._DAQ):
