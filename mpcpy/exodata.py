@@ -856,7 +856,7 @@ class _EstimatedState(_Type):
         
         return df;    
         
-    def set_data(self, name, value=None, new_name=None):
+    def set_data(self, name, value=None, new_name=None, parameter=None):
         '''Set new data for existing estimated state.
         
         All data must be in display units of estimated state.
@@ -872,6 +872,9 @@ class _EstimatedState(_Type):
         new_name : str, optional
             Set a new name for the estimated state.
             Default is None.
+        parameter : str, optional
+            Name of parameter representing intial value of estimated state.
+            Default is None.
             
         '''
         
@@ -882,10 +885,12 @@ class _EstimatedState(_Type):
         else:
             if value is not None:
                 self.data[name]['Value'].set_data(value)
+            if parameter is not None:
+                self.data[name]['Parameter'] = parameter
             if new_name is not None:
                 self.data[new_name] = self.data.pop(name)
 
-    def append_data(self, name, value, unit):                
+    def append_data(self, name, value, unit, parameter):                
         '''Append a new estimated state to existing estimated states.
 
         Parameters
@@ -896,6 +901,8 @@ class _EstimatedState(_Type):
             Value for the estimated state.
         unit : mpcpy Units object
             Unit of estimated state.
+        parameter : str
+            Name of parameter representing intial value of estimated state.
             
         '''
         
@@ -906,6 +913,7 @@ class _EstimatedState(_Type):
         else:
             self.data[name] = dict()
             self.data[name]['Value'] = variables.Static(name+'_val', value, unit)
+            self.data[name]['Parameter'] = parameter
 
 ## Constraints       
 class _Constraint(_Type):

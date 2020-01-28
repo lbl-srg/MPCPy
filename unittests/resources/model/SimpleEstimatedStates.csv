@@ -1,2 +1,2 @@
-Name,Value,Unit
-heatCapacitor2.T,18,degC
+Name,Value,Unit,Parameter
+heatCapacitor2.T,18,degC,T2o
