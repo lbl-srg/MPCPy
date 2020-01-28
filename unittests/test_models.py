@@ -912,7 +912,7 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
         
         start_time = '1/1/2017';
         final_time = '1/1/2017 12:00:00';
-        plot = True
+        plot = False
         # Set measurements
         measurements = {};
         measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
