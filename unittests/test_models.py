@@ -912,7 +912,7 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
         
         start_time = '1/1/2017';
         final_time = '1/1/2017 12:00:00';
-        plot = False
+        plot = True
         # Set measurements
         measurements = {};
         measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
@@ -921,6 +921,13 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.R2C2';
         moinfo = (mopath, modelpath, {})
+        # Define parameters
+        parameter_data = {};
+        parameter_data['T2o'] = {};
+        parameter_data['T2o']['Value'] = variables.Static('T2o_Value', 295, units.K);
+        parameter_data['T2o']['Minimum'] = variables.Static('T2o_Min', 273.15, units.K);
+        parameter_data['T2o']['Maximum'] = variables.Static('T2o_Max', 350, units.K);
+        parameter_data['T2o']['Free'] = variables.Static('T2o_Free', False, units.boolean);
         # Gather state data
         csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
         # Instantiate estimated state object
@@ -944,20 +951,26 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
                                      system.measurements, \
                                      models.JModelicaState, \
                                      moinfo = moinfo, \
+                                     parameter_data = parameter_data, \
                                      estimated_state_data = estimated_states.data, \
                                      control_data = controls.data);
+        # Simulate initial guess
+        model.simulate(start_time, final_time)
+        df_init = model.display_measurements('Simulated')
         # Estimate
         model.state_estimate(start_time, final_time, ['T_db']);
         # Check references
         df_test = system.display_measurements('Measured')
-        est = [x[0] for x in model._state_estimate_method.res_est[1]]
-        df_test['heatCapacitor2.T_est'] = est
+        est_value = estimated_states.display_data().loc['heatCapacitor2.T','Value']
+        df_test['heatCapacitor2.T_est_init'] = df_init['heatCapacitor2.T']
+        df_test['heatCapacitor2.T_est_value'] = est_value
         self.check_df(df_test, 'estimate_and_validate.csv');
         if plot:
             plt.figure(1)
             plt.plot(df_test['T_db'], '-', label='T_db_meas')
             plt.plot(df_test['heatCapacitor2.T'], '-', label='T_flo_meas')
-            plt.plot(df_test['heatCapacitor2.T_est'], 'o', label = 'T_flo_est')
+            plt.plot(df_test['heatCapacitor2.T_est_init'], '-', label = 'T_flo_est_init')
+            plt.plot(df_test['heatCapacitor2.T_est_value'], '--', label = 'T_flo_est_value')
             plt.legend()
             plt.show()
         

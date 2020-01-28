@@ -473,7 +473,7 @@ class JModelicaState(_ParameterEstimate):
         # Find all parameters that are state initializers
         pars_state = []
         for key in Model.estimated_state_data.keys():
-            pars_state.append(Model.estimated_state_data.keys['Parameter'])
+            pars_state.append(Model.estimated_state_data[key]['Parameter'])
         # Set parameters of state initialization to free, all others not free
         for key in Model.parameter_data.keys():
             if key in pars_state:
@@ -496,11 +496,10 @@ class JModelicaState(_ParameterEstimate):
         i = 0;
         for key in Model.estimated_state_data.keys():
             fmu_variable_units = Model._get_fmu_variable_units();
-            unit = self._get_unit_class_from_fmu_variable_units(key, fmu_variable_units);
+            unit = Model._get_unit_class_from_fmu_variable_units(key, fmu_variable_units);
             if not unit:
                 unit = units.unit1;
-            parameter_key = Model.estimated_state_data[key]['Parameter']
-            data = self.opt_problem.res_opt['mpc_model.' + parameter_key][-1];
+            data = self.opt_problem._package_type.res_opt['mpc_model.' + key][-1];
             Model.estimated_state_data[key]['Value'].set_display_unit(unit);
             Model.estimated_state_data[key]['Value'].set_data(data);
             i = i + 1;        
