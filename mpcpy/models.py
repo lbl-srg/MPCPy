@@ -967,7 +967,7 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
     '''
     
-    def __init__(self, parameter_estimate_method, validate_method, measurements, state_estimate_method=UKFState, save_parameter_input_data=False, **kwargs):
+    def __init__(self, parameter_estimate_method, validate_method, measurements, state_estimate_method=None, save_parameter_input_data=False, **kwargs):
         '''Constructor of a modelica or FMU model object.
         
         '''
@@ -985,10 +985,14 @@ class Modelica(_Model, utility._FMU, utility._Building):
             self.estimated_state_data = kwargs['estimated_state_data'];
         else:
             self.estimated_state_data = {};
-        # Check estimation method compatible with model
+        # Check parameter estimation method compatible with model
         if parameter_estimate_method is JModelica:
             if self.mopath is None:
                 raise ValueError('Must supply modelica file to use JModelica estimation method.  Cannot only use FMU.  If only looking to simulate the fmu, use systems.EmulationFromFMU object.')
+        # Check state estimation method compatible with model
+        if state_estimate_method is UKFState:
+            if self.fmu_target is not 'me':
+                raise ValueError('Must supply model-exchange FMU to use UKFState estimation method.')
         self.set_parameter_estimate_method(parameter_estimate_method);
         self.set_state_estimate_method(state_estimate_method);
         self.set_validate_method(validate_method);
@@ -1275,7 +1279,10 @@ class Modelica(_Model, utility._FMU, utility._Building):
 
         '''
 
-        self._state_estimate_method = state_estimate_method(self);  
+        if state_estimate_method:
+            self._state_estimate_method = state_estimate_method(self);
+        else:
+            self._state_estimate_method = None
         
     def get_global_estimate_data(self):
         '''Get the estimation data if using the global estimation algorithm.
