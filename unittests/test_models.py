@@ -1046,6 +1046,13 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
         df_test_pars = parameters.display_data()
         self.check_df(df_test_pars, 'model_parameters_check.csv', timeseries=False);
         
+    def test_instantiate_error_incompatible_estimation(self):
+        '''Test error raised if estimation method is incompatible with model.'''
+        # Set model path
+        fmupath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
+        with self.assertRaises(ValueError):
+            model = models.Modelica(models.JModelicaParameter, models.RMSE, {}, models.JModelicaState, fmupath=fmupath);
+        
 
 #%% Occupancy tests
 class OccupancyFromQueueing(TestCaseMPCPy):

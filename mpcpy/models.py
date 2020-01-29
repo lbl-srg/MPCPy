@@ -1000,9 +1000,9 @@ class Modelica(_Model, utility._FMU, utility._Building):
         else:
             self.estimated_state_data = {};
         # Check parameter estimation method compatible with model
-        if parameter_estimate_method is JModelica:
+        if (parameter_estimate_method is JModelicaParameter) or (state_estimate_method is JModelicaState) :
             if self.mopath is None:
-                raise ValueError('Must supply modelica file to use JModelica estimation method.  Cannot only use FMU.  If only looking to simulate the fmu, use systems.EmulationFromFMU object.')
+                raise ValueError('Must supply modelica file to use JModelica estimation methods.  Cannot only use FMU.  If only looking to simulate the fmu, use systems.EmulationFromFMU object.')
         # Check state estimation method compatible with model
         if state_estimate_method is UKFState:
             if self.fmu_target is not 'me':
