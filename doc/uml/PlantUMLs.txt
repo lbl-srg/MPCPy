@@ -85,8 +85,9 @@ Modelica *-- StateEstimate
 Modelica *-- Validate
 
 Validate <|-- RMSE
-ParameterEstimate <|-- JModelica
+ParameterEstimate <|-- JModelicaParameter
 ParameterEstimate <|-- UKFParameter
+StateEstimate <|-- JModelicaState
 StateEstimate <|-- UKFState
 
 Occupancy *-- OccupancyMethod

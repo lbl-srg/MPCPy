@@ -62,7 +62,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.RC';        
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -127,7 +127,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         parameter_data['heatCapacitor.C'] = {};
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
         parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 3e6, units.boolean);
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -173,7 +173,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         self.constraints.collect_data(self.start_time_exo, self.final_time_exo);
         modelpath = 'Simple.RC';
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -206,7 +206,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         parameter_data['heatCapacitor.C'] = {};
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
         parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 3e6, units.boolean);
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -247,7 +247,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         parameter_data['heatCapacitor.C'] = {};
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
         parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 3e6, units.boolean);
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -272,7 +272,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.SubPackage.RC';     
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -296,7 +296,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.RC';        
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -320,7 +320,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.RC';
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -356,7 +356,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.RC';        
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -382,7 +382,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.RC';
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -413,7 +413,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
                                                'Value' : variables.Static('C_new', 1e5, units.J_K)}, \
                           'To' : {'Free' : variables.Static('To_free', False, units.boolean), \
                                   'Value' : variables.Static('To', 24, units.degC)}};
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -447,7 +447,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.RC_nostart';        
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -478,7 +478,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         '''
         modelpath = 'Simple.RC_nostart';        
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -500,7 +500,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.RC';
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -527,7 +527,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         
         modelpath = 'Simple.RC';        
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -579,7 +579,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         self.controls = exodata.ControlFromCSV(control_csv_filepath, control_variable_map);
         self.controls.collect_data(start_time_exo, final_time_exo);
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
@@ -627,7 +627,7 @@ class EnergyPlusDemand(TestCaseMPCPy):
         parameter_data['heatCapacitor.C'] = {};
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
         parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 1e6, units.boolean);
-        self.model = models.Modelica(models.JModelica, \
+        self.model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      measurements, \
                                      moinfo = (mopath, modelpath, {}), \
@@ -774,7 +774,7 @@ class OptimizeAdvancedFromJModelica(TestCaseMPCPy):
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
         modelpath = 'LBNL71T_MPC.MPC';
         libraries = os.environ.get('MODELICAPATH');
-        estimate_method = models.JModelica; 
+        estimate_method = models.JModelicaParameter; 
         validation_method = models.RMSE;
         zone_names = ['wes', 'hal', 'eas'];                   
         # Measurements

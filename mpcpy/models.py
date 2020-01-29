@@ -22,7 +22,7 @@ Classes
 Parameter Estimate Methods
 ==========================
 
-.. autoclass:: mpcpy.models.JModelica
+.. autoclass:: mpcpy.models.JModelicaParameter
 
 .. autoclass:: mpcpy.models.UKFParameter
 
@@ -253,7 +253,7 @@ class _OccupancyMethod(utility._mpcpyPandas):
         pass            
              
 #%% Parameter Estimate Method Interface Implementations
-class JModelica(_ParameterEstimate):
+class JModelicaParameter(_ParameterEstimate):
     '''Parameter Estimation method using JModelica optimization.
     
     This estimation method sets up a parameter estimation problem to be solved
