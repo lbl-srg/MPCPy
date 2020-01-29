@@ -428,9 +428,14 @@ class UKFParameter(_ParameterEstimate, utility._FMU):
 class JModelicaState(_ParameterEstimate):
     '''State Estimation method using JModelica optimization.
     
-    This estimation method sets up a moving horizon state estimation problem 
+    This estimation method sets up a simple moving horizon state estimation problem 
     to be solved using JModelica_.  The method uses a parameter estimation with
-    altered parameter data to estimate only initial states.
+    altered parameter data to estimate only initial states.  Given a time
+    period of observed state data, the method sets up and solves an optimization
+    problem to find the optimal values of the estimated states at the initial
+    time of the time period that minimizes the error between the measured
+    observed states and modeled observed states.  Then, the final value of
+    the estimated states are taken as the current state estimates.
     
     .. _JModelica: http://jmodelica.org/
 
@@ -468,25 +473,35 @@ class JModelicaState(_ParameterEstimate):
         
         '''
         
-        # Save current parameter data definition
-        self.__parameter_data = copy.deepcopy(Model.parameter_data)
         # Find all parameters that are state initializers
         pars_state = []
         for key in Model.estimated_state_data.keys():
             pars_state.append(Model.estimated_state_data[key]['Parameter'])
         # Set parameters of state initialization to free, all others not free
+        # Keep track of which parameters were changed so that can change back
+        self.__change_false_to_true = []
+        self.__change_true_to_false = []
         for key in Model.parameter_data.keys():
             if key in pars_state:
-                Model.parameter_data[key]['Free'].set_data(True)
+                if not Model.parameter_data[key]['Free'].display_data():    
+                    Model.parameter_data[key]['Free'].set_data(True)
+                    self.__change_false_to_true.append(key)
             else:
-                Model.parameter_data[key]['Free'].set_data(False)
+                if Model.parameter_data[key]['Free'].display_data():
+                    Model.parameter_data[key]['Free'].set_data(False)
+                    self.__change_true_to_false.append(key)
                 
     def _restore_parameter_data(self, Model):
         '''Restores the parameter_data in the Model for state estimation.
         
         '''
         
-        Model.parameter_data = self.__parameter_data
+        # Change back to how parameters were originally defined
+        for key in Model.parameter_data.keys():
+            if key in self.__change_false_to_true:
+                Model.parameter_data[key]['Free'].set_data(False)
+            if key in self.__change_true_to_false:
+                Model.parameter_data[key]['Free'].set_data(True)
 
     def _get_state_results(self, Model):
         '''Update the state data dictionary in the model with ukf results.
@@ -1157,6 +1172,11 @@ class Modelica(_Model, utility._FMU, utility._Building):
         ------
         Updates the ``'Value'`` key for each estimated state in the 
         estimated_state_data attribute.
+        
+        In the case of using the JModelicaState state estimation method, which
+        implements a moving horizon state estimator, the ``'Value'`` key for 
+        each parameter corresponding to an estimated state in the 
+        parameter_data attribute is also updated with the optimal result.
 
         '''
         

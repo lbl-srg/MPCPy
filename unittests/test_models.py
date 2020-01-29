@@ -922,12 +922,22 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
         modelpath = 'Simple.R2C2';
         moinfo = (mopath, modelpath, {})
         # Define parameters
-        parameter_data = {};
-        parameter_data['T2o'] = {};
-        parameter_data['T2o']['Value'] = variables.Static('T2o_Value', 295, units.K);
-        parameter_data['T2o']['Minimum'] = variables.Static('T2o_Min', 273.15, units.K);
-        parameter_data['T2o']['Maximum'] = variables.Static('T2o_Max', 350, units.K);
-        parameter_data['T2o']['Free'] = variables.Static('T2o_Free', False, units.boolean);
+        parameter = {};
+        parameter['T2o'] = {};
+        parameter['T2o']['Value'] = 295
+        parameter['T2o']['Minimum'] = 273.15
+        parameter['T2o']['Maximum'] = 350
+        parameter['T2o']['Free'] = False
+        parameter['T2o']['Unit'] = 'K'
+        parameter['To'] = {};
+        parameter['To']['Value'] = 295
+        parameter['To']['Minimum'] = 273.15
+        parameter['To']['Maximum'] = 350
+        parameter['To']['Free'] = False
+        parameter['To']['Unit'] = 'K'
+        df_parameter = pd.DataFrame(parameter).transpose()
+        parameters = exodata.ParameterFromDF(df_parameter)
+        parameters.collect_data()
         # Gather state data
         csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
         # Instantiate estimated state object
@@ -951,7 +961,7 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
                                      system.measurements, \
                                      models.JModelicaState, \
                                      moinfo = moinfo, \
-                                     parameter_data = parameter_data, \
+                                     parameter_data = parameters.data, \
                                      estimated_state_data = estimated_states.data, \
                                      control_data = controls.data);
         # Simulate initial guess
@@ -959,20 +969,82 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
         df_init = model.display_measurements('Simulated')
         # Estimate
         model.state_estimate(start_time, final_time, ['T_db']);
+        # Simulate with updated initial value
+        model.simulate(start_time, final_time)
         # Check references
         df_test = system.display_measurements('Measured')
         est_value = estimated_states.display_data().loc['heatCapacitor2.T','Value']
+        est = model.display_measurements('Simulated')['heatCapacitor2.T']
         df_test['heatCapacitor2.T_est_init'] = df_init['heatCapacitor2.T']
         df_test['heatCapacitor2.T_est_value'] = est_value
+        df_test['heatCapacitor2.T_est'] = est
         self.check_df(df_test, 'estimate_and_validate.csv');
+        # Check parameters
+        df_test_pars = parameters.display_data()
+        self.check_df(df_test_pars, 'model_parameters_estimated.csv', timeseries=False);
+        # Plot
         if plot:
             plt.figure(1)
             plt.plot(df_test['T_db'], '-', label='T_db_meas')
             plt.plot(df_test['heatCapacitor2.T'], '-', label='T_flo_meas')
-            plt.plot(df_test['heatCapacitor2.T_est_init'], '-', label = 'T_flo_est_init')
-            plt.plot(df_test['heatCapacitor2.T_est_value'], '--', label = 'T_flo_est_value')
+            plt.plot(df_test['heatCapacitor2.T_est_init'], '--', label = 'T_flo_est_init')
+            plt.plot(df_test['heatCapacitor2.T_est'], '--', label = 'T_flo_est')
+            plt.plot(df_test['heatCapacitor2.T_est_value'].index[-1], est_value, 'o', label = 'T_flo_est_value')
             plt.legend()
             plt.show()
+            
+    def test_replace_parameters(self):
+        '''Test the functions that replace the parameters for state estimation.
+        
+        '''
+
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.R2C2';
+        moinfo = (mopath, modelpath, {})
+        # Define parameters
+        parameter = {};
+        parameter['T2o'] = {};
+        parameter['T2o']['Value'] = 295
+        parameter['T2o']['Minimum'] = 273.15
+        parameter['T2o']['Maximum'] = 350
+        parameter['T2o']['Free'] = False
+        parameter['T2o']['Unit'] = 'K'
+        parameter['T2o']['Covariance'] = 1
+        parameter['To'] = {};
+        parameter['To']['Value'] = 295
+        parameter['To']['Minimum'] = 273.15
+        parameter['To']['Maximum'] = 350
+        parameter['To']['Free'] = True
+        parameter['To']['Unit'] = 'K'
+        parameter['To']['Covariance'] = 2
+        df_parameter = pd.DataFrame(parameter).transpose()
+        parameters = exodata.ParameterFromDF(df_parameter)
+        parameters.collect_data()
+        # Gather state data
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
+        # Instantiate estimated state object
+        estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
+        estimated_states.collect_data()            
+        # Instantiate model
+        model = models.Modelica(models.JModelica, \
+                                     models.RMSE, \
+                                     {}, \
+                                     models.JModelicaState, \
+                                     moinfo = moinfo, \
+                                     parameter_data = parameters.data, \
+                                     estimated_state_data = estimated_states.data);
+        # Check original parameters
+        df_test_pars = parameters.display_data()
+        self.check_df(df_test_pars, 'model_parameters_check.csv', timeseries=False);
+        # Replace parameters and check
+        model._state_estimate_method._replace_parameter_data(model)
+        df_test_pars = parameters.display_data()
+        self.check_df(df_test_pars, 'model_parameters_replaced_check.csv', timeseries=False);
+        # Restore parameters and check with original
+        model._state_estimate_method._restore_parameter_data(model)
+        df_test_pars = parameters.display_data()
+        self.check_df(df_test_pars, 'model_parameters_check.csv', timeseries=False);
         
 
 #%% Occupancy tests

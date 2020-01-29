@@ -1792,7 +1792,13 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
                 self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
             else: 
                 self.data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
-                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
+                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);   
+                if 'Minimum' in df.columns:
+                    self.data[key]['Minimum'] = variables.Static(key+'_min', df.loc[key, 'Minimum'], unit);
+                if 'Maximum' in df.columns:
+                    self.data[key]['Maximum'] = variables.Static(key+'_max', df.loc[key, 'Maximum'], unit);
+                if 'Covariance' in df.columns:
+                    self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
 
 class ParameterFromDF(_Parameter, utility._DAQ):
     '''Collects parameter data from a pandas DataFrame object. 
@@ -1845,7 +1851,14 @@ class ParameterFromDF(_Parameter, utility._DAQ):
                 self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
             else: 
                 self.data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
-                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);            
+                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);    
+                if 'Minimum' in df.columns:
+                    self.data[key]['Minimum'] = variables.Static(key+'_min', df.loc[key, 'Minimum'], unit);
+                if 'Maximum' in df.columns:
+                    self.data[key]['Maximum'] = variables.Static(key+'_max', df.loc[key, 'Maximum'], unit);
+                if 'Covariance' in df.columns:
+                    self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
+                    
                 
 #%% Parameter source implementations 
 class EstimatedStateFromCSV(_EstimatedState, utility._DAQ):
