@@ -504,7 +504,7 @@ class JModelicaState(_ParameterEstimate):
                 Model.parameter_data[key]['Free'].set_data(True)
 
     def _get_state_results(self, Model):
-        '''Update the state data dictionary in the model with ukf results.
+        '''Update the state data dictionary in the model with optimization results.
         
         '''
         
