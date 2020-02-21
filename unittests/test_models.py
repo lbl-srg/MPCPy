@@ -973,11 +973,16 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
         model.simulate(start_time, final_time)
         # Check references
         df_test = system.display_measurements('Measured')
-        est_value = estimated_states.display_data().loc['heatCapacitor2.T','Value']
-        est = model.display_measurements('Simulated')['heatCapacitor2.T']
+        est_value_1 = estimated_states.display_data().loc['T_db','Value']
+        est_1 = model.display_measurements('Simulated')['T_db']
+        est_value_2 = estimated_states.display_data().loc['heatCapacitor2.T','Value']
+        est_2 = model.display_measurements('Simulated')['heatCapacitor2.T']
         df_test['heatCapacitor2.T_est_init'] = df_init['heatCapacitor2.T']
-        df_test['heatCapacitor2.T_est_value'] = est_value
-        df_test['heatCapacitor2.T_est'] = est
+        df_test['heatCapacitor2.T_est_value'] = est_value_2
+        df_test['heatCapacitor2.T_est'] = est_2
+        df_test['T_db_init'] = df_init['T_db']
+        df_test['T_db_est_value'] = est_value_1
+        df_test['T_db_est'] = est_1
         self.check_df(df_test, 'estimate_and_validate.csv');
         # Check parameters
         df_test_pars = parameters.display_data()
@@ -986,72 +991,75 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
         if plot:
             plt.figure(1)
             plt.plot(df_test['T_db'], '-', label='T_db_meas')
+            plt.plot(df_test['T_db_init'], ':', label='T_db_est_init')
+            plt.plot(df_test['T_db_est'], '--', label = 'T_db_est')
+            plt.plot(df_test['T_db_est_value'].index[-1], est_value_1, 'o', color='r', label = 'T_db_est_value')
             plt.plot(df_test['heatCapacitor2.T'], '-', label='T_flo_meas')
-            plt.plot(df_test['heatCapacitor2.T_est_init'], '--', label = 'T_flo_est_init')
+            plt.plot(df_test['heatCapacitor2.T_est_init'], ':', label = 'T_flo_est_init')
             plt.plot(df_test['heatCapacitor2.T_est'], '--', label = 'T_flo_est')
-            plt.plot(df_test['heatCapacitor2.T_est_value'].index[-1], est_value, 'o', label = 'T_flo_est_value')
+            plt.plot(df_test['heatCapacitor2.T_est_value'].index[-1], est_value_2, 'o', color='b', label = 'T_flo_est_value')
             plt.legend()
             plt.show()
             
-    def test_replace_parameters(self):
-        '''Test the functions that replace the parameters for state estimation.
-        
-        '''
-
-        # Set model paths
-        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
-        modelpath = 'Simple.R2C2';
-        moinfo = (mopath, modelpath, {})
-        # Define parameters
-        parameter = {};
-        parameter['T2o'] = {};
-        parameter['T2o']['Value'] = 295
-        parameter['T2o']['Minimum'] = 273.15
-        parameter['T2o']['Maximum'] = 350
-        parameter['T2o']['Free'] = False
-        parameter['T2o']['Unit'] = 'K'
-        parameter['T2o']['Covariance'] = 1
-        parameter['To'] = {};
-        parameter['To']['Value'] = 295
-        parameter['To']['Minimum'] = 273.15
-        parameter['To']['Maximum'] = 350
-        parameter['To']['Free'] = True
-        parameter['To']['Unit'] = 'K'
-        parameter['To']['Covariance'] = 2
-        df_parameter = pd.DataFrame(parameter).transpose()
-        parameters = exodata.ParameterFromDF(df_parameter)
-        parameters.collect_data()
-        # Gather state data
-        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
-        # Instantiate estimated state object
-        estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
-        estimated_states.collect_data()            
-        # Instantiate model
-        model = models.Modelica(models.JModelicaParameter, \
-                                     models.RMSE, \
-                                     {}, \
-                                     models.JModelicaState, \
-                                     moinfo = moinfo, \
-                                     parameter_data = parameters.data, \
-                                     estimated_state_data = estimated_states.data);
-        # Check original parameters
-        df_test_pars = parameters.display_data()
-        self.check_df(df_test_pars, 'model_parameters_check.csv', timeseries=False);
-        # Replace parameters and check
-        model._state_estimate_method._replace_parameter_data(model)
-        df_test_pars = parameters.display_data()
-        self.check_df(df_test_pars, 'model_parameters_replaced_check.csv', timeseries=False);
-        # Restore parameters and check with original
-        model._state_estimate_method._restore_parameter_data(model)
-        df_test_pars = parameters.display_data()
-        self.check_df(df_test_pars, 'model_parameters_check.csv', timeseries=False);
-        
-    def test_instantiate_error_incompatible_estimation(self):
-        '''Test error raised if estimation method is incompatible with model.'''
-        # Set model path
-        fmupath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
-        with self.assertRaises(ValueError):
-            model = models.Modelica(models.JModelicaParameter, models.RMSE, {}, models.JModelicaState, fmupath=fmupath);
+#    def test_replace_parameters(self):
+#        '''Test the functions that replace the parameters for state estimation.
+#        
+#        '''
+#
+#        # Set model paths
+#        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+#        modelpath = 'Simple.R2C2';
+#        moinfo = (mopath, modelpath, {})
+#        # Define parameters
+#        parameter = {};
+#        parameter['T2o'] = {};
+#        parameter['T2o']['Value'] = 295
+#        parameter['T2o']['Minimum'] = 273.15
+#        parameter['T2o']['Maximum'] = 350
+#        parameter['T2o']['Free'] = False
+#        parameter['T2o']['Unit'] = 'K'
+#        parameter['T2o']['Covariance'] = 1
+#        parameter['To'] = {};
+#        parameter['To']['Value'] = 295
+#        parameter['To']['Minimum'] = 273.15
+#        parameter['To']['Maximum'] = 350
+#        parameter['To']['Free'] = True
+#        parameter['To']['Unit'] = 'K'
+#        parameter['To']['Covariance'] = 2
+#        df_parameter = pd.DataFrame(parameter).transpose()
+#        parameters = exodata.ParameterFromDF(df_parameter)
+#        parameters.collect_data()
+#        # Gather state data
+#        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
+#        # Instantiate estimated state object
+#        estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
+#        estimated_states.collect_data()            
+#        # Instantiate model
+#        model = models.Modelica(models.JModelicaParameter, \
+#                                     models.RMSE, \
+#                                     {}, \
+#                                     models.JModelicaState, \
+#                                     moinfo = moinfo, \
+#                                     parameter_data = parameters.data, \
+#                                     estimated_state_data = estimated_states.data);
+#        # Check original parameters
+#        df_test_pars = parameters.display_data()
+#        self.check_df(df_test_pars, 'model_parameters_check.csv', timeseries=False);
+#        # Replace parameters and check
+#        model._state_estimate_method._replace_parameter_data(model)
+#        df_test_pars = parameters.display_data()
+#        self.check_df(df_test_pars, 'model_parameters_replaced_check.csv', timeseries=False);
+#        # Restore parameters and check with original
+#        model._state_estimate_method._restore_parameter_data(model)
+#        df_test_pars = parameters.display_data()
+#        self.check_df(df_test_pars, 'model_parameters_check.csv', timeseries=False);
+#        
+#    def test_instantiate_error_incompatible_estimation(self):
+#        '''Test error raised if estimation method is incompatible with model.'''
+#        # Set model path
+#        fmupath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
+#        with self.assertRaises(ValueError):
+#            model = models.Modelica(models.JModelicaParameter, models.RMSE, {}, models.JModelicaState, fmupath=fmupath);
         
 
 #%% Occupancy tests

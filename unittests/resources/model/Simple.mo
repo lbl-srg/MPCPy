@@ -142,7 +142,7 @@ package Simple "A package containing simple examples"
       annotation (Placement(transformation(extent={{-80,0},{-60,20}})));
     Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow prescribedHeatFlow
       annotation (Placement(transformation(extent={{-18,-40},{2,-20}})));
-    Modelica.Blocks.Interfaces.RealOutput T_db
+    Modelica.Blocks.Interfaces.RealOutput T_db(unit="K")
       "Absolute temperature as output signal"
       annotation (Placement(transformation(extent={{100,0},{120,20}})));
     Modelica.Blocks.Interfaces.RealInput q_flow(unit="W", start=100)

@@ -1,2 +1,3 @@
 Name,Value,Unit,Parameter
 heatCapacitor2.T,18,degC,T2o
+T_db,18,degC,To
