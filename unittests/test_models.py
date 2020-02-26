@@ -738,7 +738,7 @@ class StateEstimateFromUKF(TestCaseMPCPy):
         modelpath = 'Simple.R2C2';
         moinfo = (mopath, modelpath, {})
         # Gather state data
-        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates_ukf.csv');
         # Instantiate estimated state object
         estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
         estimated_states.collect_data()
@@ -939,7 +939,7 @@ class StateEstimateFromJModelica(TestCaseMPCPy):
         parameters = exodata.ParameterFromDF(df_parameter)
         parameters.collect_data()
         # Gather state data
-        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates_jmodelica.csv');
         # Instantiate estimated state object
         estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
         estimated_states.collect_data()
