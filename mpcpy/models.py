@@ -1177,6 +1177,8 @@ class Modelica(_Model, utility._FMU, utility._Building):
         implements a moving horizon state estimator, the ``'Value'`` key for 
         each parameter corresponding to an estimated state in the 
         parameter_data attribute is also updated with the optimal result.
+        Note that this is not the estimated state value at the current time, 
+        rather at the initial (historic) time of the state estimation.
 
         '''
         
