@@ -32,6 +32,7 @@ from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
 from pyfmi import load_fmu
 from pymodelica import compile_fmu
+import math
 
 
 #%%
@@ -219,7 +220,7 @@ class _mpcpyPandas(object):
     def _parse_time_zone_kwargs(self, kwargs):
         '''Set the timezone using geography or timezone name.
         
-        If no timezone is supplied, than utc is assigned.
+        If no timezone is supplied, then utc is assigned.
         
         Parameters
         ----------
@@ -939,3 +940,36 @@ def get_unit_class_from_unit_string(unit_string):
             continue
 
     return unit_class
+
+#%% Calculate total solar radiation using Zhang-Huang model
+def total_solar_radiation_ZH(h, cc, rh, wspd):
+    '''Calculate the total solar radiation using the Zhang-Huang Solar Model.
+    Reference to the ZH model: https://www.energyplus.net/sites/default/files/docs/site_v8.3.0/EngineeringReference/05-Climate/index.html#zhang-huang-solar-model
+    Original paper: https://pdfs.semanticscholar.org/7b8e/7ea72db78f99939ce2d7c2890dacfcb0dc5a.pdf
+
+    Parameters
+    ----------
+    h : solar altitude angle, i.e, the angle between the horizontal and the line to the sun
+        in radian (not in degree)
+    cc : cloud cover, in tenths
+    rh : relative humodity, in %
+    wspd : wind speed, in m/s
+        
+    Returns
+    -------
+    I : estimated total solar radiation, in W/m2
+    '''
+    I_0 = 1355
+    c_0 = 0.5598
+    c_1 = 0.4982
+    c_2 = -0.6762
+    c_3 = 0 # 0.02842 in the paper, not used in this model
+    c_4 = -0.00317
+    c_5 = 0.014
+    d   = -17.853
+    k   = 0.843
+
+    I = (I_0*math.sin(h)*(c_0+c_1*cc+c_2*cc*cc+c_4*rh+c_5*wspd)+d)/k
+    I = min(I, 0)
+
+    return I

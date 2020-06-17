@@ -68,6 +68,9 @@ Classes
 .. autoclass:: mpcpy.exodata.WeatherFromDF
     :members: collect_data, display_data, get_base_data
 
+.. autoclass:: mpcpy.exodata.WeatherFromNOAA
+    :members: collect_data, display_data, get_base_data
+
 
 ========   
 Internal
@@ -303,6 +306,8 @@ from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
 from mpcpy import units
 from mpcpy import variables
+from pvlib.forecast import GFS, NAM, HRRR, RAP
+import datetime
 import os
      
 #%% Abstract source interface class
@@ -1332,7 +1337,96 @@ class WeatherFromDF(_Weather, utility._DAQ):
         # Process weather data
         if self.process_variables is not None:
             self._process_weather_data();   
-                                             
+
+class WeatherFromNOAA():
+    '''Collects weather data from NOAA.
+    It could either be historical or predicted weather data, depends on the start_time and final_time.
+    Based on the weather forecast function of pvlib version 6.0, https://pvlib-python.readthedocs.io/en/v0.6.0/
+
+    Parameters
+    ----------
+    geography : [numeric, numeric]
+        List of [Latitude, Longitude] in degrees.
+    weaForeModel: Weather forecast model, str,
+        GFS: Global Forecast System model, available for the entire globe and for 7 days ahead, updated every 6 hours, time resolution: 3 hours,  
+             geographical resolutions: 0.25 and 0.5 deg 
+        HRRR: High Resolution Rapid Refresh model, available US and for ~15 hours ahead, updated every hour, time resolution: 1 hours,  
+             geographical resolutions: 3 km
+        RAP: Rapid Refresh model, available US and for 2 days ahead, updated every hour, time resolution: 1 hours,  
+             geographical resolutions: 20, 40 km
+        NAM: North American Mesoscale model, available for the whole North America and for 4 days ahead, updated every 6 hours, time resolution: 1 hours,  
+             geographical resolutions: 20 km
+    '''
+    
+    def __init__(self, geography, weaForeModel, **kwargs):
+        '''Constructor of DataFrame weather exodata object.
+        
+        '''
+        
+        if weaForeModel == 'GFS':
+            self.model = GFS()
+        elif weaForeModel == 'HRRR':
+            self.model = HRRR()
+        elif weaForeModel == 'RAP':
+            self.model = RAP()
+        elif weaForeModel == 'NAM':
+            self.model = NAM()
+        else:
+            raise NameError('The {} forecast model does not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(method))
+
+        self._vm = {'temp_air'     : ('weaTDryBul', units.degC),
+                    'wind_speed'   : ('weaWinSpe', units.m_s),
+                    'ghi'          : ('weaHGloHor', units.W_m2),
+                    'dni'          : ('weaHDirNor', units.W_m2),
+                    'dhi'          : ('weaHDifHor', units.W_m2),
+                    'total_clouds' : ('weaNTot', units.percent),
+                    }
+        self.geo = geography
+
+    def collect_data(self, start_time_UTC, final_time_UTC):
+        '''Collect data from specified source and update data attribute.
+        
+        Parameters
+        ----------
+        start_time : string
+            Start UTC time of data collection, example: '2020-06-12 17:00'.
+        final_time : string
+            Final UTC time of data collection, example: '2020-06-14 17:00'.
+   
+        '''
+        start = pd.Timestamp(start_time_UTC, tz='UTC')
+        final = pd.Timestamp(final_time_UTC, tz='UTC')
+
+        self._df = self.model.get_processed_data(self.geo[0], self.geo[1], start, final)
+
+        self.weather = WeatherFromDF(self._df, self._vm, geography=self.geo)
+        self.weather.collect_data(start_time_UTC, final_time_UTC)
+    
+    def display_data(self):
+        '''Get data in display units as pandas dataframe.
+        
+        Returns
+        -------
+        df_display : ``pandas`` dataframe
+            Timeseries dataframe in display units.
+        
+        '''
+        df_display = self.weather.display_data()
+        return df_display
+        
+    def get_base_data(self):
+        '''Get data in base units as pandas dataframe.
+        
+        Returns
+        -------
+        df_base : ``pandas`` dataframe
+            Timeseries dataframe in base units.
+        
+        '''
+        df_base = self.weather.get_base_data()
+        return df_base
+
+
 #%% Internal source implementations
 class InternalFromCSV(_Internal, utility._DAQ):
     '''Collects internal data from a csv file.
