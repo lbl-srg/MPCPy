@@ -1372,7 +1372,7 @@ class WeatherFromNOAA():
         elif weaForeModel == 'NAM':
             self.model = NAM()
         else:
-            raise NameError('The {} forecast model does not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(method))
+            raise NameError('The {} forecast model is not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(method))
 
         self._vm = {'temp_air'     : ('weaTDryBul', units.degC),
                     'wind_speed'   : ('weaWinSpe', units.m_s),
@@ -1384,13 +1384,13 @@ class WeatherFromNOAA():
         self.geo = geography
 
     def collect_data(self, start_time_UTC, final_time_UTC):
-        '''Collect data from specified source and update data attribute.
+        '''Collect data from NOAA source.
         
         Parameters
         ----------
-        start_time : string
+        start_time_UTC : string
             Start UTC time of data collection, example: '2020-06-12 17:00'.
-        final_time : string
+        final_time_UTC : string
             Final UTC time of data collection, example: '2020-06-14 17:00'.
    
         '''
