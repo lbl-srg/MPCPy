@@ -1340,7 +1340,8 @@ class WeatherFromDF(_Weather, utility._DAQ):
 
 class WeatherFromNOAA():
     '''Collects weather data from NOAA.
-    It could either be historical or predicted weather data, depends on the start_time and final_time.
+    
+    It can either be historical or predicted weather data, depends on the start_time and final_time.
     Based on the weather forecast function of pvlib version 6.0, https://pvlib-python.readthedocs.io/en/v0.6.0/
 
     Parameters
@@ -1356,6 +1357,7 @@ class WeatherFromNOAA():
              geographical resolutions: 20, 40 km
         NAM: North American Mesoscale model, available for the whole North America and for 4 days ahead, updated every 6 hours, time resolution: 1 hours,  
              geographical resolutions: 20 km
+
     '''
     
     def __init__(self, geography, weaForeModel, **kwargs):
@@ -1372,7 +1374,7 @@ class WeatherFromNOAA():
         elif weaForeModel == 'NAM':
             self.model = NAM()
         else:
-            raise NameError('The {} forecast model is not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(method))
+            raise NameError('The {} forecast model is not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(weaForeModel))
 
         self._vm = {'temp_air'     : ('weaTDryBul', units.degC),
                     'wind_speed'   : ('weaWinSpe', units.m_s),
