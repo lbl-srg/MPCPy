@@ -766,7 +766,7 @@ class JModelica(_Package, utility._FMU):
             self.mopfile.write('    input Real ' + key + '= mpc_model.' + key + ';\n');
         # Add extra inputs required for optimization problem
         self._init_input_names = self.Model.input_names;
-        self.other_inputs = self.Model.other_inputs;
+        self.other_inputs = copy.deepcopy(self.Model.other_inputs);
         for key in self.extra_inputs.keys():
             self._init_input_names.append(key);
             self.other_inputs[key] = self.extra_inputs[key];
