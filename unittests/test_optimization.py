@@ -158,6 +158,43 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         # Check references
         df_test = opt_problem.display_measurements('Simulated');
         self.check_df(df_test, 'optimize_energycost.csv');
+
+    def test_simulate_cost_opt(self):
+        '''Test the simulation of cost optimization after solving optimization.
+
+        '''
+        
+        modelpath = 'Simple.RC';        
+        # Instantiate model
+        parameter_data = {};
+        parameter_data['heatCapacitor.C'] = {};
+        parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
+        parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 3e6, units.boolean);
+        model = models.Modelica(models.JModelica, \
+                                models.RMSE, \
+                                self.measurements, \
+                                moinfo = (self.mopath, modelpath, {}), \
+                                control_data = self.controls.data, \
+                                parameter_data = parameter_data);
+        # Instantiate optimization problem
+        opt_problem = optimization.Optimization(model, \
+                                                optimization.EnergyCostMin, \
+                                                optimization.JModelica, \
+                                                'q_flow', \
+                                                constraint_data = self.constraints.data);
+        # Gather prices
+        price_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'optimization', 'SimpleRC_Prices.csv');
+        price_variable_map = {'energy[cents/kWh]' : ('pi_e', units.cents_kWh)};
+        price = exodata.PriceFromCSV(price_csv_filepath, price_variable_map);
+        price.collect_data(self.start_time, self.final_time);
+        # Solve optimization problem     
+        opt_problem.optimize(self.start_time, self.final_time, price_data = price.data)
+        # Simulate with optimal control
+        model.simulate(self.start_time, self.final_time)
+        # Check references
+        df_test = model.display_measurements('Simulated');
+        self.check_df(df_test, 'simulate_cost_opt.csv');
+        
         
     def test_slack_constraints(self):
         '''Test the slack constraints are created properly.
