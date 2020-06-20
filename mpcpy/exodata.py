@@ -1340,7 +1340,8 @@ class WeatherFromDF(_Weather, utility._DAQ):
 
 class WeatherFromNOAA(_Weather, utility._DAQ):
     '''Collects weather data from NOAA.
-    It could either be historical or predicted weather data, depends on the start_time and final_time.
+    
+    It can either be historical or predicted weather data, depends on the start_time and final_time.
     Based on the weather forecast function of pvlib version 6.0, https://pvlib-python.readthedocs.io/en/v0.6.0/
 
     Parameters
