@@ -1346,7 +1346,7 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
 
     Parameters
     ----------
-    geography : [numeric, numeric]
+    geography: [numeric, numeric]
         List of [Latitude, Longitude] in degrees.
     weaForeModel: Weather forecast model, str,
         GFS: Global Forecast System model, available for the entire globe and for 7 days ahead, updated every 6 hours, time resolution: 3 hours,  
@@ -1357,6 +1357,9 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
              geographical resolutions: 20, 40 km
         NAM: North American Mesoscale model, available for the whole North America and for 4 days ahead, updated every 6 hours, time resolution: 1 hour,  
              geographical resolutions: 20 km
+    tz_name: timezone name, str
+        Default is 'from geography', then the timezone would be inferred automatically from the input geography
+        Users could also specify the timezone manually, example 'America/Chicago', 'UTC'
 
     Attributes
     ----------
@@ -1371,7 +1374,7 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
 
     '''
     
-    def __init__(self, geography, weaForeModel, **kwargs):
+    def __init__(self, geography, weaForeModel, tz_name='from_geography'):
         '''Constructor of DataFrame weather exodata object.
         
         '''
@@ -1400,20 +1403,11 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
         else:
             raise NameError('The {} forecast model is not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(method))
         
-        # Process Variables
-        if 'process_variables' in kwargs:
-            # Set file_path for process fmu
-            weatherdir = utility.get_MPCPy_path() + os.sep + 'resources' + os.sep + 'weather';
-            fmuname = 'WeatherProcessor_JModelica_v2.fmu';
-            self._create_fmu({'fmupath': weatherdir+os.sep+fmuname});
-            # Set process variables
-            self.process_variables = kwargs['process_variables'];
-        else:
-            self.process_variables = None;
-        # Common kwargs
-        kwargs['geography'] = geography
-        self._parse_daq_kwargs(kwargs);
-        self._parse_time_zone_kwargs(kwargs);
+        if tz_name == 'from_geography':
+            self.tz = tzwhere.tzwhere();
+            self.tz_name = self.tz.tzNameAt(self.geography[0], self.geography[1]);
+        else:            
+            self.tz_name = tz_name;
            
     def _collect_data(self, start_time_local, final_time_local):
         '''Collect data from NOAA source.
