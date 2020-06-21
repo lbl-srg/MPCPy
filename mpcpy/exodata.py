@@ -1374,7 +1374,7 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
 
     '''
     
-    def __init__(self, geography, weaForeModel, tz_name='from_geography'):
+    def __init__(self, geography, weaForeModel, tz_name='from_geography', **kwargs):
         '''Constructor of DataFrame weather exodata object.
         
         '''
