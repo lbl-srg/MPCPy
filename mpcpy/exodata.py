@@ -1428,9 +1428,6 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
         final = pd.Timestamp(self.final_time_utc, tz='UTC')
         self._df = self.model.get_processed_data(self.geography[0], self.geography[1], start, final)      
         self._read_timeseries_from_df();
-        # Process weather data
-        if self.process_variables is not None:
-            self._process_weather_data(); 
 
 
 #%% Internal source implementations
