@@ -279,7 +279,43 @@ class WeatherFromDF(TestCaseMPCPy):
         # Check reference
         df_test = weather.display_data();
         self.check_df(df_test, 'collect_data_default_time.csv');
+
+class WeatherFromNOAA(TestCaseMPCPy):
+    '''Test the collection of weather data from NOAA.
+    
+    '''
+    
+    def setUp(self):
+        # self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'weather', 'BerkeleyCSV.csv'));     
+        self.geography = [37.8716, -122.2727];
+        self.model_name = 'GFS'
+                             
+    def tearDown(self):
+        # del self.df
+        del self.geography
+        del self.model_name
+                             
+    def test_instantiate(self):
+        weather = exodata.WeatherFromNOAA(self.geography,
+                                          self.model_name);
+        self.assertEqual(weather.name, 'weather_from_noaa');
+        self.assertEqual(weather.tz_name, 'America/Los_Angeles');
+        self.assertAlmostEqual(weather.lat.display_data(), 37.8716, places=4);
+        self.assertAlmostEqual(weather.lon.display_data(), -122.2727, places=4);
         
+    def test_GFS_collect_historical_data(self):
+        self.start_time = '2020-06-01 12:00:00';
+        self.final_time = '2020-06-03 12:00:00';
+        # Instantiate weather object
+        weather = exodata.WeatherFromNOAA(self.geography,'GFS');
+        # Get weather data
+        weather.collect_data(self.start_time, self.final_time);
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df(df_test, 'historical_GFS.csv');
+        
+
+
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):
     '''Test the collection of internal data from a CSV file.

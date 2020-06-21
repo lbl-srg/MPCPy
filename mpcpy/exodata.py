@@ -1390,6 +1390,8 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
                              'total_clouds' : ('weaNTot', units.percent),
                              };
         self.geography = geography
+        self.lat = variables.Static('lat', self.geography[0], units.deg);
+        self.lon = variables.Static('lon', self.geography[1], units.deg)
         
         # Initialize the weather forecast model
         if weaForeModel == 'GFS':
