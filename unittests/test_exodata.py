@@ -286,33 +286,32 @@ class WeatherFromNOAA(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        # self.df = pd.read_csv(os.path.join(self.get_unittest_path(), 'resources', 'weather', 'BerkeleyCSV.csv'));     
         self.geography = [37.8716, -122.2727];
-        self.model_name = 'GFS'
+        self.ins_model_name = 'GFS'
+        self.start_time_his = '2020-06-01 12:00:00';
+        self.final_time_his = '2020-06-03 12:00:00';
                              
     def tearDown(self):
-        # del self.df
         del self.geography
-        del self.model_name
+        del self.ins_model_name
+        del self.start_time_his
+        del self.final_time_his
                              
     def test_instantiate(self):
-        weather = exodata.WeatherFromNOAA(self.geography,
-                                          self.model_name);
+        weather = exodata.WeatherFromNOAA(self.geography, self.ins_model_name);
         self.assertEqual(weather.name, 'weather_from_noaa');
         self.assertEqual(weather.tz_name, 'America/Los_Angeles');
         self.assertAlmostEqual(weather.lat.display_data(), 37.8716, places=4);
         self.assertAlmostEqual(weather.lon.display_data(), -122.2727, places=4);
         
     def test_GFS_collect_historical_data(self):
-        self.start_time = '2020-06-01 12:00:00';
-        self.final_time = '2020-06-03 12:00:00';
         # Instantiate weather object
         weather = exodata.WeatherFromNOAA(self.geography,'GFS');
         # Get weather data
-        weather.collect_data(self.start_time, self.final_time);
+        weather.collect_data(self.start_time_his, self.final_time_his);
         # Check reference
-        df_test = weather.display_data();
-        self.check_df(df_test, 'historical_GFS.csv');
+        self.df_test = weather.display_data();
+        self.check_df(self.df_test, 'historical_GFS.csv');
         
 
 
