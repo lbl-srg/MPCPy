@@ -36,6 +36,8 @@ Validate Methods
 
 .. autoclass:: mpcpy.models.RMSE
 
+.. autoclass:: mpcpy.models.ACF
+
 =========
 Occupancy
 =========
