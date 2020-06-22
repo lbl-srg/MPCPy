@@ -62,6 +62,7 @@ Occupancy Methods
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib import collections as matcoll
 import pandas as pd
 import csv
 import logging
@@ -610,7 +611,77 @@ class RMSE(_Validate):
             Model.RMSE[key] = variables.Static('RMSE_'+key, RMSE, unit_class);
         if plot == 1:
             self._plot_simple(Model, validate_filename);
-            
+
+#%% Validate Method Interfaces
+class ACF(_Validate):
+    '''Validation method that computes the ACF of residuals (between estimated and measured data).
+    
+    Only modeled values with measurements corresponding to the same time
+    are considered in the calculation of ACF. Missing measurements would 
+    be ignored when calculating ACF.
+    
+    Yields
+    ------
+    ACF : dictionary
+        {"Measurement Name" : ([lag], [ACF])}.
+        Attribute of the model object that contains the ACF for each 
+        measurement variable used to perform the validation.
+    
+    '''
+
+    def __init__(self, Model):
+        '''Constructor of the ACF validation method class
+        
+        '''
+
+        pass;
+
+    def _validate(self, Model, validate_filename, lag_max = 50, plot = 1):
+        '''Perform the validation and plot the ACF.
+        Parameters
+        ----------
+        lag_max : the maximum lag to be calculated and plotted, integer
+            If the lag_max is longer than len(data)-10, then len(data)-10
+            number of lags are calculated to guarantee sufficient data points
+            for correlation coefficient calculation
+        '''
+
+        Model.ACF = {};
+        for key in Model.measurements.keys():
+            data = Model.measurements[key]['Measured'].get_base_data().loc[Model.start_time_utc:Model.final_time_utc];
+            data_est = Model.measurements[key]['Simulated'].get_base_data().loc[Model.start_time_utc:Model.final_time_utc];
+            res = data-data_est
+            assert (type(res) is pd.Series) , 'ACF cannot be calculated as the data is not formed as pandas series'
+            lag_list = range(min(len(res)-10,lag_max))
+            ACF_list = []
+            # calculate correlation coefficient for each lag value
+            for lag in lag_list:
+                ACF_list.append(res.corr(res.shift(lag))) 
+
+            Model.ACF[key] = (lag_list, ACF_list);
+            if plot == 1:
+                self._plot_ACF(lag_list, ACF_list, validate_filename)   # ?: does validate_filename have the path to the save folder
+
+    def _plot_ACF(lag_list, ACF_list, validate_filename):
+        lines = []
+        for i in range(len(lag_list)):
+            pair=[(lag_list[i],0), (lag_list[i], ACF_list[i])]
+            lines.append(pair)
+
+        linecoll = matcoll.LineCollection(lines,linewidths=1)
+        linecoll_xEqual0 = matcoll.LineCollection([[(0,0),(len(lag_list)+1,0)]],colors='k',linewidths=2)
+        fig, ax = plt.subplots()
+        ax.add_collection(linecoll)
+        ax.add_collection(linecoll_xEqual0)
+
+        plt.scatter(lag_list,ACF_list)
+
+        plt.xticks(lag_list)
+        plt.ylim(-0.6,1.1)
+        plt.xlabel('Lag')
+        plt.ylabel('ACF')
+        plt.savefig(validate_filename + '_' + key + '.png')
+
 #%% OccupanctPresence Model Types
 class QueueModel(_OccupancyMethod):
     '''Occupancy presence prediction based on a queueing approach.
