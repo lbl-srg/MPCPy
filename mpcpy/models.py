@@ -434,8 +434,14 @@ class JModelicaState(_ParameterEstimate):
     period of observed state data, the method sets up and solves an optimization
     problem to find the optimal values of the estimated states at the initial
     time of the time period that minimizes the error between the measured
-    observed states and modeled observed states.  Then, the final value of
-    the estimated states are taken as the current state estimates.
+    observed states and modeled observed states over the time period.  
+    Then, the final value of the estimated states are taken as the current 
+    state estimates.
+    
+    Based on the state estimator implemented in R. De Coninck and L. Helsen
+    (2016). "Practical implementation and evaluation of model predictive
+    control for an office building in Brussels." Energy and Buildings 111.
+    290-298. https://doi.org/10.1016/j.enbuild.2015.11.014
     
     .. _JModelica: http://jmodelica.org/
 
