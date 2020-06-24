@@ -14,7 +14,7 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
 	    matplotlib >= 2.0.2
 
-	    numpy >= 1.13.1
+	    numpy >= 1.16.6
 
 	    pandas >= 0.20.3
 
@@ -30,7 +30,15 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
 	    tzwhere **=** 2.3
 
-         pyDOE >= 0.3.8
+        pyDOE >= 0.3.8
+
+        netCDF4 == 1.4.2
+
+        cftime == 1.0.4.2
+
+        pvlib == 0.6.0
+
+        siphon == 0.8.0
 
 2. Install libgeos-dev with command:
 

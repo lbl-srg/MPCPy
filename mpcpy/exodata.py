@@ -1349,14 +1349,14 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
     geography: [numeric, numeric]
         List of [Latitude, Longitude] in degrees.
     weaForeModel: Weather forecast model, str,
-        GFS: Global Forecast System model, available for the entire globe and for 7 days ahead, updated every 6 hours, time resolution: 3 hours,  
-             geographical resolutions: 0.25 and 0.5 deg 
-        HRRR: High Resolution Rapid Refresh model, available US and for ~15 hours ahead, updated every hour, time resolution: 1 hour,  
-             geographical resolutions: 3 km
-        RAP: Rapid Refresh model, available US and for 2 days ahead, updated every hour, time resolution: 1 hour,  
-             geographical resolutions: 20, 40 km
-        NAM: North American Mesoscale model, available for the whole North America and for 4 days ahead, updated every 6 hours, time resolution: 1 hour,  
-             geographical resolutions: 20 km
+        GFS: Global Forecast System model, available for the entire globe and for 7 days ahead, support historical data, updated every 6 hours, 
+             time resolution: 3 hours, geographical resolutions: 0.25 and 0.5 deg 
+        HRRR: High Resolution Rapid Refresh model, available US and for ~15 hours ahead, DOES NOT support historical data, updated every hour, 
+             time resolution: 1 hour, geographical resolutions: 3 km
+        RAP: Rapid Refresh model, available US and for 2 days ahead (tested 18 hours), support historical data, updated every hour, 
+             time resolution: 1 hour, geographical resolutions: 20, 40 km
+        NAM: North American Mesoscale model, available for the whole North America and for 4 days ahead (tested 3 days), support historical data, 
+             updated every 6 hours, time resolution: 1 hour, geographical resolutions: 20 km
     tz_name: timezone name, str
         Default is 'from geography', then the timezone would be inferred automatically from the input geography
         Users could also specify the timezone manually, example 'America/Chicago', 'UTC'

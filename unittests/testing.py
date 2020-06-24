@@ -92,7 +92,10 @@ class TestCaseMPCPy(unittest.TestCase):
             df_ref = pd.read_csv(self.ref_file_path, index_col=0);
             if timeseries:
                 df_ref.index = pd.to_datetime(df_ref.index);
-                df_ref = df_ref.tz_localize('UTC');
+                try:
+                    df_ref = df_ref.tz_localize('UTC')
+                except:
+                    df_ref = df_ref.tz_convert('UTC')
             # Test index
             i_ref = df_ref.index.values;
             i_test = df_test.index.values;

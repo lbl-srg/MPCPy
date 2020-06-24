@@ -14,6 +14,7 @@ import pickle
 import copy
 import os
 import pandas as pd
+import datetime
 
 #%% Weather Tests
 class WeatherFromEPW(TestCaseMPCPy):
@@ -286,17 +287,47 @@ class WeatherFromNOAA(TestCaseMPCPy):
     '''
     
     def setUp(self):
-        self.geography = [37.8716, -122.2727];
+        self.geography = [37.8716, -122.2727]
         self.ins_model_name = 'GFS'
-        self.start_time_his = '2020-06-01 12:00:00';
-        self.final_time_his = '2020-06-03 12:00:00';
+        self.start_time_his = '2020-06-01 12:00:00'
+        self.final_time_his = '2020-06-03 12:00:00'
+        self.start_time_pre = pd.Timestamp(datetime.datetime.now())
+        self.final_time_pre = self.start_time_pre + pd.Timedelta(days=7)
                              
     def tearDown(self):
         del self.geography
         del self.ins_model_name
         del self.start_time_his
         del self.final_time_his
-                             
+        del self.start_time_pre
+        del self.final_time_pre
+
+    def foreTest(self, df_test):
+        '''The function to test the weather forecast:
+        1. Contains the prediction of weaHDifHor, weaHDirNor, weaHGloHor, weaNTot, weaTDryBul, weaWinSpe
+        2. The values of predicted weaHDifHor, weaHDirNor, weaHGloHor are in the range of (0,2000)
+        3. The values of predicted weaNTot are in the range of (0,100)
+        4. The values of predicted weaTDryBul are in the range of (200,350)
+        5. The values of predicted weaWinSpe are in the range of (0,20)  
+        '''
+        # test 1:
+        fields = df_test.columns
+        self.assertIn('weaHDifHor', fields)
+        self.assertIn('weaHDirNor', fields)
+        self.assertIn('weaHGloHor', fields)
+        self.assertIn('weaNTot', fields)
+        self.assertIn('weaTDryBul', fields)
+        self.assertIn('weaWinSpe', fields)
+        # test 2-5:
+        self.assertEqual((df_test[['weaHDifHor','weaHDirNor','weaHGloHor']]<0).sum().sum(),0)
+        self.assertEqual((df_test[['weaHDifHor','weaHDirNor','weaHGloHor']]>2000).sum().sum(),0)
+        self.assertEqual((df_test['weaNTot']<0).sum(),0)
+        self.assertEqual((df_test['weaNTot']>100).sum(),0)
+        self.assertEqual((df_test['weaTDryBul']<200).sum(),0)
+        self.assertEqual((df_test['weaTDryBul']>350).sum(),0)
+        self.assertEqual((df_test['weaWinSpe']<0).sum(),0)
+        self.assertEqual((df_test['weaWinSpe']>20).sum(),0)
+        
     def test_instantiate(self):
         weather = exodata.WeatherFromNOAA(self.geography, self.ins_model_name);
         self.assertEqual(weather.name, 'weather_from_noaa');
@@ -312,8 +343,85 @@ class WeatherFromNOAA(TestCaseMPCPy):
         # Check reference
         self.df_test = weather.display_data();
         self.check_df(self.df_test, 'historical_GFS.csv');
-        
 
+    def test_RAP_collect_historical_data(self):
+        # Instantiate weather object
+        weather = exodata.WeatherFromNOAA(self.geography,'RAP');
+        # Get weather data
+        weather.collect_data(self.start_time_his, self.final_time_his);
+        # Check reference
+        self.df_test = weather.display_data();
+        self.check_df(self.df_test, 'historical_RAP.csv');
+
+    def test_NAM_collect_historical_data(self):
+        # Instantiate weather object
+        weather = exodata.WeatherFromNOAA(self.geography,'NAM');
+        # Get weather data
+        weather.collect_data(self.start_time_his, self.final_time_his);
+        # Check reference
+        self.df_test = weather.display_data();
+        self.check_df(self.df_test, 'historical_NAM.csv');
+
+    def test_GFS_collect_prediction_data(self):
+        # Instantiate weather object
+        weather = exodata.WeatherFromNOAA(self.geography,'GFS');
+        # Get weather data
+        weather.collect_data(self.start_time_pre, self.final_time_pre);
+        self.df_test = weather.get_base_data()
+        # Check the fields and value range
+        self.foreTest(self.df_test)
+        # Check the first prediction is within 3 hours
+        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.assertLess(self.secToFirstPre, 3600*3)
+        # Check the prediction is available for at least 5 days
+        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.assertGreater(self.secToLastPre, 3600*24*5)
+            
+    def test_HRRR_collect_prediction_data(self):
+        # Instantiate weather object
+        weather = exodata.WeatherFromNOAA(self.geography,'HRRR');
+        # Get weather data
+        weather.collect_data(self.start_time_pre, self.final_time_pre);
+        self.df_test = weather.get_base_data()
+        # Check the fields and value range
+        self.foreTest(self.df_test)
+        # Check the first prediction is within 1 hours
+        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.assertLess(self.secToFirstPre, 3600*1)
+        # Check the prediction is available for at least 15 hours
+        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.assertGreaterEqual(self.secToLastPre, 3600*15)
+    
+    def test_RAP_collect_prediction_data(self):
+        # Instantiate weather object
+        weather = exodata.WeatherFromNOAA(self.geography,'RAP');
+        # Get weather data
+        weather.collect_data(self.start_time_pre, self.final_time_pre);
+        self.df_test = weather.get_base_data()
+        # Check the fields and value range
+        self.foreTest(self.df_test)
+        # Check the first prediction is within 1 hours
+        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.assertLess(self.secToFirstPre, 3600*1)
+        # Check the prediction is available for at least 18 hours
+        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.assertGreaterEqual(self.secToLastPre, 3600*18)
+    
+    def test_NAM_collect_prediction_data(self):
+        # Instantiate weather object
+        weather = exodata.WeatherFromNOAA(self.geography,'NAM');
+        # Get weather data
+        weather.collect_data(self.start_time_pre, self.final_time_pre);
+        self.df_test = weather.get_base_data()
+        # Check the fields and value range
+        self.foreTest(self.df_test)
+        # Check the first prediction is within 6 hours
+        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.assertLess(self.secToFirstPre, 3600*6)
+        # Check the prediction is available for at least 3 days
+        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.assertGreaterEqual(self.secToLastPre, 3600*24*3)
+    
 
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):
