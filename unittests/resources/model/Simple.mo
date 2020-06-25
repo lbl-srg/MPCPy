@@ -129,6 +129,7 @@ package Simple "A package containing simple examples"
 
   model R2C2 "A simple R2C2 network for example purposes"
     parameter Modelica.SIunits.Temperature To = 295 "Starting temperature";
+    parameter Modelica.SIunits.Temperature T2o = 288.15 "Starting temperature for 2nd state";
     Modelica.Thermal.HeatTransfer.Sources.PrescribedTemperature
       prescribedTemperature
       annotation (Placement(transformation(extent={{-40,0},{-20,20}})));
@@ -141,7 +142,7 @@ package Simple "A package containing simple examples"
       annotation (Placement(transformation(extent={{-80,0},{-60,20}})));
     Modelica.Thermal.HeatTransfer.Sources.PrescribedHeatFlow prescribedHeatFlow
       annotation (Placement(transformation(extent={{-18,-40},{2,-20}})));
-    Modelica.Blocks.Interfaces.RealOutput T_db
+    Modelica.Blocks.Interfaces.RealOutput T_db(unit="K")
       "Absolute temperature as output signal"
       annotation (Placement(transformation(extent={{100,0},{120,20}})));
     Modelica.Blocks.Interfaces.RealInput q_flow(unit="W", start=100)
@@ -152,7 +153,7 @@ package Simple "A package containing simple examples"
     Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor(R=0.015)
                 annotation (Placement(transformation(extent={{-10,0},{10,20}})));
     Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor2(C=2e6, T(fixed=
-            true, start=288.15))
+            true, start=T2o))
       annotation (Placement(transformation(extent={{20,-80},{40,-100}})));
     Modelica.Thermal.HeatTransfer.Components.ThermalResistor thermalResistor1(R=0.015)
                 annotation (Placement(transformation(extent={{-10,-10},{10,10}},

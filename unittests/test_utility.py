@@ -63,7 +63,7 @@ class TestFMIVersionDefault(TestCaseMPCPy):
     def test_fmi_default(self):
         building = systems.EmulationFromFMU({}, moinfo = (self.mopath, self.modelpath, {}));
         self.assertEqual(building.fmu_version, '2.0');
-        model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}));
+        model = models.Modelica(models.JModelicaParameter, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}));
         self.assertEqual(model.fmu_version, '2.0');
         
 class TestFMITarget(TestCaseMPCPy):
@@ -74,12 +74,12 @@ class TestFMITarget(TestCaseMPCPy):
             if target == 'default':
                 building = systems.EmulationFromFMU({}, moinfo = (mopath, modelpath, {}));
                 self.assertEqual(building.fmu_target, 'me');
-                model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (mopath, modelpath, {}));
+                model = models.Modelica(models.JModelicaParameter, models.RMSE, {}, moinfo = (mopath, modelpath, {}));
                 self.assertEqual(model.fmu_target, 'me');
             else:
                 building = systems.EmulationFromFMU({}, moinfo = (mopath, modelpath, {}), target=target);
                 self.assertEqual(building.fmu_target, target);
-                model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (mopath, modelpath, {}), target=target);
+                model = models.Modelica(models.JModelicaParameter, models.RMSE, {}, moinfo = (mopath, modelpath, {}), target=target);
                 self.assertEqual(model.fmu_target, target);
                 
     def test_fmi_given(self):
@@ -102,7 +102,7 @@ class TestGetInputNames(TestCaseMPCPy):
         for version in ['1.0', '2.0']:
             building = systems.EmulationFromFMU({}, moinfo = (self.mopath, self.modelpath, {}), version = version);
             self.assertEqual(building.input_names, ['q_flow']);
-            model = models.Modelica(models.JModelica, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}), version = version);
+            model = models.Modelica(models.JModelicaParameter, models.RMSE, {}, moinfo = (self.mopath, self.modelpath, {}), version = version);
             self.assertEqual(model.input_names, ['q_flow']);
             
 class TestSimulateFMU(TestCaseMPCPy):
@@ -121,7 +121,7 @@ class TestSimulateFMU(TestCaseMPCPy):
     def test_simulate_me_1(self):
         '''Test simulation me 1.0.'''
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = self.moinfo, 
@@ -136,7 +136,7 @@ class TestSimulateFMU(TestCaseMPCPy):
     def test_simulate_cs_1(self):
         '''Test simulation cs 1.0.'''
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = self.moinfo, 
@@ -151,7 +151,7 @@ class TestSimulateFMU(TestCaseMPCPy):
     def test_simulate_me_2(self):
         '''Test simulation me 2.0.'''
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = self.moinfo, 
@@ -166,7 +166,7 @@ class TestSimulateFMU(TestCaseMPCPy):
     def test_simulate_cs_2(self):
         '''Test simulation cs 2.0.'''
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = self.moinfo, 
