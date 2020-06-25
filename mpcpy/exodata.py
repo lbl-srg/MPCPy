@@ -96,9 +96,6 @@ Classes
 .. autoclass:: mpcpy.exodata.InternalFromCSV
     :members: collect_data, display_data, get_base_data
     
-.. autoclass:: mpcpy.exodata.InternalFromDF
-    :members: collect_data, display_data, get_base_data
-    
 .. autoclass:: mpcpy.exodata.InternalFromOccupancyModel
     :members: collect_data, display_data, get_base_data
     
