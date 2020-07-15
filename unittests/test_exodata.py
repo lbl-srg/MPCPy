@@ -422,6 +422,15 @@ class WeatherFromNOAA(TestCaseMPCPy):
         self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
         self.assertGreaterEqual(self.secToLastPre, 3600*24*3)
     
+    def test_catch_method_error(self):
+        # Instantiate weather object
+        with self.assertRaises(NameError):
+            weather = exodata.WeatherFromNOAA(self.geography,'GFS');
+        # Get weather data
+        weather.collect_data(self.start_time_his, self.final_time_his);
+        # Check reference
+        self.df_test = weather.display_data();
+        self.check_df(self.df_test, 'method_error.csv');  
 
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):

@@ -1348,7 +1348,7 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
     ----------
     geography: [numeric, numeric]
         List of [Latitude, Longitude] in degrees.
-    weaForeModel: Weather forecast model, str,
+    method: Weather forecast model, str,
         GFS: Global Forecast System model, available for the entire globe and for 7 days ahead, support historical data, updated every 6 hours, 
              time resolution: 3 hours, geographical resolutions: 0.25 and 0.5 deg 
         HRRR: High Resolution Rapid Refresh model, available US and for ~15 hours ahead, DOES NOT support historical data, updated every hour, 
@@ -1374,7 +1374,7 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
 
     '''
     
-    def __init__(self, geography, weaForeModel, tz_name='from_geography', **kwargs):
+    def __init__(self, geography, method, tz_name='from_geography', **kwargs):
         '''Constructor of DataFrame weather exodata object.
         
         '''
@@ -1389,46 +1389,41 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
                              'dhi'          : ('weaHDifHor', units.W_m2),
                              'total_clouds' : ('weaNTot', units.percent),
                              };
-        self.geography = geography
-        self.lat = variables.Static('lat', self.geography[0], units.deg);
-        self.lon = variables.Static('lon', self.geography[1], units.deg)
-        
+
         # Initialize the weather forecast model
-        if weaForeModel == 'GFS':
+        if method == 'GFS':
             self.model = GFS()
-        elif weaForeModel == 'HRRR':
+        elif method == 'HRRR':
             self.model = HRRR()
-        elif weaForeModel == 'RAP':
+        elif method == 'RAP':
             self.model = RAP()
-        elif weaForeModel == 'NAM':
+        elif method == 'NAM':
             self.model = NAM()
         else:
             raise NameError('The {} forecast model is not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(method))
         
+        kwargs['geography'] = geography
+        kwargs['tz_name'] = 'from_geography'
         self._parse_daq_kwargs(kwargs)
-        if tz_name == 'from_geography':
-            self.tz = tzwhere.tzwhere();
-            self.tz_name = self.tz.tzNameAt(self.geography[0], self.geography[1]);
-        else:            
-            self.tz_name = tz_name;
+        self._parse_time_zone_kwargs(kwargs)
            
-    def _collect_data(self, start_time_local, final_time_local):
+    def _collect_data(self, start_time, final_time):
         '''Collect data from NOAA source.
         
         Parameters
         ----------
-        start_time_local : string
-            Start local time of data collection, example: '2020-06-12 17:00'.
-        final_time_local : string
-            Final local time of data collection, example: '2020-06-14 17:00'.
+        start_time : string
+            Attribute for starting time of data collection period in local time (the time zone defined in the geography 
+            constructor parameter), example: '2020-06-12 17:00'.
+        final_time : string
+            Attribute for final time of data collection period in local time, example: '2020-06-14 17:00'.
    
         '''
         # Set time interval
-        self._set_time_interval(start_time_local, final_time_local)
+        self._set_time_interval(start_time, final_time)
         # collect data from NOAA
-        start = pd.Timestamp(self.start_time_utc, tz='UTC')
-        final = pd.Timestamp(self.final_time_utc, tz='UTC')
-        self._df = self.model.get_processed_data(self.geography[0], self.geography[1], start, final)      
+        self._df = self.model.get_processed_data(self.lat.display_data(), self.lon.display_data(), \
+            self.start_time_utc, self.final_time_utc)      
         self._read_timeseries_from_df();
 
 
