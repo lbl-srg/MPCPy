@@ -1403,7 +1403,7 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
             raise NameError('The {} forecast model is not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(method))
         
         kwargs['geography'] = geography
-        kwargs['tz_name'] = 'from_geography'
+        kwargs['tz_name'] = tz_name
         self._parse_daq_kwargs(kwargs)
         self._parse_time_zone_kwargs(kwargs)
            

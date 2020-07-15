@@ -289,10 +289,10 @@ class WeatherFromNOAA(TestCaseMPCPy):
     def setUp(self):
         self.geography = [37.8716, -122.2727]
         self.ins_model_name = 'GFS'
-        self.start_time_his = '2020-06-01 12:00:00'
-        self.final_time_his = '2020-06-03 12:00:00'
         self.start_time_pre = pd.Timestamp(datetime.datetime.now())
         self.final_time_pre = self.start_time_pre + pd.Timedelta(days=7)
+        self.start_time_his = self.start_time_pre - pd.Timedelta(days=7)
+        self.final_time_his = self.start_time_pre
                              
     def tearDown(self):
         del self.geography
@@ -302,8 +302,8 @@ class WeatherFromNOAA(TestCaseMPCPy):
         del self.start_time_pre
         del self.final_time_pre
 
-    def foreTest(self, df_test):
-        '''The function to test the weather forecast:
+    def valueTest(self, df_test):
+        '''The function to test the weather values are reasonable:
         1. Contains the prediction of weaHDifHor, weaHDirNor, weaHGloHor, weaNTot, weaTDryBul, weaWinSpe
         2. The values of predicted weaHDifHor, weaHDirNor, weaHGloHor are in the range of (0,2000)
         3. The values of predicted weaNTot are in the range of (0,100)
@@ -340,27 +340,44 @@ class WeatherFromNOAA(TestCaseMPCPy):
         weather = exodata.WeatherFromNOAA(self.geography,'GFS');
         # Get weather data
         weather.collect_data(self.start_time_his, self.final_time_his);
-        # Check reference
-        self.df_test = weather.display_data();
-        self.check_df(self.df_test, 'historical_GFS.csv');
-
+        self.df_test = weather.get_base_data()
+        # Check the fields and value range
+        self.valueTest(self.df_test)
+        # Check the length of collected data is at least (24/3)*7-1, because of 3 hours interval
+        self.assertGreater(self.df_test.shape[0], 55)
+    
+    def test_HRRR_collect_historical_data(self):
+        # Instantiate weather object
+        weather = exodata.WeatherFromNOAA(self.geography,'HRRR');
+        # Get weather data
+        weather.collect_data(self.start_time_his, self.final_time_his);
+        self.df_test = weather.get_base_data()
+        # Check the fields and value range
+        self.valueTest(self.df_test)
+        # Check the length of collected data is at least 3 days, HRRR method only save 3 days' data
+        self.assertGreater(self.df_test.shape[0], 72)
+    
     def test_RAP_collect_historical_data(self):
         # Instantiate weather object
         weather = exodata.WeatherFromNOAA(self.geography,'RAP');
         # Get weather data
         weather.collect_data(self.start_time_his, self.final_time_his);
-        # Check reference
-        self.df_test = weather.display_data();
-        self.check_df(self.df_test, 'historical_RAP.csv');
+        self.df_test = weather.get_base_data()
+        # Check the fields and value range
+        self.valueTest(self.df_test)
+        # Check the length of collected data is at least (24/1)*7-1, because of 1 hours interval
+        self.assertGreater(self.df_test.shape[0], 167)
 
     def test_NAM_collect_historical_data(self):
         # Instantiate weather object
         weather = exodata.WeatherFromNOAA(self.geography,'NAM');
         # Get weather data
         weather.collect_data(self.start_time_his, self.final_time_his);
-        # Check reference
-        self.df_test = weather.display_data();
-        self.check_df(self.df_test, 'historical_NAM.csv');
+        self.df_test = weather.get_base_data()
+        # Check the fields and value range
+        self.valueTest(self.df_test)
+        # Check the length of collected data is at least (24/1)*7-1, because of 1 hours interval
+        self.assertGreater(self.df_test.shape[0], 167)
 
     def test_GFS_collect_prediction_data(self):
         # Instantiate weather object
@@ -369,7 +386,7 @@ class WeatherFromNOAA(TestCaseMPCPy):
         weather.collect_data(self.start_time_pre, self.final_time_pre);
         self.df_test = weather.get_base_data()
         # Check the fields and value range
-        self.foreTest(self.df_test)
+        self.valueTest(self.df_test)
         # Check the first prediction is within 3 hours
         self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
         self.assertLess(self.secToFirstPre, 3600*3)
@@ -384,7 +401,7 @@ class WeatherFromNOAA(TestCaseMPCPy):
         weather.collect_data(self.start_time_pre, self.final_time_pre);
         self.df_test = weather.get_base_data()
         # Check the fields and value range
-        self.foreTest(self.df_test)
+        self.valueTest(self.df_test)
         # Check the first prediction is within 1 hours
         self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
         self.assertLess(self.secToFirstPre, 3600*1)
@@ -399,7 +416,7 @@ class WeatherFromNOAA(TestCaseMPCPy):
         weather.collect_data(self.start_time_pre, self.final_time_pre);
         self.df_test = weather.get_base_data()
         # Check the fields and value range
-        self.foreTest(self.df_test)
+        self.valueTest(self.df_test)
         # Check the first prediction is within 1 hours
         self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
         self.assertLess(self.secToFirstPre, 3600*1)
@@ -414,7 +431,7 @@ class WeatherFromNOAA(TestCaseMPCPy):
         weather.collect_data(self.start_time_pre, self.final_time_pre);
         self.df_test = weather.get_base_data()
         # Check the fields and value range
-        self.foreTest(self.df_test)
+        self.valueTest(self.df_test)
         # Check the first prediction is within 6 hours
         self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
         self.assertLess(self.secToFirstPre, 3600*6)
@@ -425,12 +442,12 @@ class WeatherFromNOAA(TestCaseMPCPy):
     def test_catch_method_error(self):
         # Instantiate weather object
         with self.assertRaises(NameError):
-            weather = exodata.WeatherFromNOAA(self.geography,'GFS');
-        # Get weather data
-        weather.collect_data(self.start_time_his, self.final_time_his);
-        # Check reference
-        self.df_test = weather.display_data();
-        self.check_df(self.df_test, 'method_error.csv');  
+            weather = exodata.WeatherFromNOAA(self.geography,'test');
+        # # Get weather data
+        # weather.collect_data(self.start_time_his, self.final_time_his);
+        # # Check reference
+        # self.df_test = weather.display_data();
+        # self.check_df(self.df_test, 'method_error.csv');  
 
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):
