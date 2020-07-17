@@ -1348,6 +1348,8 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
     ----------
     geography: [numeric, numeric]
         List of [Latitude, Longitude] in degrees.
+        The timezone would be inferred automatically from the input geography
+        When speficying the period for data collection, ONLY local time is allowed
     method: Weather forecast model, str,
         GFS: Global Forecast System model, available for the entire globe and for 7 days ahead, support historical data, updated every 6 hours, 
              time resolution: 3 hours, geographical resolutions: 0.25 and 0.5 deg 
@@ -1357,9 +1359,6 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
              time resolution: 1 hour, geographical resolutions: 20, 40 km
         NAM: North American Mesoscale model, available for the whole North America and for 4 days ahead (tested 3 days), support historical data, 
              updated every 6 hours, time resolution: 1 hour, geographical resolutions: 20 km
-    tz_name: timezone name, str
-        Default is 'from geography', then the timezone would be inferred automatically from the input geography
-        Users could also specify the timezone manually, example 'America/Chicago', 'UTC'
 
     Attributes
     ----------
@@ -1374,7 +1373,7 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
 
     '''
     
-    def __init__(self, geography, method, tz_name='from_geography', **kwargs):
+    def __init__(self, geography, method, **kwargs):
         '''Constructor of DataFrame weather exodata object.
         
         '''
@@ -1403,24 +1402,24 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
             raise NameError('The {} forecast model is not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(method))
         
         kwargs['geography'] = geography
-        kwargs['tz_name'] = tz_name
+        kwargs['tz_name'] = 'from_geography'
         self._parse_daq_kwargs(kwargs)
         self._parse_time_zone_kwargs(kwargs)
            
-    def _collect_data(self, start_time, final_time):
+    def _collect_data(self, start_time_local, final_time_local):
         '''Collect data from NOAA source.
         
         Parameters
         ----------
-        start_time : string
-            Attribute for starting time of data collection period in local time (the time zone defined in the geography 
+        start_time_local : string
+            Attribute for starting time of data collection period in LOCAL time (the time zone defined in the geography 
             constructor parameter), example: '2020-06-12 17:00'.
-        final_time : string
-            Attribute for final time of data collection period in local time, example: '2020-06-14 17:00'.
+        final_time_local : string
+            Attribute for final time of data collection period in LOCAL time, example: '2020-06-14 17:00'.
    
         '''
         # Set time interval
-        self._set_time_interval(start_time, final_time)
+        self._set_time_interval(start_time_local, final_time_local)
         # collect data from NOAA
         self._df = self.model.get_processed_data(self.lat.display_data(), self.lon.display_data(), \
             self.start_time_utc, self.final_time_utc)      

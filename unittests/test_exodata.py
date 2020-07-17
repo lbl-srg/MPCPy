@@ -15,6 +15,7 @@ import copy
 import os
 import pandas as pd
 import datetime
+import pytz
 
 #%% Weather Tests
 class WeatherFromEPW(TestCaseMPCPy):
@@ -289,7 +290,8 @@ class WeatherFromNOAA(TestCaseMPCPy):
     def setUp(self):
         self.geography = [37.8716, -122.2727]
         self.ins_model_name = 'GFS'
-        self.start_time_pre = pd.Timestamp(datetime.datetime.now())
+        self.weather = exodata.WeatherFromNOAA(self.geography, self.ins_model_name);
+        self.start_time_pre = pd.Timestamp(datetime.datetime.now(pytz.timezone(self.weather.tz_name)))
         self.final_time_pre = self.start_time_pre + pd.Timedelta(days=7)
         self.start_time_his = self.start_time_pre - pd.Timedelta(days=7)
         self.final_time_his = self.start_time_pre
@@ -388,10 +390,10 @@ class WeatherFromNOAA(TestCaseMPCPy):
         # Check the fields and value range
         self.valueTest(self.df_test)
         # Check the first prediction is within 3 hours
-        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_convert('UTC')).total_seconds()
         self.assertLess(self.secToFirstPre, 3600*3)
         # Check the prediction is available for at least 5 days
-        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_convert('UTC')).total_seconds()
         self.assertGreater(self.secToLastPre, 3600*24*5)
             
     def test_HRRR_collect_prediction_data(self):
@@ -403,10 +405,10 @@ class WeatherFromNOAA(TestCaseMPCPy):
         # Check the fields and value range
         self.valueTest(self.df_test)
         # Check the first prediction is within 1 hours
-        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_convert('UTC')).total_seconds()
         self.assertLess(self.secToFirstPre, 3600*1)
         # Check the prediction is available for at least 15 hours
-        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_convert('UTC')).total_seconds()
         self.assertGreaterEqual(self.secToLastPre, 3600*15)
     
     def test_RAP_collect_prediction_data(self):
@@ -418,10 +420,10 @@ class WeatherFromNOAA(TestCaseMPCPy):
         # Check the fields and value range
         self.valueTest(self.df_test)
         # Check the first prediction is within 1 hours
-        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_convert('UTC')).total_seconds()
         self.assertLess(self.secToFirstPre, 3600*1)
         # Check the prediction is available for at least 18 hours
-        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_convert('UTC')).total_seconds()
         self.assertGreaterEqual(self.secToLastPre, 3600*18)
     
     def test_NAM_collect_prediction_data(self):
@@ -433,10 +435,10 @@ class WeatherFromNOAA(TestCaseMPCPy):
         # Check the fields and value range
         self.valueTest(self.df_test)
         # Check the first prediction is within 6 hours
-        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.secToFirstPre = (self.df_test.index[0] - self.start_time_pre.tz_convert('UTC')).total_seconds()
         self.assertLess(self.secToFirstPre, 3600*6)
         # Check the prediction is available for at least 3 days
-        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_localize(weather.tz_name).tz_convert('UTC')).total_seconds()
+        self.secToLastPre = (self.df_test.index[-1] - self.start_time_pre.tz_convert('UTC')).total_seconds()
         self.assertGreaterEqual(self.secToLastPre, 3600*24*3)
     
     def test_catch_method_error(self):
