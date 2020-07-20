@@ -1348,17 +1348,17 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
     ----------
     geography: [numeric, numeric]
         List of [Latitude, Longitude] in degrees.
-        The timezone would be inferred automatically from the input geography
-        When speficying the period for data collection, ONLY local time is allowed
+        The timezone will be inferred automatically from the input geography.
+        When speficying the period for data collection, ONLY local time is allowed.
     method: Weather forecast model, str,
-        GFS: Global Forecast System model, available for the entire globe and for 7 days ahead, support historical data, updated every 6 hours, 
-             time resolution: 3 hours, geographical resolutions: 0.25 and 0.5 deg 
-        HRRR: High Resolution Rapid Refresh model, available US and for ~15 hours ahead, DOES NOT support historical data, updated every hour, 
-             time resolution: 1 hour, geographical resolutions: 3 km
-        RAP: Rapid Refresh model, available US and for 2 days ahead (tested 18 hours), support historical data, updated every hour, 
-             time resolution: 1 hour, geographical resolutions: 20, 40 km
-        NAM: North American Mesoscale model, available for the whole North America and for 4 days ahead (tested 3 days), support historical data, 
-             updated every 6 hours, time resolution: 1 hour, geographical resolutions: 20 km
+        GFS: Global Forecast System model, available for the entire globe and for 7 days ahead, supports historical data, updated every 6 hours, 
+             time resolution: 3 hours, geographical resolution: 0.25 and 0.5 deg 
+        HRRR: High Resolution Rapid Refresh model, available for U.S. and for ~15 hours ahead, DOES NOT support historical data, updated every hour, 
+             time resolution: 1 hour, geographical resolution: 3 km
+        RAP: Rapid Refresh model, available for the U.S. and for 2 days ahead (tested 18 hours), supports historical data, updated every hour, 
+             time resolution: 1 hour, geographical resolution: 20, 40 km
+        NAM: North American Mesoscale model, available for the whole North America and for 4 days ahead (tested 3 days), supports historical data, 
+             updated every 6 hours, time resolution: 1 hour, geographical resolution: 20 km
 
     Attributes
     ----------
