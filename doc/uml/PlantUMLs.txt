@@ -44,15 +44,22 @@ Type <|-- Price
 
 Weather <|-- WeatherFromEPW
 Weather <|-- WeatherFromCSV
+Weather <|-- WeatherFromDF
 Internal <|-- InternalFromCSV
 Internal <|-- InternalFromOccupancyModel
 Control <|-- ControlFromCSV
+Control <|-- ControlFromDF
 OtherInput <|-- OtherInputFromCSV
+OtherInput <|-- OtherInputFromDF
 Parameter <|-- ParameterFromCSV
+Parameter <|-- ParameterFromDF
 EstimatedState <|-- EstimatedStateFromCSV
+EstimatedState <|-- EstimatedStateFromDF
 Constraint <|-- ConstraintFromCSV
+Constraint <|-- ConstraintFromDF
 Constraint <|-- ConstraintFromOccupancyModel
 Price <|-- PriceFromCSV
+Price <|-- PriceFromDF
 @enduml
 
 
