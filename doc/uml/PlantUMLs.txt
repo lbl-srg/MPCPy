@@ -44,16 +44,23 @@ Type <|-- Price
 
 Weather <|-- WeatherFromEPW
 Weather <|-- WeatherFromCSV
+Weather <|-- WeatherFromDF
 Weather <|-- WeatherFromNOAA
 Internal <|-- InternalFromCSV
 Internal <|-- InternalFromOccupancyModel
 Control <|-- ControlFromCSV
+Control <|-- ControlFromDF
 OtherInput <|-- OtherInputFromCSV
+OtherInput <|-- OtherInputFromDF
 Parameter <|-- ParameterFromCSV
+Parameter <|-- ParameterFromDF
 EstimatedState <|-- EstimatedStateFromCSV
+EstimatedState <|-- EstimatedStateFromDF
 Constraint <|-- ConstraintFromCSV
+Constraint <|-- ConstraintFromDF
 Constraint <|-- ConstraintFromOccupancyModel
 Price <|-- PriceFromCSV
+Price <|-- PriceFromDF
 @enduml
 
 
@@ -86,8 +93,9 @@ Modelica *-- StateEstimate
 Modelica *-- Validate
 
 Validate <|-- RMSE
-ParameterEstimate <|-- JModelica
+ParameterEstimate <|-- JModelicaParameter
 ParameterEstimate <|-- UKFParameter
+StateEstimate <|-- JModelicaState
 StateEstimate <|-- UKFState
 
 Occupancy *-- OccupancyMethod

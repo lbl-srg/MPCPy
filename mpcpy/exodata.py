@@ -99,9 +99,6 @@ Classes
 .. autoclass:: mpcpy.exodata.InternalFromCSV
     :members: collect_data, display_data, get_base_data
     
-.. autoclass:: mpcpy.exodata.InternalFromDF
-    :members: collect_data, display_data, get_base_data
-    
 .. autoclass:: mpcpy.exodata.InternalFromOccupancyModel
     :members: collect_data, display_data, get_base_data
     
@@ -827,9 +824,12 @@ class _EstimatedState(_Type):
         for key in self.data.keys():
             d[key] = {};
             for subkey in self.data[key].keys():
-                d[key][subkey] = self.data[key][subkey].display_data();
-                if subkey == 'Value':
-                    d[key]['Unit'] = self.data[key][subkey].get_display_unit_name();
+                if subkey == 'Parameter':
+                    d[key]['Parameter'] = self.data[key][subkey]
+                else:
+                    d[key][subkey] = self.data[key][subkey].display_data();
+                    if subkey == 'Value':
+                        d[key]['Unit'] = self.data[key][subkey].get_display_unit_name();
         df = pd.DataFrame(data = d).transpose();
         df.index.name = 'Name';
         
@@ -850,12 +850,15 @@ class _EstimatedState(_Type):
         for key in self.data.keys():
             d[key] = {};
             for subkey in self.data[key].keys():
-                d[key][subkey] = self.data[key][subkey].get_base_data();
+                if subkey == 'Parameter':
+                    d[key]['Parameter'] = self.data[key][subkey]
+                else:
+                    d[key][subkey] = self.data[key][subkey].get_base_data();
         df = pd.DataFrame(data = d);
         
         return df;    
         
-    def set_data(self, name, value=None, new_name=None):
+    def set_data(self, name, value=None, new_name=None, parameter=None):
         '''Set new data for existing estimated state.
         
         All data must be in display units of estimated state.
@@ -871,6 +874,9 @@ class _EstimatedState(_Type):
         new_name : str, optional
             Set a new name for the estimated state.
             Default is None.
+        parameter : str, optional
+            Name of parameter representing intial value of estimated state.
+            Default is None.
             
         '''
         
@@ -881,10 +887,12 @@ class _EstimatedState(_Type):
         else:
             if value is not None:
                 self.data[name]['Value'].set_data(value)
+            if parameter is not None:
+                self.data[name]['Parameter'] = parameter
             if new_name is not None:
                 self.data[new_name] = self.data.pop(name)
 
-    def append_data(self, name, value, unit):                
+    def append_data(self, name, value, unit, parameter):                
         '''Append a new estimated state to existing estimated states.
 
         Parameters
@@ -895,6 +903,8 @@ class _EstimatedState(_Type):
             Value for the estimated state.
         unit : mpcpy Units object
             Unit of estimated state.
+        parameter : str
+            Name of parameter representing intial value of estimated state.
             
         '''
         
@@ -905,6 +915,7 @@ class _EstimatedState(_Type):
         else:
             self.data[name] = dict()
             self.data[name]['Value'] = variables.Static(name+'_val', value, unit)
+            self.data[name]['Parameter'] = parameter
 
 ## Constraints       
 class _Constraint(_Type):
@@ -1871,7 +1882,13 @@ class ParameterFromCSV(_Parameter, utility._DAQ):
                 self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
             else: 
                 self.data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
-                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
+                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);   
+                if 'Minimum' in df.columns:
+                    self.data[key]['Minimum'] = variables.Static(key+'_min', df.loc[key, 'Minimum'], unit);
+                if 'Maximum' in df.columns:
+                    self.data[key]['Maximum'] = variables.Static(key+'_max', df.loc[key, 'Maximum'], unit);
+                if 'Covariance' in df.columns:
+                    self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
 
 class ParameterFromDF(_Parameter, utility._DAQ):
     '''Collects parameter data from a pandas DataFrame object. 
@@ -1924,7 +1941,14 @@ class ParameterFromDF(_Parameter, utility._DAQ):
                 self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
             else: 
                 self.data[key]['Free'] = variables.Static(key+'_free', False, units.boolean);
-                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);            
+                self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);    
+                if 'Minimum' in df.columns:
+                    self.data[key]['Minimum'] = variables.Static(key+'_min', df.loc[key, 'Minimum'], unit);
+                if 'Maximum' in df.columns:
+                    self.data[key]['Maximum'] = variables.Static(key+'_max', df.loc[key, 'Maximum'], unit);
+                if 'Covariance' in df.columns:
+                    self.data[key]['Covariance'] = variables.Static(key+'_cov', df.loc[key, 'Covariance'], unit);
+                    
                 
 #%% Parameter source implementations 
 class EstimatedStateFromCSV(_EstimatedState, utility._DAQ):
@@ -1971,7 +1995,8 @@ class EstimatedStateFromCSV(_EstimatedState, utility._DAQ):
         for key in df.index.values:
             self.data[key] = {};
             unit = utility.get_unit_class_from_unit_string(df.loc[key, 'Unit']);
-            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);              
+            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);  
+            self.data[key]['Parameter'] = df.loc[key, 'Parameter']            
 
 class EstimatedStateFromDF(_EstimatedState, utility._DAQ):
     '''Collects estimated state data from a pandas DataFrame object. 
@@ -2016,7 +2041,8 @@ class EstimatedStateFromDF(_EstimatedState, utility._DAQ):
         for key in df.index.values:
             self.data[key] = {};
             unit = utility.get_unit_class_from_unit_string(df.loc[key, 'Unit']);
-            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);     
+            self.data[key]['Value'] = variables.Static(key+'_val', df.loc[key, 'Value'], unit);
+            self.data[key]['Parameter'] = df.loc[key, 'Parameter']
             
 #%% Constraint source implementations
 class ConstraintFromCSV(_Constraint, utility._DAQ):

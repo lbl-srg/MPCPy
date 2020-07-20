@@ -298,7 +298,7 @@ the parameter estimation and will validate the parameter estimation by
 calculating the root mean square error (RMSE) between measurements from the 
 model and emulation.
 
->>> model = models.Modelica(models.JModelica,
+>>> model = models.Modelica(models.JModelicaParameter,
 ...                         models.RMSE,
 ...                         emulation.measurements,
 ...                         moinfo = moinfo,

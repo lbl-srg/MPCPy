@@ -766,7 +766,7 @@ class JModelica(_Package, utility._FMU):
             self.mopfile.write('    input Real ' + key + '= mpc_model.' + key + ';\n');
         # Add extra inputs required for optimization problem
         self._init_input_names = self.Model.input_names;
-        self.other_inputs = self.Model.other_inputs;
+        self.other_inputs = copy.deepcopy(self.Model.other_inputs);
         for key in self.extra_inputs.keys():
             self._init_input_names.append(key);
             self.other_inputs[key] = self.extra_inputs[key];
@@ -902,10 +902,13 @@ class JModelica(_Package, utility._FMU):
 
         '''
 
-        # Update exogenous except constraints
+        # Update exogenous except constraints and only other inputs that are in model
+        # Additional other inputs needed by optimization already updated
         self.weather_data = self.Model.weather_data;
         self.internal_data = self.Model.internal_data;
         self.control_data = self.Model.control_data;
+        for key in self.Model.other_inputs.keys():
+            self.other_inputs[key] = self.Model.other_inputs[key]
         # Update constraints
         if type(Optimization._problem_type) is _ParameterEstimate:
             self.other_inputs = self.Model.other_inputs;

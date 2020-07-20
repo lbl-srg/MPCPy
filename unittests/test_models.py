@@ -46,7 +46,7 @@ class SimpleRC(TestCaseMPCPy):
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         controls.collect_data(self.start_time, self.final_time);
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
@@ -70,7 +70,7 @@ class SimpleRC(TestCaseMPCPy):
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         controls.collect_data(self.start_time, self.final_time);
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
@@ -101,7 +101,7 @@ class SimpleRC(TestCaseMPCPy):
         parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 1000000, units.J_K);
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
@@ -136,7 +136,7 @@ class SimpleRC(TestCaseMPCPy):
         parameter_data['thermalResistor.R']['Maximum'] = variables.Static('R_Max', 0.1, units.K_W);
         parameter_data['thermalResistor.R']['Free'] = variables.Static('R_Free', True, units.boolean);
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
@@ -161,7 +161,7 @@ class SimpleRC(TestCaseMPCPy):
         controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
         controls.collect_data(self.start_time, self.final_time);
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}), \
@@ -189,7 +189,7 @@ class SimpleRC(TestCaseMPCPy):
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_noinputs';
         # Instantiate model
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                      models.RMSE, \
                                      self.measurements, \
                                      moinfo = (mopath, modelpath, {}));
@@ -205,7 +205,7 @@ class SimpleRC(TestCaseMPCPy):
         mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
         modelpath = 'Simple.RC_noinputs';
         # Instantiate model
-        model_no_params = models.Modelica(models.JModelica, \
+        model_no_params = models.Modelica(models.JModelicaParameter, \
                                                models.RMSE, \
                                                self.measurements, \
                                                moinfo = (mopath, modelpath, {}));
@@ -220,7 +220,7 @@ class SimpleRC(TestCaseMPCPy):
         parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', False, units.boolean);
         # Instantiate model
-        model_no_free = models.Modelica(models.JModelica, \
+        model_no_free = models.Modelica(models.JModelicaParameter, \
                                                models.RMSE, \
                                                self.measurements, \
                                                moinfo = (mopath, modelpath, {}), \
@@ -242,7 +242,7 @@ class SimpleRC(TestCaseMPCPy):
         parameter_data['heatCapacitor.C']['Maximum'] = variables.Static('C_Max', 100000, units.J_K);
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_Free', True, units.boolean);
         # Instantiate model
-        model_no_meas = models.Modelica(models.JModelica, \
+        model_no_meas = models.Modelica(models.JModelicaParameter, \
                                                models.RMSE, \
                                                self.measurements, \
                                                moinfo = (mopath, modelpath, {}), \
@@ -256,7 +256,7 @@ class SimpleRC(TestCaseMPCPy):
         # Set model path
         fmupath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
         with self.assertRaises(ValueError):
-            model = models.Modelica(models.JModelica, models.RMSE, {}, fmupath=fmupath);
+            model = models.Modelica(models.JModelicaParameter, models.RMSE, {}, fmupath=fmupath);
 
 
 #%%
@@ -306,7 +306,7 @@ class EstimateFromJModelicaRealCSV(TestCaseMPCPy):
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
         self.modelpath = 'LBNL71T_MPC.MPC';
         self.libraries = os.environ.get('MODELICAPATH');
-        self.estimate_method = models.JModelica;
+        self.estimate_method = models.JModelicaParameter;
         self.validation_method = models.RMSE;
         # Instantiate exo data sources
         self.weather = exodata.WeatherFromEPW(self.weather_path);
@@ -516,7 +516,7 @@ class EstimateFromJModelicaEmulationFMU(TestCaseMPCPy):
         self.mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'LBNL71T_MPC.mo');
         self.modelpath = 'LBNL71T_MPC.MPC';
         self.libraries = os.environ.get('MODELICAPATH');
-        self.estimate_method = models.JModelica;
+        self.estimate_method = models.JModelicaParameter;
         self.validation_method = models.RMSE;
         # Instantiate exo data sources
         self.weather = exodata.WeatherFromEPW(self.weather_path);
@@ -738,7 +738,7 @@ class StateEstimateFromUKF(TestCaseMPCPy):
         modelpath = 'Simple.R2C2';
         moinfo = (mopath, modelpath, {})
         # Gather state data
-        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates.csv');
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates_ukf.csv');
         # Instantiate estimated state object
         estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
         estimated_states.collect_data()
@@ -899,6 +899,169 @@ class StateEstimateFromUKF(TestCaseMPCPy):
         df.to_csv(csv_file_path_new)
         
         return csv_file_path_new
+        
+class StateEstimateFromJModelica(TestCaseMPCPy):
+    '''Test the state estimation of a model using JModelica.
+
+    '''
+
+    def test_simple_estimate(self):
+        '''Test state estimation on a simple two-state model.
+        
+        '''
+        
+        start_time = '1/1/2017';
+        final_time = '1/1/2017 12:00:00';
+        plot = False
+        # Set measurements
+        measurements = {};
+        measurements['T_db'] = {'Sample' : variables.Static('T_db_sample', 1800, units.s)};
+        measurements['heatCapacitor2.T'] = {'Sample' : variables.Static('T_flo_sample', 1800, units.s)};
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.R2C2';
+        moinfo = (mopath, modelpath, {})
+        # Define parameters
+        parameter = {};
+        parameter['T2o'] = {};
+        parameter['T2o']['Value'] = 295
+        parameter['T2o']['Minimum'] = 273.15
+        parameter['T2o']['Maximum'] = 350
+        parameter['T2o']['Free'] = False
+        parameter['T2o']['Unit'] = 'K'
+        parameter['To'] = {};
+        parameter['To']['Value'] = 295
+        parameter['To']['Minimum'] = 273.15
+        parameter['To']['Maximum'] = 350
+        parameter['To']['Free'] = False
+        parameter['To']['Unit'] = 'K'
+        df_parameter = pd.DataFrame(parameter).transpose()
+        parameters = exodata.ParameterFromDF(df_parameter)
+        parameters.collect_data()
+        # Gather state data
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates_jmodelica.csv');
+        # Instantiate estimated state object
+        estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
+        estimated_states.collect_data()
+        # Gather control inputs
+        control_csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleRC_Input.csv');
+        variable_map = {'q_flow_csv' : ('q_flow', units.W)};
+        controls = exodata.ControlFromCSV(control_csv_filepath, variable_map);
+        controls.collect_data(start_time, final_time);
+        # Instantiate system
+        system = systems.EmulationFromFMU(measurements, \
+                                          moinfo = moinfo, \
+                                          control_data = controls.data);
+        # Get measurements
+        system.collect_measurements(start_time, final_time);
+        
+        # Instantiate model
+        model = models.Modelica(models.JModelicaParameter, \
+                                     models.RMSE, \
+                                     system.measurements, \
+                                     models.JModelicaState, \
+                                     moinfo = moinfo, \
+                                     parameter_data = parameters.data, \
+                                     estimated_state_data = estimated_states.data, \
+                                     control_data = controls.data);
+        # Simulate initial guess
+        model.simulate(start_time, final_time)
+        df_init = model.display_measurements('Simulated')
+        # Estimate
+        model.state_estimate(start_time, final_time, ['T_db']);
+        # Simulate with updated initial value
+        model.simulate(start_time, final_time)
+        # Check references
+        df_test = system.display_measurements('Measured')
+        est_value_1 = estimated_states.display_data().loc['T_db','Value']
+        est_1 = model.display_measurements('Simulated')['T_db']
+        est_value_2 = estimated_states.display_data().loc['heatCapacitor2.T','Value']
+        est_2 = model.display_measurements('Simulated')['heatCapacitor2.T']
+        df_test['heatCapacitor2.T_est_init'] = df_init['heatCapacitor2.T']
+        df_test['heatCapacitor2.T_est_value'] = est_value_2
+        df_test['heatCapacitor2.T_est'] = est_2
+        df_test['T_db_init'] = df_init['T_db']
+        df_test['T_db_est_value'] = est_value_1
+        df_test['T_db_est'] = est_1
+        self.check_df(df_test, 'estimate_and_validate.csv');
+        # Check parameters
+        df_test_pars = parameters.display_data()
+        self.check_df(df_test_pars, 'model_parameters_estimated.csv', timeseries=False);
+        # Plot
+        if plot:
+            plt.figure(1)
+            plt.plot(df_test['T_db'], '-', label='T_db_meas')
+            plt.plot(df_test['T_db_init'], ':', label='T_db_est_init')
+            plt.plot(df_test['T_db_est'], '--', label = 'T_db_est')
+            plt.plot(df_test['T_db_est_value'].index[-1], est_value_1, 'o', color='r', label = 'T_db_est_value')
+            plt.plot(df_test['heatCapacitor2.T'], '-', label='T_flo_meas')
+            plt.plot(df_test['heatCapacitor2.T_est_init'], ':', label = 'T_flo_est_init')
+            plt.plot(df_test['heatCapacitor2.T_est'], '--', label = 'T_flo_est')
+            plt.plot(df_test['heatCapacitor2.T_est_value'].index[-1], est_value_2, 'o', color='b', label = 'T_flo_est_value')
+            plt.legend()
+            plt.show()
+            
+    def test_replace_parameters(self):
+        '''Test the functions that replace the parameters for state estimation.
+        
+        '''
+
+        # Set model paths
+        mopath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'Simple.mo');
+        modelpath = 'Simple.R2C2';
+        moinfo = (mopath, modelpath, {})
+        # Define parameters
+        parameter = {};
+        parameter['T2o'] = {};
+        parameter['T2o']['Value'] = 295
+        parameter['T2o']['Minimum'] = 273.15
+        parameter['T2o']['Maximum'] = 350
+        parameter['T2o']['Free'] = False
+        parameter['T2o']['Unit'] = 'K'
+        parameter['T2o']['Covariance'] = 1
+        parameter['To'] = {};
+        parameter['To']['Value'] = 295
+        parameter['To']['Minimum'] = 273.15
+        parameter['To']['Maximum'] = 350
+        parameter['To']['Free'] = True
+        parameter['To']['Unit'] = 'K'
+        parameter['To']['Covariance'] = 2
+        df_parameter = pd.DataFrame(parameter).transpose()
+        parameters = exodata.ParameterFromDF(df_parameter)
+        parameters.collect_data()
+        # Gather state data
+        csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'model', 'SimpleEstimatedStates_jmodelica.csv');
+        # Instantiate estimated state object
+        estimated_states = exodata.EstimatedStateFromCSV(csv_filepath);
+        estimated_states.collect_data()            
+        # Instantiate model
+        model = models.Modelica(models.JModelicaParameter, \
+                                     models.RMSE, \
+                                     {}, \
+                                     models.JModelicaState, \
+                                     moinfo = moinfo, \
+                                     parameter_data = parameters.data, \
+                                     estimated_state_data = estimated_states.data);
+        # Check original parameters
+        df_test_pars = parameters.display_data()
+        self.check_df(df_test_pars, 'model_parameters_check.csv', timeseries=False);
+        # Replace parameters and check
+        model._state_estimate_method._replace_parameter_data(model)
+        df_test_pars = parameters.display_data()
+        self.check_df(df_test_pars, 'model_parameters_replaced_check.csv', timeseries=False);
+        # Restore parameters and check with original
+        model._state_estimate_method._restore_parameter_data(model)
+        df_test_pars = parameters.display_data()
+        self.check_df(df_test_pars, 'model_parameters_check.csv', timeseries=False);
+        
+    def test_instantiate_error_incompatible_estimation(self):
+        '''Test error raised if estimation method is incompatible with model.'''
+        # Set model path
+        fmupath = os.path.join(self.get_unittest_path(), 'resources', 'building', 'LBNL71T_Emulation_JModelica_v1.fmu');
+        with self.assertRaises(ValueError):
+            model = models.Modelica(models.UKFParameter, models.RMSE, {}, models.JModelicaState, fmupath=fmupath);
+        with self.assertRaises(ValueError):
+            model = models.Modelica(models.JModelicaParameter, models.RMSE, {}, models.UKFState, fmupath=fmupath);
         
 
 #%% Occupancy tests

@@ -865,6 +865,11 @@ class EstimatedStateSet(TestCaseMPCPy):
         self.estimated_states.set_data('heatCapacitor2.T', value=20.0)
         df_test = self.estimated_states.display_data();
         self.check_df(df_test, 'set_data_value.csv', timeseries=False);
+    def test_set_data_parameter(self):
+        # Set value only
+        self.estimated_states.set_data('heatCapacitor2.T', parameter='T2_o')
+        df_test = self.estimated_states.display_data();
+        self.check_df(df_test, 'set_data_parameter.csv', timeseries=False);
         
     def test_set_data_name(self):
         # Set name only
@@ -876,7 +881,8 @@ class EstimatedStateSet(TestCaseMPCPy):
         # Set all data
         self.estimated_states.set_data('heatCapacitor2.T', 
                                  value=20.0,
-                                 new_name='heaCap2.T')
+                                 new_name='heaCap2.T',
+                                 parameter='T2_o')
         df_test = self.estimated_states.display_data();
         self.check_df(df_test, 'set_data_all.csv', timeseries=False);
         
@@ -904,7 +910,8 @@ class EstimatedStateAppend(TestCaseMPCPy):
         # Set all data
         self.estimated_states.append_data('heaCap2.T', 
                                     value=20.0,
-                                    unit=units.degC)
+                                    unit=units.degC, 
+                                    parameter='T2o')
         df_test = self.estimated_states.display_data();
         self.check_df(df_test, 'append_data.csv', timeseries=False);
         
@@ -913,7 +920,8 @@ class EstimatedStateAppend(TestCaseMPCPy):
         with self.assertRaises(KeyError): 
             self.estimated_states.append_data('heatCapacitor2.T', 
                                         value=20.0,
-                                        unit=units.degC)
+                                        unit=units.degC,
+                                        parameter='T2o')
 
 class EstimatedStateFromDF(TestCaseMPCPy):
     '''Test the collection of estimated state data from a pandas DataFrame object.
