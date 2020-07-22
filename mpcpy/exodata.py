@@ -554,7 +554,62 @@ class _Weather(_Type, utility._FMU):
                                      self.data['weaNTot'], self.data['weaWinSpe'], \
                                      self.data['weaWinDir'], self.data['weaHHorIR'], \
                                      self.data['weaHDirNor'], self.data['weaHGloHor']);        
-        
+
+    def calculate_solar_radiation(self, method = 'Zhang-Huang'):
+        '''
+        h, cc, rh, wspd
+        Calculate the total solar radiation using the value of collected variables
+        Method: 
+        'Zhang-Huang': Zhang-Huang Solar Model.
+        Reference to the ZH model: https://www.energyplus.net/sites/default/files/docs/site_v8.3.0/EngineeringReference/05-Climate/index.html#zhang-huang-solar-model
+        Original paper: https://pdfs.semanticscholar.org/7b8e/7ea72db78f99939ce2d7c2890dacfcb0dc5a.pdf
+
+        Parameters
+        ----------
+        weaSolAlt : solar altitude angle, i.e, the angle between the horizontal and the line to the sun, in radian (not in degree)
+        weaNTot : cloud cover, in %. As in the original manuscript, the cloud cover is requried in tenths, 
+                we divide weaNTot by 10 
+        weaRelHum : relative humidity, in %
+        weaWinSpe : wind speed, in m/s
+            
+        Returns
+        -------
+        weaHGloHor : estimated global horizontal irradiation, in W/m2
+        '''
+        if method == 'Zhang-Huang':
+            if 'weaSolAlt' not in self.data.keys():
+                raise KeyError('weaSolAlt is not available, therefore solar radiation cannot be calculated')
+            elif 'weaNTot' not in self.data.keys():
+                raise KeyError('weaNTot is not available, therefore solar radiation cannot be calculated')
+            elif 'weaRelHum' not in self.data.keys():
+                raise KeyError('weaRelHum is not available, therefore solar radiation cannot be calculated')
+            elif 'weaWinSpe' not in self.data.keys():
+                raise KeyError('weaWinSpe is not available, therefore solar radiation cannot be calculated')
+            else:
+                self._df = self.get_base_data()
+                
+                I_0 = 1355
+                c_0 = 0.5598
+                c_1 = 0.4982
+                c_2 = -0.6762
+                c_3 = 0 # 0.02842 in the paper, not used in this model
+                c_4 = -0.00317
+                c_5 = 0.014
+                d   = -17.853
+                k   = 0.843
+
+                weaHGloHor_np = np.zeros(len(self._df))
+                for i in range(len(self._df)):
+                    weaHGloHor_np[i] = max((I_0*math.sin(self._df['weaSolAlt'][i])*(c_0+c_1*(self._df['weaNTot'][i]/10)+\
+                    c_2*(self._df['weaNTot'][i]/10)**2+c_4*self._df['weaRelHum'][i]+c_5*self._df['weaWinSpe'][i])+d)/k,0)
+                    self._df['weaHGloHor'] = weaHGloHor_np
+                self._read_timeseries_from_df()
+        else:
+            raise NameError("The method is not supported")
+
+        return None
+
+
 ## Internal       
 class _Internal(_Type):
     '''Mix-in class for internal exogenous data.
@@ -1366,9 +1421,9 @@ class WeatherFromNOAA(_Weather, utility._DAQ):
              time resolution: 3 hours, geographical resolution: 0.25 and 0.5 deg 
         HRRR: High Resolution Rapid Refresh model, available for U.S. and for ~15 hours ahead, DOES NOT support historical data, updated every hour, 
              time resolution: 1 hour, geographical resolution: 3 km
-        RAP: Rapid Refresh model, available for the U.S. and for 2 days ahead (tested 18 hours), supports historical data, updated every hour, 
+        RAP: Rapid Refresh model, available for the U.S. and for 18 hours, supports historical data, updated every hour, 
              time resolution: 1 hour, geographical resolution: 20, 40 km
-        NAM: North American Mesoscale model, available for the whole North America and for 4 days ahead (tested 3 days), supports historical data, 
+        NAM: North American Mesoscale model, available for the whole North America and for 3 days ahead, supports historical data, 
              updated every 6 hours, time resolution: 1 hour, geographical resolution: 20 km
 
     Attributes
