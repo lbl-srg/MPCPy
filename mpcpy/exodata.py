@@ -306,6 +306,7 @@ from mpcpy import variables
 from pvlib.forecast import GFS, NAM, HRRR, RAP
 import datetime
 import os
+import math
      
 #%% Abstract source interface class
 class _Type(utility._mpcpyPandas):

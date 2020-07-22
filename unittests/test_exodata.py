@@ -92,7 +92,6 @@ class calSolRad(TestCaseMPCPy):
         del self.start_time
         del self.final_time
         del self.time_header
-        del weather
 
     def test_calculate(self):
         # Instantiate weather object
