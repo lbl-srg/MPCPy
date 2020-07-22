@@ -69,6 +69,67 @@ class WeatherFromEPW(TestCaseMPCPy):
         df_test = weather.display_data();
         self.check_df(df_test, 'collect_data_standard_time.csv');
 
+class calSolRad(TestCaseMPCPy):
+    '''Test the method of calculate_solar_radiation
+
+    '''
+
+    def setUp(self):
+        self.csv_filepath = os.path.join(self.get_unittest_path(), 'resources', 'weather', 'calSolRadCSV.csv');
+        self.geography = [37.8716, -122.2727];
+        self.variable_map = {'Solar Altitude' : ('weaSolAlt', units.rad), \
+                             'Cloud Cover' : ('weaNTot', units.unit1), \
+                             'Relative Humidity' : ('weaRelHum', units.percent), \
+                             'Wind Speed' : ('weaWinSpe', units.m_s)}
+        self.start_time = '10/19/2016 12:53:00 PM'
+        self.final_time = '10/19/2016 11:53:00 PM'
+        self.time_header = 'TimePDT'
+    
+    def tearDown(self):
+        del self.csv_filepath
+        del self.geography
+        del self.variable_map
+        del self.start_time
+        del self.final_time
+        del self.time_header
+        del weather
+
+    def test_calculate(self):
+        # Instantiate weather object
+        weather = exodata.WeatherFromCSV(self.csv_filepath, \
+                                         self.variable_map, \
+                                         self.geography, \
+                                         time_header = self.time_header, \
+                                         tz_name = 'from_geography')
+        # Get weather data
+        weather.collect_data(self.start_time, self.final_time)
+        # Calculate solar radiation
+        weather.calculate_solar_radiation(method = 'Zhang-Huang')
+        # Check reference
+        df_test = weather.display_data();
+        self.check_df(df_test, 'calculate_solar_radiation.csv')
+    
+    def test_catch_method_error(self):
+        # Instantiate weather object
+        with self.assertRaises(NameError):
+            weather.calculate_solar_radiation(method = 'test')
+
+    def test_catch_value_missing_error(self):
+        # Instantiate weather object
+        self.variable_map_missingRH = {'Solar Altitude' : ('weaSolAlt', units.rad), \
+                             'Cloud Cover' : ('weaNTot', units.unit1), \
+                             'Wind Speed' : ('weaWinSpe', units.m_s)}        
+        # Instantiate weather object
+        weather = exodata.WeatherFromCSV(self.csv_filepath, \
+                                         self.variable_map_missingRH, \
+                                         self.geography, \
+                                         time_header = self.time_header, \
+                                         tz_name = 'from_geography')
+        # Get weather data
+        weather.collect_data(self.start_time, self.final_time)        
+        with self.assertRaises(KeyError):
+            weather.calculate_solar_radiation(method = 'Zhang-Huang')
+
 class WeatherFromCSV(TestCaseMPCPy):
     '''Test the collection of weather data from a CSV file.
     
@@ -445,11 +506,7 @@ class WeatherFromNOAA(TestCaseMPCPy):
         # Instantiate weather object
         with self.assertRaises(NameError):
             weather = exodata.WeatherFromNOAA(self.geography,'test');
-        # # Get weather data
-        # weather.collect_data(self.start_time_his, self.final_time_his);
-        # # Check reference
-        # self.df_test = weather.display_data();
-        # self.check_df(self.df_test, 'method_error.csv');  
+
 
 #%% Internal Tests
 class InternalFromCSV(TestCaseMPCPy):
