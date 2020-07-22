@@ -565,7 +565,7 @@ class _Weather(_Type, utility._FMU):
         Reference to the ZH model: https://www.energyplus.net/sites/default/files/docs/site_v8.3.0/EngineeringReference/05-Climate/index.html#zhang-huang-solar-model
         Original paper: https://pdfs.semanticscholar.org/7b8e/7ea72db78f99939ce2d7c2890dacfcb0dc5a.pdf
 
-        Parameters
+        Parameters needed to calculate the solar radiation
         ----------
         weaSolAlt : solar altitude angle, i.e, the angle between the horizontal and the line to the sun, in radian (not in degree)
         weaNTot : cloud cover, in %. As in the original manuscript, the cloud cover is requried in tenths, 
@@ -603,7 +603,13 @@ class _Weather(_Type, utility._FMU):
                 for i in range(len(self._df)):
                     weaHGloHor_np[i] = max((I_0*math.sin(self._df['weaSolAlt'][i])*(c_0+c_1*(self._df['weaNTot'][i]/10)+\
                     c_2*(self._df['weaNTot'][i]/10)**2+c_4*self._df['weaRelHum'][i]+c_5*self._df['weaWinSpe'][i])+d)/k,0)
-                    self._df['weaHGloHor'] = weaHGloHor_np
+                self._df['weaHGloHor'] = weaHGloHor_np
+                self.variable_map = {'weaSolAlt' : ('weaSolAlt', units.rad), \
+                                     'weaNTot' : ('weaNTot', units.unit1), \
+                                     'weaRelHum' : ('weaRelHum', units.percent), \
+                                     'weaWinSpe' : ('weaWinSpe', units.m_s), \
+                                     'weaHGloHor': ('weaHGloHor', units.W_m2)
+                                    }            
                 self._read_timeseries_from_df()
         else:
             raise NameError("The method is not supported")
