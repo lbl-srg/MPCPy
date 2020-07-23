@@ -557,26 +557,32 @@ class _Weather(_Type, utility._FMU):
                                      self.data['weaHDirNor'], self.data['weaHGloHor']);        
 
     def calculate_solar_radiation(self, method = 'Zhang-Huang'):
-        '''
-        h, cc, rh, wspd
-        Calculate the total solar radiation using the value of collected variables
-        Method: 
-        'Zhang-Huang': Zhang-Huang Solar Model.
+        '''Calculate the global solar horizontal irradiation with already-collected variables.
+        
+        This function adds the 'weaHGloHor' variable to the data dictionary in W/m^2.
+        
+        The available method is the 'Zhang-Huang': Zhang-Huang Solar Model.
         Reference to the ZH model: https://www.energyplus.net/sites/default/files/docs/site_v8.3.0/EngineeringReference/05-Climate/index.html#zhang-huang-solar-model
         Original paper: https://pdfs.semanticscholar.org/7b8e/7ea72db78f99939ce2d7c2890dacfcb0dc5a.pdf
+        For this method, the data dictionary variables needed to calculate the solar radiation are:
+            - weaSolAlt : solar altitude angle, i.e, the angle between the horizontal and the line to the sun, in radian (not in degree)
+            - weaNTot : cloud cover, in %. In the original manuscript, the cloud cover is requried in tenths, so we divide weaNTot by 10 
+            - weaRelHum : relative humidity, in %.
+            - weaWinSpe : wind speed, in m/s.
 
-        Parameters needed to calculate the solar radiation
+        Parameters
         ----------
-        weaSolAlt : solar altitude angle, i.e, the angle between the horizontal and the line to the sun, in radian (not in degree)
-        weaNTot : cloud cover, in %. As in the original manuscript, the cloud cover is requried in tenths, 
-                we divide weaNTot by 10 
-        weaRelHum : relative humidity, in %
-        weaWinSpe : wind speed, in m/s
-            
+        method : str, optional
+            Method of calculating the solar irradiation.  
+            Only one option exists, 'Zhang-Huang'.
+            Default is 'Zhang-Huang'.
+        
         Returns
         -------
-        weaHGloHor : estimated global horizontal irradiation, in W/m2
+        None
+
         '''
+
         if method == 'Zhang-Huang':
             if 'weaSolAlt' not in self.data.keys():
                 raise KeyError('weaSolAlt is not available, therefore solar radiation cannot be calculated')
