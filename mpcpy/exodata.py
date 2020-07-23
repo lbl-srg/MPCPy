@@ -60,16 +60,16 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.WeatherFromEPW
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, calculate_solar_radiation
 
 .. autoclass:: mpcpy.exodata.WeatherFromCSV
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, calculate_solar_radiation
     
 .. autoclass:: mpcpy.exodata.WeatherFromDF
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, calculate_solar_radiation
 
 .. autoclass:: mpcpy.exodata.WeatherFromNOAA
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, calculate_solar_radiation
 
 
 ========   
@@ -565,10 +565,13 @@ class _Weather(_Type, utility._FMU):
         Reference to the ZH model: https://www.energyplus.net/sites/default/files/docs/site_v8.3.0/EngineeringReference/05-Climate/index.html#zhang-huang-solar-model
         Original paper: https://pdfs.semanticscholar.org/7b8e/7ea72db78f99939ce2d7c2890dacfcb0dc5a.pdf
         For this method, the data dictionary variables needed to calculate the solar radiation are:
-            - weaSolAlt : solar altitude angle, i.e, the angle between the horizontal and the line to the sun, in radian (not in degree)
-            - weaNTot : cloud cover, in %. In the original manuscript, the cloud cover is requried in tenths, so we divide weaNTot by 10 
-            - weaRelHum : relative humidity, in %.
-            - weaWinSpe : wind speed, in m/s.
+        
+        - weaSolAlt : solar altitude angle
+        - weaNTot : cloud cover
+        - weaRelHum : relative humidity
+        - weaWinSpe : wind speed
+        
+        The ``collect_data()`` method should be used before calling this method.
 
         Parameters
         ----------
@@ -604,6 +607,10 @@ class _Weather(_Type, utility._FMU):
                 d   = -17.853
                 k   = 0.843
                 # Calculate ghi
+                # weaSolAlt : solar altitude angle, in radians.  Already base units.
+                # weaNTot : cloud cover, in tenths. Base units are 1, so we divide by 10. 
+                # weaRelHum : relative humidity, in %.  Already base units.
+                # weaWinSpe : wind speed, in m/s.  Already base units.
                 weaHGloHor_np = np.zeros(len(self.get_base_data()))
                 for i in range(len(self.get_base_data())):
                     weaHGloHor_np[i] = max((I_0*math.sin(self.get_base_data()['weaSolAlt'][i])*(c_0+c_1*(self.get_base_data()['weaNTot'][i]/10)+\
