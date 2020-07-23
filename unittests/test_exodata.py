@@ -69,7 +69,7 @@ class WeatherFromEPW(TestCaseMPCPy):
         df_test = weather.display_data();
         self.check_df(df_test, 'collect_data_standard_time.csv');
 
-class calSolRad(TestCaseMPCPy):
+class CalSolRad(TestCaseMPCPy):
     '''Test the method of calculate_solar_radiation
 
     '''
