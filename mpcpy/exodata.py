@@ -592,9 +592,8 @@ class _Weather(_Type, utility._FMU):
                 raise KeyError('weaRelHum is not available, therefore solar radiation cannot be calculated')
             elif 'weaWinSpe' not in self.data.keys():
                 raise KeyError('weaWinSpe is not available, therefore solar radiation cannot be calculated')
-            else:
-                self._df = self.get_base_data()
-                
+            else:                
+                # Set constants
                 I_0 = 1355
                 c_0 = 0.5598
                 c_1 = 0.4982
@@ -604,19 +603,15 @@ class _Weather(_Type, utility._FMU):
                 c_5 = 0.014
                 d   = -17.853
                 k   = 0.843
-
-                weaHGloHor_np = np.zeros(len(self._df))
-                for i in range(len(self._df)):
-                    weaHGloHor_np[i] = max((I_0*math.sin(self._df['weaSolAlt'][i])*(c_0+c_1*(self._df['weaNTot'][i]/10)+\
-                    c_2*(self._df['weaNTot'][i]/10)**2+c_4*self._df['weaRelHum'][i]+c_5*self._df['weaWinSpe'][i])+d)/k,0)
-                self._df['weaHGloHor'] = weaHGloHor_np
-                self.variable_map = {'weaSolAlt' : ('weaSolAlt', units.rad), \
-                                     'weaNTot' : ('weaNTot', units.unit1), \
-                                     'weaRelHum' : ('weaRelHum', units.percent), \
-                                     'weaWinSpe' : ('weaWinSpe', units.m_s), \
-                                     'weaHGloHor': ('weaHGloHor', units.W_m2)
-                                    }            
-                self._read_timeseries_from_df()
+                # Calculate ghi
+                weaHGloHor_np = np.zeros(len(self.get_base_data()))
+                for i in range(len(self.get_base_data())):
+                    weaHGloHor_np[i] = max((I_0*math.sin(self.get_base_data()['weaSolAlt'][i])*(c_0+c_1*(self.get_base_data()['weaNTot'][i]/10)+\
+                    c_2*(self.get_base_data()['weaNTot'][i]/10)**2+c_4*self.get_base_data()['weaRelHum'][i]+c_5*self.get_base_data()['weaWinSpe'][i])+d)/k,0)
+                # Make pandas series
+                weaHGloHor_ts = pd.Series(data=weaHGloHor_np, index=self.get_base_data().index)
+                # Assign to data dictionary
+                self.data['weaHGloHor'] = variables.Timeseries('weaHGloHor', weaHGloHor_ts, units.W_m2)
         else:
             raise NameError("The method is not supported")
 
