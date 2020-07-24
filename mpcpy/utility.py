@@ -32,6 +32,7 @@ from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
 from pyfmi import load_fmu
 from pymodelica import compile_fmu
+import math
 
 
 #%%
@@ -219,7 +220,7 @@ class _mpcpyPandas(object):
     def _parse_time_zone_kwargs(self, kwargs):
         '''Set the timezone using geography or timezone name.
         
-        If no timezone is supplied, than utc is assigned.
+        If no timezone is supplied, then utc is assigned.
         
         Parameters
         ----------

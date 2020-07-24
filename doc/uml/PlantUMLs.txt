@@ -45,6 +45,7 @@ Type <|-- Price
 Weather <|-- WeatherFromEPW
 Weather <|-- WeatherFromCSV
 Weather <|-- WeatherFromDF
+Weather <|-- WeatherFromNOAA
 Internal <|-- InternalFromCSV
 Internal <|-- InternalFromOccupancyModel
 Control <|-- ControlFromCSV

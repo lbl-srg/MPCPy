@@ -60,13 +60,16 @@ Classes
 =======
 
 .. autoclass:: mpcpy.exodata.WeatherFromEPW
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, calculate_solar_radiation
 
 .. autoclass:: mpcpy.exodata.WeatherFromCSV
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, calculate_solar_radiation
     
 .. autoclass:: mpcpy.exodata.WeatherFromDF
-    :members: collect_data, display_data, get_base_data
+    :members: collect_data, display_data, get_base_data, calculate_solar_radiation
+
+.. autoclass:: mpcpy.exodata.WeatherFromNOAA
+    :members: collect_data, display_data, get_base_data, calculate_solar_radiation
 
 
 ========   
@@ -300,7 +303,10 @@ from dateutil.relativedelta import relativedelta
 from pytz import exceptions as pytz_exceptions
 from mpcpy import units
 from mpcpy import variables
+from pvlib.forecast import GFS, NAM, HRRR, RAP
+import datetime
 import os
+import math
      
 #%% Abstract source interface class
 class _Type(utility._mpcpyPandas):
@@ -549,7 +555,76 @@ class _Weather(_Type, utility._FMU):
                                      self.data['weaNTot'], self.data['weaWinSpe'], \
                                      self.data['weaWinDir'], self.data['weaHHorIR'], \
                                      self.data['weaHDirNor'], self.data['weaHGloHor']);        
+
+    def calculate_solar_radiation(self, method = 'Zhang-Huang'):
+        '''Calculate the global solar horizontal irradiation with already-collected variables.
         
+        This function adds the 'weaHGloHor' variable to the data dictionary in W/m^2.
+        
+        The available method is the 'Zhang-Huang': Zhang-Huang Solar Model.
+        Reference to the ZH model: https://www.energyplus.net/sites/default/files/docs/site_v8.3.0/EngineeringReference/05-Climate/index.html#zhang-huang-solar-model
+        Original paper: https://pdfs.semanticscholar.org/7b8e/7ea72db78f99939ce2d7c2890dacfcb0dc5a.pdf
+        For this method, the data dictionary variables needed to calculate the solar radiation are:
+        
+        - weaSolAlt : solar altitude angle
+        - weaNTot : cloud cover
+        - weaRelHum : relative humidity
+        - weaWinSpe : wind speed
+        
+        The ``collect_data()`` method should be used before calling this method.
+
+        Parameters
+        ----------
+        method : str, optional
+            Method of calculating the solar irradiation.  
+            Only one option exists, 'Zhang-Huang'.
+            Default is 'Zhang-Huang'.
+        
+        Returns
+        -------
+        None
+
+        '''
+
+        if method == 'Zhang-Huang':
+            if 'weaSolAlt' not in self.data.keys():
+                raise KeyError('weaSolAlt is not available, therefore solar radiation cannot be calculated')
+            elif 'weaNTot' not in self.data.keys():
+                raise KeyError('weaNTot is not available, therefore solar radiation cannot be calculated')
+            elif 'weaRelHum' not in self.data.keys():
+                raise KeyError('weaRelHum is not available, therefore solar radiation cannot be calculated')
+            elif 'weaWinSpe' not in self.data.keys():
+                raise KeyError('weaWinSpe is not available, therefore solar radiation cannot be calculated')
+            else:                
+                # Set constants
+                I_0 = 1355
+                c_0 = 0.5598
+                c_1 = 0.4982
+                c_2 = -0.6762
+                c_3 = 0 # 0.02842 in the paper, not used in this model
+                c_4 = -0.00317
+                c_5 = 0.014
+                d   = -17.853
+                k   = 0.843
+                # Calculate ghi
+                # weaSolAlt : solar altitude angle, in radians.  Already base units.
+                # weaNTot : cloud cover, in tenths. Base units are 1, so we divide by 10. 
+                # weaRelHum : relative humidity, in %.  Already base units.
+                # weaWinSpe : wind speed, in m/s.  Already base units.
+                weaHGloHor_np = np.zeros(len(self.get_base_data()))
+                for i in range(len(self.get_base_data())):
+                    weaHGloHor_np[i] = max((I_0*math.sin(self.get_base_data()['weaSolAlt'][i])*(c_0+c_1*(self.get_base_data()['weaNTot'][i]/10)+\
+                    c_2*(self.get_base_data()['weaNTot'][i]/10)**2+c_4*self.get_base_data()['weaRelHum'][i]+c_5*self.get_base_data()['weaWinSpe'][i])+d)/k,0)
+                # Make pandas series
+                weaHGloHor_ts = pd.Series(data=weaHGloHor_np, index=self.get_base_data().index)
+                # Assign to data dictionary
+                self.data['weaHGloHor'] = variables.Timeseries('weaHGloHor', weaHGloHor_ts, units.W_m2)
+        else:
+            raise NameError("The method is not supported")
+
+        return None
+
+
 ## Internal       
 class _Internal(_Type):
     '''Mix-in class for internal exogenous data.
@@ -1343,7 +1418,104 @@ class WeatherFromDF(_Weather, utility._DAQ):
         # Process weather data
         if self.process_variables is not None:
             self._process_weather_data();   
-                                             
+
+class WeatherFromNOAA(_Weather, utility._DAQ):
+    '''Collects weather data from NOAA.
+    
+    It can either be historical or predicted weather data, depends on the start_time and final_time.
+    Based on the weather forecast function of pvlib version 6.0, https://pvlib-python.readthedocs.io/en/v0.6.0/
+
+    Parameters
+    ----------
+    geography: [numeric, numeric]
+        List of [Latitude, Longitude] in degrees.
+        The timezone will be inferred automatically from the input geography.
+        When speficying the period for data collection, ONLY local time is allowed.
+    method: string
+        Weather forecast model. Options are:
+        
+            'GFS': Global Forecast System model, available for the entire globe
+            and for 7 days ahead, supports historical data, updated every 6 hours, 
+            time resolution: 3 hours, geographical resolution: 0.25 and 0.5 deg
+
+            'HRRR': High Resolution Rapid Refresh model, available for U.S. 
+            and for ~15 hours ahead, DOES NOT support historical data, 
+            updated every hour, time resolution: 1 hour, geographical resolution: 3 km
+            
+            'RAP': Rapid Refresh model, available for the U.S. and for 
+            18 hours, supports historical data, updated every hour, time 
+            resolution: 1 hour, geographical resolution: 20, 40 km
+            
+            'NAM': North American Mesoscale model, available for the whole
+            North America and for 3 days ahead, supports historical data, 
+            updated every 6 hours, time resolution: 1 hour, geographical resolution: 20 km
+
+    Attributes
+    ----------
+    data : dictionary
+        {"Weather Variable Name" : mpcpy.Variables.Timeseries}.
+    lat : mpcpy.variables.Static
+        Latitude in degrees.
+    lon : mpcpy.variables.Static
+        Longitude in degrees.
+    tz_name : string
+        Timezone name.  
+
+    '''
+    
+    def __init__(self, geography, method, **kwargs):
+        '''Constructor of DataFrame weather exodata object.
+        
+        '''
+        
+        self.name = 'weather_from_noaa';
+        self.data = {};   
+        # Dictionary of format {'dfHeader' : ('weaVarName', mpcpyUnit)}
+        self.variable_map = {'temp_air'     : ('weaTDryBul', units.degC),
+                             'wind_speed'   : ('weaWinSpe', units.m_s),
+                             'ghi'          : ('weaHGloHor', units.W_m2),
+                             'dni'          : ('weaHDirNor', units.W_m2),
+                             'dhi'          : ('weaHDifHor', units.W_m2),
+                             'total_clouds' : ('weaNTot', units.percent),
+                             };
+
+        # Initialize the weather forecast model
+        if method == 'GFS':
+            self.model = GFS()
+        elif method == 'HRRR':
+            self.model = HRRR()
+        elif method == 'RAP':
+            self.model = RAP()
+        elif method == 'NAM':
+            self.model = NAM()
+        else:
+            raise NameError('The {} forecast model is not supported. Only GFS, HRRR, RAP, NAM are supported now'.format(method))
+        
+        kwargs['geography'] = geography
+        kwargs['tz_name'] = 'from_geography'
+        self._parse_daq_kwargs(kwargs)
+        self._parse_time_zone_kwargs(kwargs)
+           
+    def _collect_data(self, start_time_local, final_time_local):
+        '''Collect data from NOAA source.
+        
+        Parameters
+        ----------
+        start_time_local : string
+            Attribute for starting time of data collection period in LOCAL time (the time zone defined in the geography 
+            constructor parameter), example: '2020-06-12 17:00'.
+        final_time_local : string
+            Attribute for final time of data collection period in LOCAL time, example: '2020-06-14 17:00'.
+   
+        '''
+        # Set time interval
+        self._set_time_interval(start_time_local, final_time_local)
+        # collect data from NOAA
+        self._df = self.model.get_processed_data(self.lat.display_data(), self.lon.display_data(), \
+            self.start_time_utc, self.final_time_utc)      
+        self._read_timeseries_from_df();
+
+
 #%% Internal source implementations
 class InternalFromCSV(_Internal, utility._DAQ):
     '''Collects internal data from a csv file.
