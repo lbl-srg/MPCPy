@@ -12,23 +12,23 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
     - using pip, install the following packages:
 
-	    matplotlib >= 2.0.2
+        matplotlib >= 2.0.2
 
-	    numpy >= 1.16.6
+        numpy >= 1.16.6
 
-	    pandas >= 0.20.3
+        pandas >= 0.20.3
 
-	    python-dateutil >= 2.6.1
+        python-dateutil >= 2.6.1
 
-	    pytz >= 2017.2
+        pytz >= 2017.2
 
-	    scikit-learn >= 0.18.2
+        scikit-learn >= 0.18.2
 
-	    sphinx >= 1.6.3
+        sphinx >= 1.6.3
 
-	    numpydoc >= 0.7.0
+        numpydoc >= 0.7.0
 
-	    tzwhere **=** 2.3
+        tzwhere **=** 2.3
 
         pyDOE >= 0.3.8
 

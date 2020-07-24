@@ -11,4 +11,5 @@ Thank you to all who have provided guidance on the development of this program. 
 - David H. Blum, Lawrence Berkeley National Laboratory
 - Ruoxi Jia, University of California, Berkeley
 - Lisa Rivalin, Engie Axima
+- Zhe Wang, Lawrence Berkeley National Laboratory
 - Michael Wetter, Lawrence Berkeley National Laboratory
