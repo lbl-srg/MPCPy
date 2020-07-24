@@ -170,7 +170,7 @@ class OptimizeSimpleFromJModelica(TestCaseMPCPy):
         parameter_data['heatCapacitor.C'] = {};
         parameter_data['heatCapacitor.C']['Free'] = variables.Static('C_free', False, units.boolean);
         parameter_data['heatCapacitor.C']['Value'] = variables.Static('C_value', 3e6, units.boolean);
-        model = models.Modelica(models.JModelica, \
+        model = models.Modelica(models.JModelicaParameter, \
                                 models.RMSE, \
                                 self.measurements, \
                                 moinfo = (self.mopath, modelpath, {}), \
