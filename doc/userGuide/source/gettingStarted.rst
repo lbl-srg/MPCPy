@@ -16,7 +16,7 @@ Installation Instructions For Linux (Ubuntu 16.04 LTS)
 
         numpy >= 1.16.6
 
-        pandas >= 0.20.3
+        pandas == 0.20.3
 
         python-dateutil >= 2.6.1
 
