@@ -34,3 +34,7 @@ MPCPy is available under the following open-source [license](https://github.com/
 To cite MPCPy, please use:
 
 Blum, D. H. and Wetter, M. “MPCPy: An Open-Source Software Platform for Model Predictive Control in Buildings.” Proceedings of the 15th Conference of International Building Performance Simulation, Aug 7 – 9, 2017. San Francisco, CA.
+
+This branch includes models (located in ``uses/appenergy_2019``) that were utilized for the following paper: 
+
+Blum, D.H, K.Arendt, L. Rivalin, M.A. Piette, M. Wetter, and C.T.Veje (2019). "Practical factors of envelope model setup and their effects on the performance of model predictive control for building heating, ventilating, and air conditioning systems."  Applied Energy 236, 410-425.  https://doi.org/10.1016/j.apenergy.2018.11.093. 
